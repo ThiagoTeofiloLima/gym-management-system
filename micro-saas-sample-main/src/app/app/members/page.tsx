@@ -25,12 +25,14 @@ import {
     DialogTrigger
 } from "@/components/ui/dialog";
 import { PlusIcon } from "@radix-ui/react-icons";
+import { Dumbbell } from "lucide-react";
 import { jsonDb } from "@/services/json-db";
+import Link from "next/link";
 
 export default async function MembersPage() {
     // Get all members from the database
-    const allMembers = await jsonDb.getData();
-    const members = allMembers.members;
+    const allData = await jsonDb.getData();
+    const members = allData.members;
 
     return (
         <DashboardPage>
@@ -99,6 +101,7 @@ export default async function MembersPage() {
                                     <TableHead>Plano</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead>Última Visita</TableHead>
+                                    <TableHead>Ações</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -114,6 +117,13 @@ export default async function MembersPage() {
                                             </Badge>
                                         </TableCell>
                                         <TableCell>{member.lastVisit}</TableCell>
+                                        <TableCell>
+                                            <Link href={`/app/members/${member.id}`}>
+                                                <Button variant="outline" size="sm">
+                                                    Ver Detalhes
+                                                </Button>
+                                            </Link>
+                                        </TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
