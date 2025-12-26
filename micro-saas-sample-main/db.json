@@ -2013,6 +2013,16 @@
       "status": "Ativo",
       "lastVisit": "2025-06-19",
       "userId": "user-1"
+    },
+    {
+      "name": "Sicrano de Tals",
+      "email": "sicrano@gmail.com",
+      "phone": "959991458562",
+      "plan": "Mensal",
+      "status": "Ativo",
+      "lastVisit": "2025-12-26",
+      "userId": "user-1",
+      "id": "member-1766770935997-egp8u63c5"
     }
   ],
   "trainers": [

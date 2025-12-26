@@ -2,6 +2,16 @@
 
 import { auth } from "@/services/auth";
 import { jsonDb } from "@/services/json-db";
+import { z } from "zod";
+import { upsertToDoSchema } from "./schema";
+
+export interface ToDo {
+    id: string;
+    title: string;
+    doneAt: Date | null;
+    createdAt: Date;
+    userId?: string;
+}
 
 // Get gym dashboard data
 export async function getDashboardData() {
@@ -63,5 +73,100 @@ export async function getDashboardData() {
         expenses,
         profit
     };
+}
+
+// ToDo functions
+export async function getToDos() {
+    let session;
+    try {
+        session = await auth();
+    } catch (error) {
+        // If auth fails, use a default user for development
+        session = { user: { id: "user-1" } };
+    }
+
+    if (!session?.user?.id) {
+        return [];
+    }
+
+    const userId = session.user.id;
+
+    // Get ToDos for the user from the database
+    return await jsonDb.findToDosByUserId(userId);
+}
+
+export async function upsertToDo(data: { id?: string; title: string; doneAt?: Date | null }) {
+    let session;
+    try {
+        session = await auth();
+    } catch (error) {
+        // If auth fails, use a default user for development
+        session = { user: { id: "user-1" } };
+    }
+
+    if (!session?.user?.id) {
+        return { error: "Unauthorized", data: null };
+    }
+
+    const validatedData = upsertToDoSchema.safeParse(data);
+    if (!validatedData.success) {
+        return { error: "Invalid data", data: null };
+    }
+
+    const { id, title, doneAt } = validatedData.data;
+    const userId = session.user.id;
+
+    if (id) {
+        // Update existing ToDo
+        const updatedTodo = await jsonDb.updateToDo(id, { title, doneAt: doneAt || null });
+        if (!updatedTodo) {
+            return { error: "ToDo not found", data: null };
+        }
+        return { error: null, data: updatedTodo };
+    } else {
+        // Create new ToDo
+        const newTodo = await jsonDb.createToDo({
+            title,
+            doneAt: doneAt || null,
+            createdAt: new Date(),
+            userId
+        });
+        return { error: null, data: newTodo };
+    }
+}
+
+export async function deleteToDo(data: { id: string }) {
+    let session;
+    try {
+        session = await auth();
+    } catch (error) {
+        // If auth fails, use a default user for development
+        session = { user: { id: "user-1" } };
+    }
+
+    if (!session?.user?.id) {
+        return { error: "Unauthorized", success: false };
+    }
+
+    const success = await jsonDb.deleteToDo(data.id);
+    return { error: success ? null : "Failed to delete ToDo", success };
+}
+
+export async function deleteAllToDos() {
+    let session;
+    try {
+        session = await auth();
+    } catch (error) {
+        // If auth fails, use a default user for development
+        session = { user: { id: "user-1" } };
+    }
+
+    if (!session?.user?.id) {
+        return { error: "Unauthorized", success: false };
+    }
+
+    const userId = session.user.id;
+    const success = await jsonDb.deleteAllToDosByUserId(userId);
+    return { error: success ? null : "Failed to delete all ToDos", success };
 }
 

@@ -164,7 +164,7 @@ export const getUserCurrentPlan = async (userId: string) => {
         };
 
         // Count user's todos
-        const userTodos = await jsonDb.findTodosByUserId(userId);
+        const userTodos = await jsonDb.findToDosByUserId(userId);
         const currentTasks = userTodos.length;
         const availableTasks = plan.quota.TASKS;
         const usage = (currentTasks / availableTasks) * 100;
@@ -184,7 +184,7 @@ export const getUserCurrentPlan = async (userId: string) => {
     const plan = getPlanByPrice(user.stripePriceId);
 
     // Count user's todos
-    const userTodos = await jsonDb.findTodosByUserId(userId);
+    const userTodos = await jsonDb.findToDosByUserId(userId);
     const currentTasks = userTodos.length;
     const availableTasks = plan.quota.TASKS;
     const usage = (currentTasks / availableTasks) * 100;

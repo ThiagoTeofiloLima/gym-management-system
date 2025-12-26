@@ -95,7 +95,7 @@ export function ToDoDataTable({ data }: ToDoDataTableProps) {
 
     const handleMarkAsDone = async (toDo: ToDo) => {
         const doneAt = toDo.doneAt ? null : new Date();
-        await upsertToDo({ id: toDo.id, doneAt });
+        await upsertToDo({ id: toDo.id, title: toDo.title, doneAt });
         setDone(!done);
         router.refresh();
 

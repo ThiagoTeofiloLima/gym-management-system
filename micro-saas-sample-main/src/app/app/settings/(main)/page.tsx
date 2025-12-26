@@ -12,7 +12,7 @@ export default async function SettingsPage() {
                 id: "mock-user-id",
                 name: "Development User",
                 email: "thiago.lima.amazoniatelecom@gmail.com",
-                image: null,
+                image: undefined,
             }
         };
     }
@@ -24,7 +24,7 @@ export default async function SettingsPage() {
                 id: "mock-user-id",
                 name: "Development User",
                 email: "thiago.lima.amazoniatelecom@gmail.com",
-                image: null,
+                image: undefined,
             }
         };
     }

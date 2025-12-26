@@ -49,12 +49,12 @@ export function FinancialCharts() {
 
                 // Calculate financial summary
                 const totalRevenue = financial
-                    .filter(record => record.type === 'Receita')
-                    .reduce((sum, record) => sum + record.amount, 0);
+                    .filter((record: any) => record.type === 'Receita')
+                    .reduce((sum: number, record: any) => sum + record.amount, 0);
 
                 const totalExpenses = financial
-                    .filter(record => record.type === 'Despesa')
-                    .reduce((sum, record) => sum + record.amount, 0);
+                    .filter((record: any) => record.type === 'Despesa')
+                    .reduce((sum: number, record: any) => sum + record.amount, 0);
 
                 setFinancialSummary({
                     totalRevenue,
@@ -76,7 +76,7 @@ export function FinancialCharts() {
                 setMonthlyData(monthly);
 
                 // Prepare category data
-                const categories = financial.reduce((acc, record) => {
+                const categories = financial.reduce((acc: Record<string, number>, record: any) => {
                     if (!acc[record.category]) {
                         acc[record.category] = 0;
                     }
@@ -197,7 +197,7 @@ export function FinancialCharts() {
                                     cx="50%"
                                     cy="50%"
                                     labelLine={false}
-                                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                    label={({ name, percent }) => `${name} ${percent ? (percent * 100).toFixed(0) : '0'}%`}
                                     outerRadius={80}
                                     fill="#8884d8"
                                     dataKey="value"

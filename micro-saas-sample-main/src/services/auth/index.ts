@@ -6,7 +6,7 @@ export async function auth() {
       id: "user-1",
       name: "Thiago Lima",
       email: "thiago.lima.amazoniatelecom@gmail.com",
-      image: null,
+      image: undefined,
     },
     expires: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 hours from now
   };

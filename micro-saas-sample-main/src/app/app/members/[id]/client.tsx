@@ -1,20 +1,21 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-    Dialog, 
-    DialogContent, 
-    DialogDescription, 
-    DialogHeader, 
-    DialogTitle, 
-    DialogTrigger 
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger
 } from "@/components/ui/dialog";
-import { 
+import {
     AlertDialog,
     AlertDialogAction,
     AlertDialogCancel,
@@ -25,8 +26,30 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { PencilIcon, TrashIcon } from "lucide-react";
+import { PencilIcon, TrashIcon, CalendarIcon, ClockIcon } from "lucide-react";
 import { DashboardPage, DashboardPageHeader, DashboardPageHeaderTitle, DashboardPageMain } from "@/components/dashboard/page";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow
+} from "@/components/ui/table";
+
+// Mock auth function to get the current user - in a real app, this would come from next-auth
+async function getCurrentUser() {
+  // Return a mock session with a default user
+  return {
+    user: {
+      id: "user-1",
+      name: "Thiago Lima",
+      email: "thiago.lima.amazoniatelecom@gmail.com",
+      image: null,
+    },
+    expires: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 hours from now
+  };
+}
 
 interface Member {
     id: string;
@@ -38,13 +61,56 @@ interface Member {
     lastVisit: string;
 }
 
+interface Attendance {
+    id: string;
+    date: string;
+    member: string;
+    memberEmail: string;
+    checkIn: string | null;
+    checkOut: string | null;
+    status: string;
+    userId: string;
+}
+
 export default function MemberDetailPageClient({ member }: { member: Member }) {
     const router = useRouter();
-    
+    const [attendanceRecords, setAttendanceRecords] = useState<Attendance[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [checkInTime, setCheckInTime] = useState('');
+    const [checkOutTime, setCheckOutTime] = useState('');
+
     // Function to format date
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('pt-BR');
     };
+
+    // Function to format time
+    const formatTime = (timeString: string | null) => {
+        if (!timeString) return 'N/A';
+        return timeString;
+    };
+
+    // Load attendance records when component mounts
+    useEffect(() => {
+        const loadAttendance = async () => {
+            try {
+                const session = await getCurrentUser();
+                const userId = session.user.id;
+
+                const response = await fetch(`/api/attendance/${member.id}?userId=${userId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setAttendanceRecords(data);
+                }
+            } catch (error) {
+                console.error('Error loading attendance:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadAttendance();
+    }, [member.id]);
 
     const updateMember = async () => {
         // Get form values
@@ -99,6 +165,40 @@ export default function MemberDetailPageClient({ member }: { member: Member }) {
         }
     };
 
+    const recordAttendance = async () => {
+        try {
+            const session = await getCurrentUser();
+            const userId = session.user.id;
+
+            const response = await fetch(`/api/attendance/${member.id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    date: new Date().toISOString().split('T')[0], // Today's date
+                    checkIn: checkInTime || null,
+                    checkOut: checkOutTime || null,
+                    userId
+                }),
+            });
+
+            if (response.ok) {
+                const newAttendance = await response.json();
+                setAttendanceRecords(prev => [newAttendance, ...prev]); // Add to the beginning of the list
+                setCheckInTime('');
+                setCheckOutTime('');
+                // Update the member's last visit date
+                router.refresh();
+            } else {
+                alert('Erro ao registrar frequência');
+            }
+        } catch (error) {
+            console.error('Error recording attendance:', error);
+            alert('Erro ao registrar frequência');
+        }
+    };
+
     return (
         <DashboardPage>
             <DashboardPageHeader>
@@ -132,8 +232,8 @@ export default function MemberDetailPageClient({ member }: { member: Member }) {
                                 </div>
                                 <div>
                                     <Label>Plano</Label>
-                                    <Badge variant={member.plan === 'Mensal' ? 'default' : 
-                                                  member.plan === 'Trimestral' ? 'secondary' : 
+                                    <Badge variant={member.plan === 'Mensal' ? 'default' :
+                                                  member.plan === 'Trimestral' ? 'secondary' :
                                                   'outline'}>
                                         {member.plan}
                                     </Badge>
@@ -149,7 +249,7 @@ export default function MemberDetailPageClient({ member }: { member: Member }) {
                                     <p className="text-muted-foreground">{formatDate(member.lastVisit)}</p>
                                 </div>
                             </div>
-                            
+
                             <div className="pt-4 flex space-x-4">
                                 <Dialog>
                                     <DialogTrigger asChild>
@@ -183,8 +283,8 @@ export default function MemberDetailPageClient({ member }: { member: Member }) {
                                                 </div>
                                                 <div>
                                                     <Label htmlFor="edit-plan">Plano</Label>
-                                                    <select 
-                                                        id="edit-plan" 
+                                                    <select
+                                                        id="edit-plan"
                                                         className="w-full border rounded-md px-3 py-2"
                                                         defaultValue={member.plan}
                                                     >
@@ -196,8 +296,8 @@ export default function MemberDetailPageClient({ member }: { member: Member }) {
                                             </div>
                                             <div>
                                                 <Label htmlFor="edit-status">Status</Label>
-                                                <select 
-                                                    id="edit-status" 
+                                                <select
+                                                    id="edit-status"
                                                     className="w-full border rounded-md px-3 py-2"
                                                     defaultValue={member.status}
                                                 >
@@ -247,22 +347,22 @@ export default function MemberDetailPageClient({ member }: { member: Member }) {
                                     <h4 className="font-medium">Últimas Visitas</h4>
                                     <p className="text-sm text-muted-foreground">{formatDate(member.lastVisit)}</p>
                                 </div>
-                                
+
                                 <div>
                                     <h4 className="font-medium">Status de Pagamento</h4>
                                     <Badge variant="default">Em dia</Badge>
                                 </div>
-                                
+
                                 <div>
                                     <h4 className="font-medium">Próximo Vencimento</h4>
                                     <p className="text-sm text-muted-foreground">15/01/2026</p>
                                 </div>
-                                
+
                                 <div>
                                     <h4 className="font-medium">Treinos Agendados</h4>
                                     <p className="text-sm text-muted-foreground">3 treinos esta semana</p>
                                 </div>
-                                
+
                                 <div>
                                     <h4 className="font-medium">Tempo de Membro</h4>
                                     <p className="text-sm text-muted-foreground">2 anos e 3 meses</p>
@@ -271,6 +371,107 @@ export default function MemberDetailPageClient({ member }: { member: Member }) {
                         </CardContent>
                     </Card>
                 </div>
+
+                {/* Attendance Records Section */}
+                <Card className="mt-6">
+                    <CardHeader>
+                        <CardTitle className="flex items-center justify-between">
+                            <span>Registro de Frequência</span>
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Button variant="outline" className="flex items-center gap-2">
+                                        <CalendarIcon className="h-4 w-4" />
+                                        Registrar Frequência
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Registrar Frequência</DialogTitle>
+                                        <DialogDescription>
+                                            Registre a entrada e saída do membro.
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <div className="space-y-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <Label htmlFor="check-in">Horário de Entrada</Label>
+                                                <Input
+                                                    id="check-in"
+                                                    type="time"
+                                                    value={checkInTime}
+                                                    onChange={(e) => setCheckInTime(e.target.value)}
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="check-out">Horário de Saída</Label>
+                                                <Input
+                                                    id="check-out"
+                                                    type="time"
+                                                    value={checkOutTime}
+                                                    onChange={(e) => setCheckOutTime(e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
+                                        <Button onClick={recordAttendance} className="w-full">
+                                            Registrar Frequência
+                                        </Button>
+                                    </div>
+                                </DialogContent>
+                            </Dialog>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {loading ? (
+                            <p>Carregando registros de frequência...</p>
+                        ) : attendanceRecords.length > 0 ? (
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Data</TableHead>
+                                            <TableHead>Entrada</TableHead>
+                                            <TableHead>Saída</TableHead>
+                                            <TableHead>Status</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {attendanceRecords.map((record) => (
+                                            <TableRow key={record.id}>
+                                                <TableCell className="font-medium">
+                                                    <div className="flex items-center gap-2">
+                                                        <CalendarIcon className="h-4 w-4" />
+                                                        {formatDate(record.date)}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-2">
+                                                        <ClockIcon className="h-4 w-4" />
+                                                        {formatTime(record.checkIn)}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-2">
+                                                        <ClockIcon className="h-4 w-4" />
+                                                        {formatTime(record.checkOut)}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge variant={record.status === 'Presente' ? 'default' : 'secondary'}>
+                                                        {record.status}
+                                                    </Badge>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        ) : (
+                            <p className="text-center text-muted-foreground py-4">
+                                Nenhum registro de frequência encontrado para este membro.
+                            </p>
+                        )}
+                    </CardContent>
+                </Card>
             </DashboardPageMain>
         </DashboardPage>
     );

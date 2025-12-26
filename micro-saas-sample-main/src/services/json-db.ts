@@ -71,6 +71,14 @@ interface Financial {
   userId: string;
 }
 
+interface ToDo {
+  id: string;
+  title: string;
+  doneAt: Date | null;
+  createdAt: Date;
+  userId: string;
+}
+
 interface Database {
   users: User[];
   members: Member[];
@@ -78,6 +86,7 @@ interface Database {
   workouts: Workout[];
   attendance: Attendance[];
   financial: Financial[];
+  toDos: ToDo[];
   accounts: any[];
   sessions: any[];
   verificationTokens: any[];
@@ -103,6 +112,7 @@ export class JsonDatabase {
       if (!parsedData.workouts) parsedData.workouts = [];
       if (!parsedData.attendance) parsedData.attendance = [];
       if (!parsedData.financial) parsedData.financial = [];
+      if (!parsedData.toDos) parsedData.toDos = [];
       if (!parsedData.accounts) parsedData.accounts = [];
       if (!parsedData.sessions) parsedData.sessions = [];
       if (!parsedData.verificationTokens) parsedData.verificationTokens = [];
@@ -118,6 +128,7 @@ export class JsonDatabase {
         workouts: [],
         attendance: [],
         financial: [],
+        toDos: [],
         accounts: [],
         sessions: [],
         verificationTokens: []
@@ -425,6 +436,69 @@ export class JsonDatabase {
     db.financial = db.financial.filter(record => record.id !== id);
 
     if (db.financial.length < initialLength) {
+      await this.saveData(db);
+      return true;
+    }
+
+    return false;
+  }
+
+  // ToDo operations
+  async findToDosByUserId(userId: string): Promise<ToDo[]> {
+    const db = await this.getData();
+    return db.toDos.filter(todo => todo.userId === userId);
+  }
+
+  async findToDoById(id: string): Promise<ToDo | undefined> {
+    const db = await this.getData();
+    return db.toDos.find(todo => todo.id === id);
+  }
+
+  async createToDo(todoData: Omit<ToDo, 'id'>): Promise<ToDo> {
+    const db = await this.getData();
+    const newToDo = {
+      ...todoData,
+      id: `todo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    };
+
+    db.toDos.push(newToDo);
+    await this.saveData(db);
+
+    return newToDo;
+  }
+
+  async updateToDo(id: string, todoData: Partial<ToDo>): Promise<ToDo | null> {
+    const db = await this.getData();
+    const todoIndex = db.toDos.findIndex(todo => todo.id === id);
+
+    if (todoIndex === -1) return null;
+
+    db.toDos[todoIndex] = { ...db.toDos[todoIndex], ...todoData };
+
+    await this.saveData(db);
+
+    return db.toDos[todoIndex];
+  }
+
+  async deleteToDo(id: string): Promise<boolean> {
+    const db = await this.getData();
+    const initialLength = db.toDos.length;
+    db.toDos = db.toDos.filter(todo => todo.id !== id);
+
+    if (db.toDos.length < initialLength) {
+      await this.saveData(db);
+      return true;
+    }
+
+    return false;
+  }
+
+  async deleteAllToDosByUserId(userId: string): Promise<boolean> {
+    const db = await this.getData();
+    const initialLength = db.toDos.length;
+    db.toDos = db.toDos.filter(todo => todo.userId !== userId);
+
+    if (db.toDos.length < initialLength) {
       await this.saveData(db);
       return true;
     }

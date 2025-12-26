@@ -5,7 +5,7 @@ const mockUser = {
     id: "mock-user-id",
     name: "Development User",
     email: "dev@example.com",
-    image: null,
+    image: undefined,
 };
 
 export default async function AppLayout({
