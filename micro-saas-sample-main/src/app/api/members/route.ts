@@ -4,7 +4,7 @@ import { jsonDb } from '@/services/json-db';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, phone, plan, userId } = body;
+    const { name, email, phone, plan, userId, planRenewalDate } = body;
 
     // Validate required fields
     if (!name || !email || !phone || !plan || !userId) {
@@ -27,6 +27,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Calculate renewal date if not provided
+    let renewalDate = planRenewalDate;
+    if (!renewalDate) {
+      const today = new Date();
+      switch (plan.toLowerCase()) {
+        case 'mensal':
+          today.setMonth(today.getMonth() + 1);
+          break;
+        case 'trimestral':
+          today.setMonth(today.getMonth() + 3);
+          break;
+        case 'anual':
+          today.setFullYear(today.getFullYear() + 1);
+          break;
+        default:
+          today.setMonth(today.getMonth() + 1); // Default to monthly
+      }
+      renewalDate = today.toISOString().split('T')[0];
+    }
+
     // Create new member
     const newMember = await jsonDb.createMember({
       name,
@@ -35,6 +55,7 @@ export async function POST(request: NextRequest) {
       plan,
       status: 'Ativo', // Default status
       lastVisit: new Date().toISOString().split('T')[0], // Today's date in YYYY-MM-DD format
+      planRenewalDate: renewalDate,
       userId
     });
 

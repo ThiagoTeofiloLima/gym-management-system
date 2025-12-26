@@ -37,6 +37,40 @@ import {
     TableRow
 } from "@/components/ui/table";
 
+// Função para determinar o status do plano com base na data de renovação
+function getPlanStatus(planRenewalDate: string) {
+  const today = new Date();
+  const renewalDate = new Date(planRenewalDate);
+  const diffTime = renewalDate.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays < -7) {
+    // Mais de 7 dias atrasado - membro inativo
+    return {
+      label: "Inativo",
+      variant: "destructive" as const
+    };
+  } else if (diffDays < 0) {
+    // Menos de 7 dias atrasado - vencido
+    return {
+      label: "Vencido",
+      variant: "secondary" as const
+    };
+  } else if (diffDays <= 7) {
+    // A vencer em até 7 dias - aviso
+    return {
+      label: `Vence em ${diffDays} dia(s)`,
+      variant: "default" as const
+    };
+  } else {
+    // Mais de 7 dias para vencer - normal
+    return {
+      label: "Ativo",
+      variant: "default" as const
+    };
+  }
+}
+
 // Mock auth function to get the current user - in a real app, this would come from next-auth
 async function getCurrentUser() {
   // Return a mock session with a default user
@@ -59,6 +93,7 @@ interface Member {
     plan: string;
     status: string;
     lastVisit: string;
+    planRenewalDate: string; // Data de renovação do plano
 }
 
 interface Attendance {
@@ -119,6 +154,7 @@ export default function MemberDetailPageClient({ member }: { member: Member }) {
         const phone = (document.getElementById('edit-phone') as HTMLInputElement).value;
         const plan = (document.getElementById('edit-plan') as HTMLSelectElement).value;
         const status = (document.getElementById('edit-status') as HTMLSelectElement).value;
+        const planRenewalDate = (document.getElementById('edit-planRenewalDate') as HTMLInputElement).value;
 
         try {
             const response = await fetch(`/api/members/${member.id}`, {
@@ -131,7 +167,8 @@ export default function MemberDetailPageClient({ member }: { member: Member }) {
                     email,
                     phone,
                     plan,
-                    status
+                    status,
+                    planRenewalDate
                 }),
             });
 
@@ -248,6 +285,16 @@ export default function MemberDetailPageClient({ member }: { member: Member }) {
                                     <Label>Última Visita</Label>
                                     <p className="text-muted-foreground">{formatDate(member.lastVisit)}</p>
                                 </div>
+                                <div>
+                                    <Label>Data de Renovação</Label>
+                                    <p className="text-muted-foreground">{formatDate(member.planRenewalDate)}</p>
+                                </div>
+                                <div>
+                                    <Label>Status do Plano</Label>
+                                    <Badge variant={getPlanStatus(member.planRenewalDate).variant}>
+                                        {getPlanStatus(member.planRenewalDate).label}
+                                    </Badge>
+                                </div>
                             </div>
 
                             <div className="pt-4 flex space-x-4">
@@ -305,6 +352,14 @@ export default function MemberDetailPageClient({ member }: { member: Member }) {
                                                     <option value="Inativo">Inativo</option>
                                                 </select>
                                             </div>
+                                            <div>
+                                                <Label htmlFor="edit-planRenewalDate">Data de Renovação</Label>
+                                                <Input
+                                                    id="edit-planRenewalDate"
+                                                    type="date"
+                                                    defaultValue={member.planRenewalDate}
+                                                />
+                                            </div>
                                             <Button onClick={updateMember} className="w-full">
                                                 Salvar Alterações
                                             </Button>
@@ -350,12 +405,14 @@ export default function MemberDetailPageClient({ member }: { member: Member }) {
 
                                 <div>
                                     <h4 className="font-medium">Status de Pagamento</h4>
-                                    <Badge variant="default">Em dia</Badge>
+                                    <Badge variant={getPlanStatus(member.planRenewalDate).variant}>
+                                        {getPlanStatus(member.planRenewalDate).label}
+                                    </Badge>
                                 </div>
 
                                 <div>
                                     <h4 className="font-medium">Próximo Vencimento</h4>
-                                    <p className="text-sm text-muted-foreground">15/01/2026</p>
+                                    <p className="text-sm text-muted-foreground">{formatDate(member.planRenewalDate)}</p>
                                 </div>
 
                                 <div>

@@ -23,16 +23,19 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { PlusIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
+import { calculateRevenueFromMembers, getPlanPricingBreakdown, getPlanPrice, generateFinancialRecordsFromMembers } from "@/services/plan-pricing";
 
 export function FinancialCharts() {
     const [monthlyData, setMonthlyData] = useState<any[]>([]);
     const [categoryData, setCategoryData] = useState<any[]>([]);
     const [financialRecords, setFinancialRecords] = useState<any[]>([]);
+    const [filteredRecords, setFilteredRecords] = useState<any[]>([]);
     const [financialSummary, setFinancialSummary] = useState({
         totalRevenue: 0,
         totalExpenses: 0,
         profit: 0
     });
+    const [selectedDate, setSelectedDate] = useState<string>('');
 
     useEffect(() => {
         const loadFinancialData = async () => {
@@ -43,15 +46,46 @@ export function FinancialCharts() {
                 }
                 const allData = await response.json();
                 const financial = allData.financial;
+                const members = allData.members;
 
-                // Set financial records
-                setFinancialRecords(financial);
+                // Generate financial records based on member plan renewals
+                const planBasedFinancialRecords = generateFinancialRecordsFromMembers(members);
 
-                // Calculate financial summary
-                const totalRevenue = financial
-                    .filter((record: any) => record.type === 'Receita')
+                // Combine with existing financial records
+                const allFinancialRecords = [...financial, ...planBasedFinancialRecords];
+
+                // Set all financial records
+                setFinancialRecords(allFinancialRecords);
+
+                // Set default to show last 7 days
+                const today = new Date();
+                const sevenDaysAgo = new Date();
+                sevenDaysAgo.setDate(today.getDate() - 7);
+
+                // Filter records to show only those from the last 7 days
+                const recentRecords = allFinancialRecords.filter(record => {
+                    const recordDate = new Date(record.date);
+                    return recordDate >= sevenDaysAgo;
+                }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Sort by date descending
+
+                // If no recent records, show all records as fallback
+                const recordsToShow = recentRecords.length > 0 ? recentRecords : allFinancialRecords.slice(0, 20); // Show first 20 if no recent ones
+
+                setFilteredRecords(recordsToShow);
+                setSelectedDate(today.toISOString().split('T')[0]); // Set today as default selected date
+
+                // Calculate revenue from members based on their plans
+                const planBasedRevenue = calculateRevenueFromMembers(members);
+
+                // Calculate additional revenue from financial records (non-plan related)
+                const additionalRevenue = financial
+                    .filter((record: any) => record.type === 'Receita' && !record.description.includes('Mensalidade'))
                     .reduce((sum: number, record: any) => sum + record.amount, 0);
 
+                // Calculate total revenue (plan-based + additional)
+                const totalRevenue = planBasedRevenue + additionalRevenue;
+
+                // Calculate expenses from financial records
                 const totalExpenses = financial
                     .filter((record: any) => record.type === 'Despesa')
                     .reduce((sum: number, record: any) => sum + record.amount, 0);
@@ -75,16 +109,26 @@ export function FinancialCharts() {
                 });
                 setMonthlyData(monthly);
 
-                // Prepare category data
+                // Prepare category data based on plan pricing breakdown
+                const planBreakdown = getPlanPricingBreakdown(members);
+
+                // Also include non-plan related revenue from financial records
                 const categories = financial.reduce((acc: Record<string, number>, record: any) => {
                     if (!acc[record.category]) {
                         acc[record.category] = 0;
                     }
-                    if (record.type === 'Receita') {
+                    if (record.type === 'Receita' && !record.description.includes('Mensalidade')) {
                         acc[record.category] += record.amount;
                     }
                     return acc;
                 }, {});
+
+                // Add plan-based revenue to categories
+                Object.entries(planBreakdown).forEach(([planType, data]) => {
+                    if (data.total > 0) {
+                        categories[`${planType} (Mensalidades)`] = data.total;
+                    }
+                });
 
                 const catData = Object.entries(categories).map(([name, value]) => ({
                     name,
@@ -123,6 +167,30 @@ export function FinancialCharts() {
 
         loadFinancialData();
     }, []);
+
+    // Filter records based on selected date
+    useEffect(() => {
+        if (selectedDate && financialRecords.length > 0) {
+            // If a specific date is selected, show records for that date
+            const selectedDateRecords = financialRecords.filter(record => {
+                return record.date === selectedDate;
+            }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+            setFilteredRecords(selectedDateRecords);
+        } else if (financialRecords.length > 0) {
+            // If no date is selected, show last 7 days
+            const today = new Date();
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(today.getDate() - 7);
+
+            const recentRecords = financialRecords.filter(record => {
+                const recordDate = new Date(record.date);
+                return recordDate >= sevenDaysAgo;
+            }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+            setFilteredRecords(recentRecords);
+        }
+    }, [selectedDate, financialRecords]);
 
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
@@ -216,68 +284,93 @@ export function FinancialCharts() {
             {/* Financial Records Table */}
             <Card>
                 <CardHeader>
-                    <div className="flex justify-between items-center">
-                        <CardTitle>Registro Financeiro ({financialRecords.length})</CardTitle>
-                        <Dialog>
-                            <DialogTrigger asChild>
-                                <Button>
-                                    <PlusIcon className="mr-2 h-4 w-4" /> Adicionar Transação
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>Adicionar Nova Transação</DialogTitle>
-                                    <DialogDescription>
-                                        Preencha as informações da transação.
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <div className="grid gap-4 py-4">
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <label htmlFor="date" className="text-right">
-                                            Data
-                                        </label>
-                                        <Input id="date" type="date" className="col-span-3" />
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <CardTitle>Registro Financeiro ({filteredRecords.length})</CardTitle>
+                        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                            <Input
+                                type="date"
+                                value={selectedDate}
+                                onChange={(e) => setSelectedDate(e.target.value)}
+                                className="max-w-[200px]"
+                            />
+                            <Button
+                                onClick={() => {
+                                    const today = new Date().toISOString().split('T')[0];
+                                    setSelectedDate(today);
+                                }}
+                                variant="outline"
+                                className="whitespace-nowrap"
+                            >
+                                Hoje
+                            </Button>
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Button>
+                                        <PlusIcon className="mr-2 h-4 w-4" /> Adicionar Transação
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Adicionar Nova Transação</DialogTitle>
+                                        <DialogDescription>
+                                            Preencha as informações da transação.
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <div className="grid gap-4 py-4">
+                                        <div className="grid grid-cols-4 items-center gap-4">
+                                            <label htmlFor="date" className="text-right">
+                                                Data
+                                            </label>
+                                            <Input id="date" type="date" className="col-span-3" />
+                                        </div>
+                                        <div className="grid grid-cols-4 items-center gap-4">
+                                            <label htmlFor="description" className="text-right">
+                                                Descrição
+                                            </label>
+                                            <Input id="description" className="col-span-3" placeholder="Descrição da transação" />
+                                        </div>
+                                        <div className="grid grid-cols-4 items-center gap-4">
+                                            <label htmlFor="type" className="text-right">
+                                                Tipo
+                                            </label>
+                                            <select id="type" className="col-span-3 border rounded-md px-3 py-2">
+                                                <option value="Receita">Receita</option>
+                                                <option value="Despesa">Despesa</option>
+                                            </select>
+                                        </div>
+                                        <div className="grid grid-cols-4 items-center gap-4">
+                                            <label htmlFor="amount" className="text-right">
+                                                Valor
+                                            </label>
+                                            <Input id="amount" type="number" className="col-span-3" placeholder="R$" />
+                                        </div>
+                                        <div className="grid grid-cols-4 items-center gap-4">
+                                            <label htmlFor="category" className="text-right">
+                                                Categoria
+                                            </label>
+                                            <select id="category" className="col-span-3 border rounded-md px-3 py-2">
+                                                <option value="Mensalidades">Mensalidades</option>
+                                                <option value="Personal Trainers">Personal Trainers</option>
+                                                <option value="Manutenção">Manutenção</option>
+                                                <option value="Folha de Pagamento">Folha de Pagamento</option>
+                                                <option value="Outros">Outros</option>
+                                            </select>
+                                        </div>
                                     </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <label htmlFor="description" className="text-right">
-                                            Descrição
-                                        </label>
-                                        <Input id="description" className="col-span-3" placeholder="Descrição da transação" />
-                                    </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <label htmlFor="type" className="text-right">
-                                            Tipo
-                                        </label>
-                                        <select id="type" className="col-span-3 border rounded-md px-3 py-2">
-                                            <option value="Receita">Receita</option>
-                                            <option value="Despesa">Despesa</option>
-                                        </select>
-                                    </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <label htmlFor="amount" className="text-right">
-                                            Valor
-                                        </label>
-                                        <Input id="amount" type="number" className="col-span-3" placeholder="R$" />
-                                    </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                        <label htmlFor="category" className="text-right">
-                                            Categoria
-                                        </label>
-                                        <select id="category" className="col-span-3 border rounded-md px-3 py-2">
-                                            <option value="Mensalidades">Mensalidades</option>
-                                            <option value="Personal Trainers">Personal Trainers</option>
-                                            <option value="Manutenção">Manutenção</option>
-                                            <option value="Folha de Pagamento">Folha de Pagamento</option>
-                                            <option value="Outros">Outros</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <Button type="submit">Salvar Transação</Button>
-                            </DialogContent>
-                        </Dialog>
+                                    <Button type="submit">Salvar Transação</Button>
+                                </DialogContent>
+                            </Dialog>
+                        </div>
                     </div>
                 </CardHeader>
                 <CardContent>
+                    <div className="mb-4">
+                        <p className="text-sm text-muted-foreground">
+                            {selectedDate
+                                ? `Mostrando registros para: ${new Date(selectedDate).toLocaleDateString('pt-BR')}`
+                                : 'Mostrando registros dos últimos 7 dias'}
+                        </p>
+                    </div>
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead>
@@ -290,23 +383,31 @@ export function FinancialCharts() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {financialRecords.map((record) => (
-                                    <tr key={record.id} className="border-t">
-                                        <td className="py-2">{new Date(record.date).toLocaleDateString('pt-BR')}</td>
-                                        <td className="py-2 font-medium">{record.description}</td>
-                                        <td className="py-2">
-                                            <Badge variant="outline">{record.category}</Badge>
-                                        </td>
-                                        <td className="py-2">
-                                            <Badge variant={record.type === 'Receita' ? 'default' : 'secondary'}>
-                                                {record.type}
-                                            </Badge>
-                                        </td>
-                                        <td className="py-2">
-                                            {record.type === 'Receita' ? '+' : '-'} R$ {record.amount}
+                                {filteredRecords.length > 0 ? (
+                                    filteredRecords.map((record) => (
+                                        <tr key={record.id} className="border-t">
+                                            <td className="py-2">{new Date(record.date).toLocaleDateString('pt-BR')}</td>
+                                            <td className="py-2 font-medium">{record.description}</td>
+                                            <td className="py-2">
+                                                <Badge variant="outline">{record.category}</Badge>
+                                            </td>
+                                            <td className="py-2">
+                                                <Badge variant={record.type === 'Receita' ? 'default' : 'secondary'}>
+                                                    {record.type}
+                                                </Badge>
+                                            </td>
+                                            <td className="py-2">
+                                                {record.type === 'Receita' ? '+' : '-'} R$ {record.amount}
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={5} className="text-center py-8 text-muted-foreground">
+                                            Nenhum registro financeiro encontrado para a data selecionada.
                                         </td>
                                     </tr>
-                                ))}
+                                )}
                             </tbody>
                         </table>
                     </div>

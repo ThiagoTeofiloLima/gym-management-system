@@ -9,6 +9,7 @@ export const upsertMemberSchema = z.object({
     plan: z.string().min(1, "Plano é obrigatório"),
     status: z.string().min(1, "Status é obrigatório"),
     lastVisit: z.string().optional(),
+    planRenewalDate: z.string().optional(), // Data de renovação do plano
 });
 
 export const deleteMemberSchema = z.object({

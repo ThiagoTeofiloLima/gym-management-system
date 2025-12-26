@@ -28,6 +28,9 @@ export function SettingsSidebar() {
                     <DashboardSidebarNavLink href="/app/settings/billing" active={isActive("/app/settings/billing")}>
                         Faturamento
                     </DashboardSidebarNavLink>
+                    <DashboardSidebarNavLink href="/app/settings/pricing" active={isActive("/app/settings/pricing")}>
+                        Preços dos Planos
+                    </DashboardSidebarNavLink>
                 </DashboardSidebarNavMain>
             </DashboardSidebarNav>
         </aside>

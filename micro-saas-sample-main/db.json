@@ -32,7 +32,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-12-24",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-02-06"
     },
     {
       "id": "2",
@@ -42,7 +43,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-12-23",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-19"
     },
     {
       "id": "4",
@@ -52,7 +54,8 @@
       "plan": "Mensal",
       "status": "Inativo",
       "lastVisit": "2025-12-20",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-16"
     },
     {
       "id": "5",
@@ -62,7 +65,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-12-25",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-16"
     },
     {
       "id": "6",
@@ -72,7 +76,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-12-24",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-20"
     },
     {
       "id": "7",
@@ -82,7 +87,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-12-23",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2027-01-02"
     },
     {
       "id": "8",
@@ -92,7 +98,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-12-22",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-02-03"
     },
     {
       "id": "9",
@@ -102,7 +109,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-12-21",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-04-01"
     },
     {
       "id": "10",
@@ -112,7 +120,8 @@
       "plan": "Mensal",
       "status": "Inativo",
       "lastVisit": "2025-12-15",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-16"
     },
     {
       "id": "11",
@@ -122,7 +131,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-12-25",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-13"
     },
     {
       "id": "12",
@@ -132,7 +142,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-12-24",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-29"
     },
     {
       "id": "13",
@@ -142,7 +153,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-12-23",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-11"
     },
     {
       "id": "14",
@@ -152,7 +164,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-12-22",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-11"
     },
     {
       "id": "15",
@@ -162,7 +175,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-12-21",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-29"
     },
     {
       "id": "16",
@@ -172,7 +186,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-12-20",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-02-06"
     },
     {
       "id": "17",
@@ -182,7 +197,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-12-19",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-15"
     },
     {
       "id": "18",
@@ -192,7 +208,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-12-18",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-24"
     },
     {
       "id": "19",
@@ -202,7 +219,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-12-17",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-28"
     },
     {
       "id": "20",
@@ -212,7 +230,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-12-16",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-21"
     },
     {
       "id": "21",
@@ -222,7 +241,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-12-15",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-29"
     },
     {
       "id": "22",
@@ -232,7 +252,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-12-14",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-18"
     },
     {
       "id": "23",
@@ -242,7 +263,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-12-13",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-20"
     },
     {
       "id": "24",
@@ -252,7 +274,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-12-12",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-02-07"
     },
     {
       "id": "25",
@@ -262,7 +285,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-12-11",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2027-01-02"
     },
     {
       "id": "26",
@@ -272,7 +296,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-12-10",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-22"
     },
     {
       "id": "27",
@@ -282,7 +307,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-12-09",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-02-07"
     },
     {
       "id": "28",
@@ -292,7 +318,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-12-08",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-12"
     },
     {
       "id": "29",
@@ -302,7 +329,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-12-07",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-18"
     },
     {
       "id": "30",
@@ -312,7 +340,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-12-06",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-11"
     },
     {
       "id": "31",
@@ -322,7 +351,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-12-05",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-20"
     },
     {
       "id": "32",
@@ -332,7 +362,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-12-04",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-25"
     },
     {
       "id": "33",
@@ -342,7 +373,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-12-03",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-26"
     },
     {
       "id": "34",
@@ -352,7 +384,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-12-02",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-13"
     },
     {
       "id": "35",
@@ -362,7 +395,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-12-01",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-25"
     },
     {
       "id": "36",
@@ -372,7 +406,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-11-30",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-20"
     },
     {
       "id": "37",
@@ -382,7 +417,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-11-29",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2027-01-02"
     },
     {
       "id": "38",
@@ -392,7 +428,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-11-28",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-04-05"
     },
     {
       "id": "39",
@@ -402,7 +439,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-11-27",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-17"
     },
     {
       "id": "40",
@@ -412,7 +450,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-11-26",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-25"
     },
     {
       "id": "41",
@@ -422,7 +461,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-11-25",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-18"
     },
     {
       "id": "42",
@@ -432,7 +472,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-11-24",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-31"
     },
     {
       "id": "43",
@@ -442,7 +483,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-11-23",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-15"
     },
     {
       "id": "44",
@@ -452,7 +494,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-11-22",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-14"
     },
     {
       "id": "45",
@@ -462,7 +505,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-11-21",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-02-07"
     },
     {
       "id": "46",
@@ -472,7 +516,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-11-20",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2027-01-09"
     },
     {
       "id": "47",
@@ -482,7 +527,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-11-19",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-13"
     },
     {
       "id": "48",
@@ -492,7 +538,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-11-18",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-27"
     },
     {
       "id": "49",
@@ -502,7 +549,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-11-17",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-29"
     },
     {
       "id": "50",
@@ -512,7 +560,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-11-16",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-26"
     },
     {
       "id": "51",
@@ -522,7 +571,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-11-15",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-20"
     },
     {
       "id": "52",
@@ -532,7 +582,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-11-14",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-17"
     },
     {
       "id": "53",
@@ -542,7 +593,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-11-13",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-23"
     },
     {
       "id": "54",
@@ -552,7 +604,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-11-12",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-02-02"
     },
     {
       "id": "55",
@@ -562,7 +615,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-11-11",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-28"
     },
     {
       "id": "56",
@@ -572,7 +626,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-11-10",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-21"
     },
     {
       "id": "57",
@@ -582,7 +637,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-11-09",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-02-08"
     },
     {
       "id": "58",
@@ -592,7 +648,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-11-08",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-28"
     },
     {
       "id": "59",
@@ -602,7 +659,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-11-07",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-04-08"
     },
     {
       "id": "60",
@@ -612,7 +670,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-11-06",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-27"
     },
     {
       "id": "61",
@@ -622,7 +681,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-11-05",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2027-01-06"
     },
     {
       "id": "62",
@@ -632,7 +692,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-11-04",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-27"
     },
     {
       "id": "63",
@@ -642,7 +703,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-11-03",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-02-03"
     },
     {
       "id": "64",
@@ -652,7 +714,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-11-02",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2027-01-05"
     },
     {
       "id": "65",
@@ -662,7 +725,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-11-01",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-11"
     },
     {
       "id": "66",
@@ -672,7 +736,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-10-31",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-02-07"
     },
     {
       "id": "67",
@@ -682,7 +747,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-10-30",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-22"
     },
     {
       "id": "68",
@@ -692,7 +758,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-10-29",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-04-09"
     },
     {
       "id": "69",
@@ -702,7 +769,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-10-28",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-20"
     },
     {
       "id": "70",
@@ -712,7 +780,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-10-27",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-11"
     },
     {
       "id": "71",
@@ -722,7 +791,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-10-26",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-31"
     },
     {
       "id": "72",
@@ -732,7 +802,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-10-25",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-31"
     },
     {
       "id": "73",
@@ -742,7 +813,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-10-24",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-22"
     },
     {
       "id": "74",
@@ -752,7 +824,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-10-23",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-28"
     },
     {
       "id": "75",
@@ -762,7 +835,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-10-22",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-29"
     },
     {
       "id": "76",
@@ -772,7 +846,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-10-21",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-21"
     },
     {
       "id": "77",
@@ -782,7 +857,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-10-20",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-29"
     },
     {
       "id": "78",
@@ -792,7 +868,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-10-19",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-16"
     },
     {
       "id": "79",
@@ -802,7 +879,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-10-18",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-31"
     },
     {
       "id": "80",
@@ -812,7 +890,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-10-17",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-04-01"
     },
     {
       "id": "81",
@@ -822,7 +901,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-10-16",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-02-08"
     },
     {
       "id": "82",
@@ -832,7 +912,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-10-15",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-30"
     },
     {
       "id": "83",
@@ -842,7 +923,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-10-14",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-23"
     },
     {
       "id": "84",
@@ -852,7 +934,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-10-13",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-02-01"
     },
     {
       "id": "85",
@@ -862,7 +945,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-10-12",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-18"
     },
     {
       "id": "86",
@@ -872,7 +956,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-10-11",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-24"
     },
     {
       "id": "87",
@@ -882,7 +967,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-10-10",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-21"
     },
     {
       "id": "88",
@@ -892,7 +978,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-10-09",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2027-01-07"
     },
     {
       "id": "89",
@@ -902,7 +989,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-10-08",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-18"
     },
     {
       "id": "90",
@@ -912,7 +1000,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-10-07",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-14"
     },
     {
       "id": "91",
@@ -922,7 +1011,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-10-06",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-23"
     },
     {
       "id": "92",
@@ -932,7 +1022,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-10-05",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-04-09"
     },
     {
       "id": "93",
@@ -942,7 +1033,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-10-04",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-20"
     },
     {
       "id": "94",
@@ -952,7 +1044,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-10-03",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-28"
     },
     {
       "id": "95",
@@ -962,7 +1055,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-10-02",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-04-02"
     },
     {
       "id": "96",
@@ -972,7 +1066,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-10-01",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-19"
     },
     {
       "id": "97",
@@ -982,7 +1077,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-09-30",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-23"
     },
     {
       "id": "98",
@@ -992,7 +1088,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-09-29",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-27"
     },
     {
       "id": "99",
@@ -1002,7 +1099,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-09-28",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-02-08"
     },
     {
       "id": "100",
@@ -1012,7 +1110,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-09-27",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-13"
     },
     {
       "id": "101",
@@ -1022,7 +1121,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-09-26",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-30"
     },
     {
       "id": "102",
@@ -1032,7 +1132,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-09-25",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-02-03"
     },
     {
       "id": "103",
@@ -1042,7 +1143,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-09-24",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-26"
     },
     {
       "id": "104",
@@ -1052,7 +1154,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-09-23",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-21"
     },
     {
       "id": "105",
@@ -1062,7 +1165,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-09-22",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-24"
     },
     {
       "id": "106",
@@ -1072,7 +1176,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-09-21",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2027-01-06"
     },
     {
       "id": "107",
@@ -1082,7 +1187,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-09-20",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-30"
     },
     {
       "id": "108",
@@ -1092,7 +1198,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-09-19",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-17"
     },
     {
       "id": "109",
@@ -1102,7 +1209,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-09-18",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-25"
     },
     {
       "id": "110",
@@ -1112,7 +1220,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-09-17",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-04-03"
     },
     {
       "id": "111",
@@ -1122,7 +1231,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-09-16",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-25"
     },
     {
       "id": "112",
@@ -1132,7 +1242,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-09-15",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-12"
     },
     {
       "id": "113",
@@ -1142,7 +1253,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-09-14",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-27"
     },
     {
       "id": "114",
@@ -1152,7 +1264,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-09-13",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-30"
     },
     {
       "id": "115",
@@ -1162,7 +1275,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-09-12",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-24"
     },
     {
       "id": "116",
@@ -1172,7 +1286,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-09-11",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-19"
     },
     {
       "id": "117",
@@ -1182,7 +1297,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-09-10",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-26"
     },
     {
       "id": "118",
@@ -1192,7 +1308,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-09-09",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-23"
     },
     {
       "id": "119",
@@ -1202,7 +1319,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-09-08",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-19"
     },
     {
       "id": "120",
@@ -1212,7 +1330,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-09-07",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-29"
     },
     {
       "id": "121",
@@ -1222,7 +1341,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-09-06",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2027-01-05"
     },
     {
       "id": "122",
@@ -1232,7 +1352,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-09-05",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-28"
     },
     {
       "id": "123",
@@ -1242,7 +1363,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-09-04",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-26"
     },
     {
       "id": "124",
@@ -1252,7 +1374,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-09-03",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-20"
     },
     {
       "id": "125",
@@ -1262,7 +1385,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-09-02",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-04-08"
     },
     {
       "id": "126",
@@ -1272,7 +1396,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-09-01",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-19"
     },
     {
       "id": "127",
@@ -1282,7 +1407,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-08-31",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-28"
     },
     {
       "id": "128",
@@ -1292,7 +1418,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-08-30",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-12"
     },
     {
       "id": "129",
@@ -1302,7 +1429,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-08-29",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-30"
     },
     {
       "id": "130",
@@ -1312,7 +1440,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-08-28",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2027-01-02"
     },
     {
       "id": "131",
@@ -1322,7 +1451,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-08-27",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-26"
     },
     {
       "id": "132",
@@ -1332,7 +1462,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-08-26",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-02-06"
     },
     {
       "id": "133",
@@ -1342,7 +1473,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-08-25",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2027-01-09"
     },
     {
       "id": "134",
@@ -1352,7 +1484,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-08-24",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-04-02"
     },
     {
       "id": "135",
@@ -1362,7 +1495,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-08-23",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-02-06"
     },
     {
       "id": "136",
@@ -1372,7 +1506,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-08-22",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-24"
     },
     {
       "id": "137",
@@ -1382,7 +1517,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-08-21",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-26"
     },
     {
       "id": "138",
@@ -1392,7 +1528,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-08-20",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-26"
     },
     {
       "id": "139",
@@ -1402,7 +1539,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-08-19",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-24"
     },
     {
       "id": "140",
@@ -1412,7 +1550,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-08-18",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-17"
     },
     {
       "id": "141",
@@ -1422,7 +1561,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-08-17",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-21"
     },
     {
       "id": "142",
@@ -1432,7 +1572,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-08-16",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-15"
     },
     {
       "id": "143",
@@ -1442,7 +1583,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-08-15",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-30"
     },
     {
       "id": "144",
@@ -1452,7 +1594,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-08-14",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-16"
     },
     {
       "id": "145",
@@ -1462,7 +1605,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-08-13",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-21"
     },
     {
       "id": "146",
@@ -1472,7 +1616,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-08-12",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-22"
     },
     {
       "id": "147",
@@ -1482,7 +1627,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-08-11",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-29"
     },
     {
       "id": "148",
@@ -1492,7 +1638,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-08-10",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-30"
     },
     {
       "id": "149",
@@ -1502,7 +1649,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-08-09",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-24"
     },
     {
       "id": "150",
@@ -1512,7 +1660,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-08-08",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-23"
     },
     {
       "id": "151",
@@ -1522,7 +1671,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-08-07",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-19"
     },
     {
       "id": "152",
@@ -1532,7 +1682,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-08-06",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-24"
     },
     {
       "id": "153",
@@ -1542,7 +1693,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-08-05",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-02-03"
     },
     {
       "id": "154",
@@ -1552,7 +1704,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-08-04",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2027-01-08"
     },
     {
       "id": "155",
@@ -1562,7 +1715,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-08-03",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-29"
     },
     {
       "id": "156",
@@ -1572,7 +1726,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-08-02",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-02-01"
     },
     {
       "id": "157",
@@ -1582,7 +1737,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-08-01",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-30"
     },
     {
       "id": "158",
@@ -1592,7 +1748,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-07-31",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-13"
     },
     {
       "id": "159",
@@ -1602,7 +1759,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-07-30",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-02-02"
     },
     {
       "id": "160",
@@ -1612,7 +1770,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-07-29",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-24"
     },
     {
       "id": "161",
@@ -1622,7 +1781,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-07-28",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-23"
     },
     {
       "id": "162",
@@ -1632,7 +1792,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-07-27",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-12"
     },
     {
       "id": "163",
@@ -1642,7 +1803,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-07-26",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2027-01-06"
     },
     {
       "id": "164",
@@ -1652,7 +1814,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-07-25",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-31"
     },
     {
       "id": "165",
@@ -1662,7 +1825,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-07-24",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-02-04"
     },
     {
       "id": "166",
@@ -1672,7 +1836,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-07-23",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-30"
     },
     {
       "id": "167",
@@ -1682,7 +1847,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-07-22",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-29"
     },
     {
       "id": "168",
@@ -1692,7 +1858,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-07-21",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-02-09"
     },
     {
       "id": "169",
@@ -1702,7 +1869,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-07-20",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2027-01-01"
     },
     {
       "id": "170",
@@ -1712,7 +1880,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-07-19",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-30"
     },
     {
       "id": "171",
@@ -1722,7 +1891,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-07-18",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-19"
     },
     {
       "id": "172",
@@ -1732,7 +1902,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-07-17",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2027-01-09"
     },
     {
       "id": "173",
@@ -1742,7 +1913,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-07-16",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-04-05"
     },
     {
       "id": "174",
@@ -1752,7 +1924,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-07-15",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-28"
     },
     {
       "id": "175",
@@ -1762,7 +1935,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-07-14",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-11"
     },
     {
       "id": "176",
@@ -1772,7 +1946,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-07-13",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-31"
     },
     {
       "id": "177",
@@ -1782,7 +1957,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-07-12",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-02-02"
     },
     {
       "id": "178",
@@ -1792,7 +1968,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-07-11",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2027-01-07"
     },
     {
       "id": "179",
@@ -1802,7 +1979,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-07-10",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-31"
     },
     {
       "id": "180",
@@ -1812,7 +1990,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-07-09",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-12"
     },
     {
       "id": "181",
@@ -1822,7 +2001,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-07-08",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2027-01-02"
     },
     {
       "id": "182",
@@ -1832,7 +2012,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-07-07",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-22"
     },
     {
       "id": "183",
@@ -1842,7 +2023,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-07-06",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-02-09"
     },
     {
       "id": "184",
@@ -1852,7 +2034,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-07-05",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-15"
     },
     {
       "id": "185",
@@ -1862,7 +2045,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-07-04",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-12"
     },
     {
       "id": "186",
@@ -1872,7 +2056,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-07-03",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-19"
     },
     {
       "id": "187",
@@ -1882,7 +2067,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-07-02",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-20"
     },
     {
       "id": "188",
@@ -1892,7 +2078,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-07-01",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-14"
     },
     {
       "id": "189",
@@ -1902,7 +2089,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-06-30",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-02-01"
     },
     {
       "id": "190",
@@ -1912,7 +2100,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-06-29",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-24"
     },
     {
       "id": "191",
@@ -1922,7 +2111,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-06-28",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-04-07"
     },
     {
       "id": "192",
@@ -1932,7 +2122,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-06-27",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-28"
     },
     {
       "id": "193",
@@ -1942,7 +2133,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-06-26",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-28"
     },
     {
       "id": "194",
@@ -1952,7 +2144,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-06-25",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-04-09"
     },
     {
       "id": "195",
@@ -1962,7 +2155,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-06-24",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-02-01"
     },
     {
       "id": "196",
@@ -1972,7 +2166,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-06-23",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-28"
     },
     {
       "id": "197",
@@ -1982,7 +2177,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-06-22",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-15"
     },
     {
       "id": "198",
@@ -1992,7 +2188,8 @@
       "plan": "Mensal",
       "status": "Ativo",
       "lastVisit": "2025-06-21",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-01-28"
     },
     {
       "id": "199",
@@ -2002,7 +2199,8 @@
       "plan": "Anual",
       "status": "Ativo",
       "lastVisit": "2025-06-20",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-12-23"
     },
     {
       "id": "200",
@@ -2012,7 +2210,8 @@
       "plan": "Trimestral",
       "status": "Ativo",
       "lastVisit": "2025-06-19",
-      "userId": "user-1"
+      "userId": "user-1",
+      "planRenewalDate": "2026-03-28"
     },
     {
       "name": "Sicrano de Tals",
@@ -2022,7 +2221,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-26",
       "userId": "user-1",
-      "id": "member-1766770935997-egp8u63c5"
+      "id": "member-1766770935997-egp8u63c5",
+      "planRenewalDate": "2026-01-20"
     }
   ],
   "trainers": [
@@ -2425,6 +2625,16 @@
       "checkOut": "19:45",
       "status": "Presente",
       "userId": "user-1"
+    },
+    {
+      "date": "2025-12-26",
+      "member": "Sicrano de Tals",
+      "memberEmail": "sicrano@gmail.com",
+      "checkIn": "15:00",
+      "checkOut": "16:00",
+      "status": "Presente",
+      "userId": "user-1",
+      "id": "attendance-1766779314563-8766plxc2"
     }
   ],
   "financial": [
@@ -2611,5 +2821,6 @@
   ],
   "accounts": [],
   "sessions": [],
-  "verificationTokens": []
+  "verificationTokens": [],
+  "toDos": []
 }

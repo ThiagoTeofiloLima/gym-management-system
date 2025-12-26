@@ -9,7 +9,7 @@ export async function PUT(
   try {
     const { id } = params;
     const body = await request.json();
-    const { name, email, phone, plan, status } = body;
+    const { name, email, phone, plan, status, planRenewalDate } = body;
 
     // Validate required fields
     if (!name || !email || !phone || !plan || !status) {
@@ -28,6 +28,29 @@ export async function PUT(
       );
     }
 
+    // Calculate renewal date if plan changed and no new date provided
+    let renewalDate = planRenewalDate;
+    if (!renewalDate && plan !== existingMember.plan) {
+      const today = new Date();
+      switch (plan.toLowerCase()) {
+        case 'mensal':
+          today.setMonth(today.getMonth() + 1);
+          break;
+        case 'trimestral':
+          today.setMonth(today.getMonth() + 3);
+          break;
+        case 'anual':
+          today.setFullYear(today.getFullYear() + 1);
+          break;
+        default:
+          today.setMonth(today.getMonth() + 1); // Default to monthly
+      }
+      renewalDate = today.toISOString().split('T')[0];
+    } else if (!renewalDate) {
+      // Keep the original renewal date if not provided
+      renewalDate = existingMember.planRenewalDate;
+    }
+
     // Update member
     const updatedMember = await jsonDb.updateMember(id, {
       name,
@@ -35,6 +58,7 @@ export async function PUT(
       phone,
       plan,
       status,
+      planRenewalDate: renewalDate,
       lastVisit: existingMember.lastVisit, // Keep the original lastVisit unless explicitly changed
       userId: existingMember.userId
     });

@@ -20,6 +20,7 @@ export interface Member {
   status: string;
   lastVisit: string;
   userId: string;
+  planRenewalDate: string; // Data de renovação do plano
 }
 
 export interface Trainer {

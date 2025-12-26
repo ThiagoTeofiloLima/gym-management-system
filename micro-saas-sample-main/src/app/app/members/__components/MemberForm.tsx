@@ -42,6 +42,41 @@ interface Member {
     status: string;
     lastVisit: string;
     userId: string;
+    planRenewalDate: string; // Data de renovação do plano
+}
+
+// Função para determinar o status do plano com base na data de renovação
+function getPlanStatus(planRenewalDate: string) {
+  const today = new Date();
+  const renewalDate = new Date(planRenewalDate);
+  const diffTime = renewalDate.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays < -7) {
+    // Mais de 7 dias atrasado - membro inativo
+    return {
+      label: "Inativo",
+      variant: "destructive" as const
+    };
+  } else if (diffDays < 0) {
+    // Menos de 7 dias atrasado - vencido
+    return {
+      label: "Vencido",
+      variant: "secondary" as const
+    };
+  } else if (diffDays <= 7) {
+    // A vencer em até 7 dias - aviso
+    return {
+      label: `Vence em ${diffDays} dia(s)`,
+      variant: "default" as const
+    };
+  } else {
+    // Mais de 7 dias para vencer - normal
+    return {
+      label: "Ativo",
+      variant: "default" as const
+    };
+  }
 }
 
 // Mock auth function to get the current user - in a real app, this would come from next-auth
@@ -68,6 +103,7 @@ export default function MembersPageClient({ initialMembers }: { initialMembers: 
         email: '',
         phone: '',
         plan: 'Mensal',
+        planRenewalDate: new Date().toISOString().split('T')[0], // Data atual por padrão
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -137,6 +173,7 @@ export default function MembersPageClient({ initialMembers }: { initialMembers: 
                     email: '',
                     phone: '',
                     plan: 'Mensal',
+                    planRenewalDate: new Date().toISOString().split('T')[0],
                 });
                 setIsOpen(false);
                 router.refresh(); // Refresh the page to get updated data
@@ -230,6 +267,19 @@ export default function MembersPageClient({ initialMembers }: { initialMembers: 
                                             <option value="Anual">Anual</option>
                                         </select>
                                     </div>
+                                    <div className="grid grid-cols-4 items-center gap-4">
+                                        <label htmlFor="planRenewalDate" className="text-right">
+                                            Data de Renovação
+                                        </label>
+                                        <Input
+                                            id="planRenewalDate"
+                                            type="date"
+                                            className="col-span-3"
+                                            value={formData.planRenewalDate}
+                                            onChange={handleChange}
+                                            required
+                                        />
+                                    </div>
                                     {error && (
                                         <div className="col-span-4 text-red-500 text-sm">
                                             {error}
@@ -265,6 +315,8 @@ export default function MembersPageClient({ initialMembers }: { initialMembers: 
                                     <TableHead>Plano</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead>Última Visita</TableHead>
+                                    <TableHead>Data de Renovação</TableHead>
+                                    <TableHead>Status do Plano</TableHead>
                                     <TableHead>Ações</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -281,6 +333,12 @@ export default function MembersPageClient({ initialMembers }: { initialMembers: 
                                             </Badge>
                                         </TableCell>
                                         <TableCell>{member.lastVisit}</TableCell>
+                                        <TableCell>{new Date(member.planRenewalDate).toLocaleDateString('pt-BR')}</TableCell>
+                                        <TableCell>
+                                            <Badge variant={getPlanStatus(member.planRenewalDate).variant}>
+                                                {getPlanStatus(member.planRenewalDate).label}
+                                            </Badge>
+                                        </TableCell>
                                         <TableCell>
                                             <Link href={`/app/members/${member.id}`}>
                                                 <Button variant="outline" size="sm">
