@@ -33,7 +33,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-24",
       "userId": "user-1",
-      "planRenewalDate": "2026-02-06"
+      "planRenewalDate": "2026-01-21",
+      "paymentDate": "2025-12-21"
     },
     {
       "id": "2",
@@ -44,7 +45,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-23",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-19"
+      "planRenewalDate": "2025-04-20",
+      "paymentDate": "2025-01-20"
     },
     {
       "id": "4",
@@ -55,7 +57,8 @@
       "status": "Inativo",
       "lastVisit": "2025-12-20",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-16"
+      "planRenewalDate": "2026-01-24",
+      "paymentDate": "2025-12-24"
     },
     {
       "id": "5",
@@ -66,7 +69,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-25",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-16"
+      "planRenewalDate": "2025-04-09",
+      "paymentDate": "2025-01-09"
     },
     {
       "id": "6",
@@ -77,7 +81,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-24",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-20"
+      "planRenewalDate": "2025-02-12",
+      "paymentDate": "2025-01-12"
     },
     {
       "id": "7",
@@ -88,7 +93,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-23",
       "userId": "user-1",
-      "planRenewalDate": "2027-01-02"
+      "planRenewalDate": "2026-01-15",
+      "paymentDate": "2025-01-15"
     },
     {
       "id": "8",
@@ -99,7 +105,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-22",
       "userId": "user-1",
-      "planRenewalDate": "2026-02-03"
+      "planRenewalDate": "2025-02-18",
+      "paymentDate": "2025-01-18"
     },
     {
       "id": "9",
@@ -110,7 +117,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-21",
       "userId": "user-1",
-      "planRenewalDate": "2026-04-01"
+      "planRenewalDate": "2025-04-21",
+      "paymentDate": "2025-01-21"
     },
     {
       "id": "10",
@@ -121,7 +129,8 @@
       "status": "Inativo",
       "lastVisit": "2025-12-15",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-16"
+      "planRenewalDate": "2025-02-24",
+      "paymentDate": "2025-01-24"
     },
     {
       "id": "11",
@@ -132,7 +141,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-25",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-13"
+      "planRenewalDate": "2026-01-27",
+      "paymentDate": "2025-01-27"
     },
     {
       "id": "12",
@@ -143,7 +153,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-24",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-29"
+      "planRenewalDate": "2025-04-30",
+      "paymentDate": "2025-01-30"
     },
     {
       "id": "13",
@@ -154,7 +165,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-23",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-11"
+      "planRenewalDate": "2025-03-02",
+      "paymentDate": "2025-02-02"
     },
     {
       "id": "14",
@@ -165,7 +177,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-22",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-11"
+      "planRenewalDate": "2026-02-05",
+      "paymentDate": "2025-02-05"
     },
     {
       "id": "15",
@@ -176,7 +189,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-21",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-29"
+      "planRenewalDate": "2025-05-08",
+      "paymentDate": "2025-02-08"
     },
     {
       "id": "16",
@@ -187,7 +201,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-20",
       "userId": "user-1",
-      "planRenewalDate": "2026-02-06"
+      "planRenewalDate": "2025-03-11",
+      "paymentDate": "2025-02-11"
     },
     {
       "id": "17",
@@ -198,7 +213,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-19",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-15"
+      "planRenewalDate": "2025-05-14",
+      "paymentDate": "2025-02-14"
     },
     {
       "id": "18",
@@ -209,7 +225,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-18",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-24"
+      "planRenewalDate": "2026-02-17",
+      "paymentDate": "2025-02-17"
     },
     {
       "id": "19",
@@ -220,7 +237,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-17",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-28"
+      "planRenewalDate": "2025-03-20",
+      "paymentDate": "2025-02-20"
     },
     {
       "id": "20",
@@ -231,7 +249,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-16",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-21"
+      "planRenewalDate": "2025-05-23",
+      "paymentDate": "2025-02-23"
     },
     {
       "id": "21",
@@ -242,7 +261,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-15",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-29"
+      "planRenewalDate": "2025-03-26",
+      "paymentDate": "2025-02-26"
     },
     {
       "id": "22",
@@ -253,7 +273,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-14",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-18"
+      "planRenewalDate": "2026-03-01",
+      "paymentDate": "2025-02-29"
     },
     {
       "id": "23",
@@ -264,7 +285,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-13",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-20"
+      "planRenewalDate": "2025-06-03",
+      "paymentDate": "2025-03-03"
     },
     {
       "id": "24",
@@ -275,7 +297,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-12",
       "userId": "user-1",
-      "planRenewalDate": "2026-02-07"
+      "planRenewalDate": "2025-04-06",
+      "paymentDate": "2025-03-06"
     },
     {
       "id": "25",
@@ -286,7 +309,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-11",
       "userId": "user-1",
-      "planRenewalDate": "2027-01-02"
+      "planRenewalDate": "2026-03-09",
+      "paymentDate": "2025-03-09"
     },
     {
       "id": "26",
@@ -297,7 +321,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-10",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-22"
+      "planRenewalDate": "2025-06-12",
+      "paymentDate": "2025-03-12"
     },
     {
       "id": "27",
@@ -308,7 +333,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-09",
       "userId": "user-1",
-      "planRenewalDate": "2026-02-07"
+      "planRenewalDate": "2025-04-15",
+      "paymentDate": "2025-03-15"
     },
     {
       "id": "28",
@@ -319,7 +345,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-08",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-12"
+      "planRenewalDate": "2026-03-18",
+      "paymentDate": "2025-03-18"
     },
     {
       "id": "29",
@@ -330,7 +357,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-07",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-18"
+      "planRenewalDate": "2025-06-21",
+      "paymentDate": "2025-03-21"
     },
     {
       "id": "30",
@@ -341,7 +369,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-06",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-11"
+      "planRenewalDate": "2025-04-24",
+      "paymentDate": "2025-03-24"
     },
     {
       "id": "31",
@@ -352,7 +381,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-05",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-20"
+      "planRenewalDate": "2026-03-27",
+      "paymentDate": "2025-03-27"
     },
     {
       "id": "32",
@@ -363,7 +393,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-04",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-25"
+      "planRenewalDate": "2025-06-30",
+      "paymentDate": "2025-03-30"
     },
     {
       "id": "33",
@@ -374,7 +405,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-03",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-26"
+      "planRenewalDate": "2025-05-02",
+      "paymentDate": "2025-04-02"
     },
     {
       "id": "34",
@@ -385,7 +417,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-02",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-13"
+      "planRenewalDate": "2026-04-05",
+      "paymentDate": "2025-04-05"
     },
     {
       "id": "35",
@@ -396,7 +429,8 @@
       "status": "Ativo",
       "lastVisit": "2025-12-01",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-25"
+      "planRenewalDate": "2025-07-08",
+      "paymentDate": "2025-04-08"
     },
     {
       "id": "36",
@@ -407,7 +441,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-30",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-20"
+      "planRenewalDate": "2025-05-11",
+      "paymentDate": "2025-04-11"
     },
     {
       "id": "37",
@@ -418,7 +453,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-29",
       "userId": "user-1",
-      "planRenewalDate": "2027-01-02"
+      "planRenewalDate": "2026-04-14",
+      "paymentDate": "2025-04-14"
     },
     {
       "id": "38",
@@ -429,7 +465,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-28",
       "userId": "user-1",
-      "planRenewalDate": "2026-04-05"
+      "planRenewalDate": "2025-07-17",
+      "paymentDate": "2025-04-17"
     },
     {
       "id": "39",
@@ -440,7 +477,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-27",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-17"
+      "planRenewalDate": "2025-05-20",
+      "paymentDate": "2025-04-20"
     },
     {
       "id": "40",
@@ -451,7 +489,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-26",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-25"
+      "planRenewalDate": "2026-04-23",
+      "paymentDate": "2025-04-23"
     },
     {
       "id": "41",
@@ -462,7 +501,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-25",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-18"
+      "planRenewalDate": "2025-07-26",
+      "paymentDate": "2025-04-26"
     },
     {
       "id": "42",
@@ -473,7 +513,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-24",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-31"
+      "planRenewalDate": "2025-05-29",
+      "paymentDate": "2025-04-29"
     },
     {
       "id": "43",
@@ -484,7 +525,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-23",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-15"
+      "planRenewalDate": "2026-05-02",
+      "paymentDate": "2025-05-02"
     },
     {
       "id": "44",
@@ -495,7 +537,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-22",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-14"
+      "planRenewalDate": "2025-08-05",
+      "paymentDate": "2025-05-05"
     },
     {
       "id": "45",
@@ -506,7 +549,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-21",
       "userId": "user-1",
-      "planRenewalDate": "2026-02-07"
+      "planRenewalDate": "2025-06-08",
+      "paymentDate": "2025-05-08"
     },
     {
       "id": "46",
@@ -517,7 +561,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-20",
       "userId": "user-1",
-      "planRenewalDate": "2027-01-09"
+      "planRenewalDate": "2026-05-11",
+      "paymentDate": "2025-05-11"
     },
     {
       "id": "47",
@@ -528,7 +573,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-19",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-13"
+      "planRenewalDate": "2025-08-14",
+      "paymentDate": "2025-05-14"
     },
     {
       "id": "48",
@@ -539,7 +585,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-18",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-27"
+      "planRenewalDate": "2025-06-17",
+      "paymentDate": "2025-05-17"
     },
     {
       "id": "49",
@@ -550,7 +597,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-17",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-29"
+      "planRenewalDate": "2026-05-20",
+      "paymentDate": "2025-05-20"
     },
     {
       "id": "50",
@@ -561,7 +609,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-16",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-26"
+      "planRenewalDate": "2025-08-23",
+      "paymentDate": "2025-05-23"
     },
     {
       "id": "51",
@@ -572,7 +621,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-15",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-20"
+      "planRenewalDate": "2025-06-26",
+      "paymentDate": "2025-05-26"
     },
     {
       "id": "52",
@@ -583,7 +633,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-14",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-17"
+      "planRenewalDate": "2026-05-29",
+      "paymentDate": "2025-05-29"
     },
     {
       "id": "53",
@@ -594,7 +645,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-13",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-23"
+      "planRenewalDate": "2025-09-01",
+      "paymentDate": "2025-06-01"
     },
     {
       "id": "54",
@@ -605,7 +657,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-12",
       "userId": "user-1",
-      "planRenewalDate": "2026-02-02"
+      "planRenewalDate": "2025-07-04",
+      "paymentDate": "2025-06-04"
     },
     {
       "id": "55",
@@ -616,7 +669,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-11",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-28"
+      "planRenewalDate": "2026-06-07",
+      "paymentDate": "2025-06-07"
     },
     {
       "id": "56",
@@ -627,7 +681,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-10",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-21"
+      "planRenewalDate": "2025-09-10",
+      "paymentDate": "2025-06-10"
     },
     {
       "id": "57",
@@ -638,7 +693,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-09",
       "userId": "user-1",
-      "planRenewalDate": "2026-02-08"
+      "planRenewalDate": "2025-07-13",
+      "paymentDate": "2025-06-13"
     },
     {
       "id": "58",
@@ -649,7 +705,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-08",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-28"
+      "planRenewalDate": "2026-06-16",
+      "paymentDate": "2025-06-16"
     },
     {
       "id": "59",
@@ -660,7 +717,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-07",
       "userId": "user-1",
-      "planRenewalDate": "2026-04-08"
+      "planRenewalDate": "2025-09-19",
+      "paymentDate": "2025-06-19"
     },
     {
       "id": "60",
@@ -671,7 +729,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-06",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-27"
+      "planRenewalDate": "2025-07-22",
+      "paymentDate": "2025-06-22"
     },
     {
       "id": "61",
@@ -682,7 +741,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-05",
       "userId": "user-1",
-      "planRenewalDate": "2027-01-06"
+      "planRenewalDate": "2026-06-25",
+      "paymentDate": "2025-06-25"
     },
     {
       "id": "62",
@@ -693,7 +753,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-04",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-27"
+      "planRenewalDate": "2025-09-28",
+      "paymentDate": "2025-06-28"
     },
     {
       "id": "63",
@@ -704,7 +765,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-03",
       "userId": "user-1",
-      "planRenewalDate": "2026-02-03"
+      "planRenewalDate": "2025-08-01",
+      "paymentDate": "2025-07-01"
     },
     {
       "id": "64",
@@ -715,7 +777,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-02",
       "userId": "user-1",
-      "planRenewalDate": "2027-01-05"
+      "planRenewalDate": "2026-07-04",
+      "paymentDate": "2025-07-04"
     },
     {
       "id": "65",
@@ -726,7 +789,8 @@
       "status": "Ativo",
       "lastVisit": "2025-11-01",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-11"
+      "planRenewalDate": "2025-10-07",
+      "paymentDate": "2025-07-07"
     },
     {
       "id": "66",
@@ -737,7 +801,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-31",
       "userId": "user-1",
-      "planRenewalDate": "2026-02-07"
+      "planRenewalDate": "2025-08-10",
+      "paymentDate": "2025-07-10"
     },
     {
       "id": "67",
@@ -748,7 +813,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-30",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-22"
+      "planRenewalDate": "2026-07-13",
+      "paymentDate": "2025-07-13"
     },
     {
       "id": "68",
@@ -759,7 +825,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-29",
       "userId": "user-1",
-      "planRenewalDate": "2026-04-09"
+      "planRenewalDate": "2025-10-16",
+      "paymentDate": "2025-07-16"
     },
     {
       "id": "69",
@@ -770,7 +837,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-28",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-20"
+      "planRenewalDate": "2025-08-19",
+      "paymentDate": "2025-07-19"
     },
     {
       "id": "70",
@@ -781,7 +849,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-27",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-11"
+      "planRenewalDate": "2026-07-22",
+      "paymentDate": "2025-07-22"
     },
     {
       "id": "71",
@@ -792,7 +861,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-26",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-31"
+      "planRenewalDate": "2025-10-25",
+      "paymentDate": "2025-07-25"
     },
     {
       "id": "72",
@@ -803,7 +873,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-25",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-31"
+      "planRenewalDate": "2025-08-28",
+      "paymentDate": "2025-07-28"
     },
     {
       "id": "73",
@@ -814,7 +885,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-24",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-22"
+      "planRenewalDate": "2026-07-31",
+      "paymentDate": "2025-07-31"
     },
     {
       "id": "74",
@@ -825,7 +897,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-23",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-28"
+      "planRenewalDate": "2025-11-03",
+      "paymentDate": "2025-08-03"
     },
     {
       "id": "75",
@@ -836,7 +909,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-22",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-29"
+      "planRenewalDate": "2025-09-06",
+      "paymentDate": "2025-08-06"
     },
     {
       "id": "76",
@@ -847,7 +921,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-21",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-21"
+      "planRenewalDate": "2026-08-09",
+      "paymentDate": "2025-08-09"
     },
     {
       "id": "77",
@@ -858,7 +933,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-20",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-29"
+      "planRenewalDate": "2025-11-12",
+      "paymentDate": "2025-08-12"
     },
     {
       "id": "78",
@@ -869,7 +945,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-19",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-16"
+      "planRenewalDate": "2025-09-15",
+      "paymentDate": "2025-08-15"
     },
     {
       "id": "79",
@@ -880,7 +957,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-18",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-31"
+      "planRenewalDate": "2026-08-18",
+      "paymentDate": "2025-08-18"
     },
     {
       "id": "80",
@@ -891,7 +969,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-17",
       "userId": "user-1",
-      "planRenewalDate": "2026-04-01"
+      "planRenewalDate": "2025-11-21",
+      "paymentDate": "2025-08-21"
     },
     {
       "id": "81",
@@ -902,7 +981,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-16",
       "userId": "user-1",
-      "planRenewalDate": "2026-02-08"
+      "planRenewalDate": "2025-09-24",
+      "paymentDate": "2025-08-24"
     },
     {
       "id": "82",
@@ -913,7 +993,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-15",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-30"
+      "planRenewalDate": "2026-08-27",
+      "paymentDate": "2025-08-27"
     },
     {
       "id": "83",
@@ -924,7 +1005,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-14",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-23"
+      "planRenewalDate": "2025-11-30",
+      "paymentDate": "2025-08-30"
     },
     {
       "id": "84",
@@ -935,7 +1017,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-13",
       "userId": "user-1",
-      "planRenewalDate": "2026-02-01"
+      "planRenewalDate": "2025-10-02",
+      "paymentDate": "2025-09-02"
     },
     {
       "id": "85",
@@ -946,7 +1029,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-12",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-18"
+      "planRenewalDate": "2026-09-05",
+      "paymentDate": "2025-09-05"
     },
     {
       "id": "86",
@@ -957,7 +1041,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-11",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-24"
+      "planRenewalDate": "2025-12-08",
+      "paymentDate": "2025-09-08"
     },
     {
       "id": "87",
@@ -968,7 +1053,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-10",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-21"
+      "planRenewalDate": "2025-10-11",
+      "paymentDate": "2025-09-11"
     },
     {
       "id": "88",
@@ -979,7 +1065,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-09",
       "userId": "user-1",
-      "planRenewalDate": "2027-01-07"
+      "planRenewalDate": "2026-09-14",
+      "paymentDate": "2025-09-14"
     },
     {
       "id": "89",
@@ -990,7 +1077,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-08",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-18"
+      "planRenewalDate": "2025-12-17",
+      "paymentDate": "2025-09-17"
     },
     {
       "id": "90",
@@ -1001,7 +1089,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-07",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-14"
+      "planRenewalDate": "2025-10-20",
+      "paymentDate": "2025-09-20"
     },
     {
       "id": "91",
@@ -1012,7 +1101,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-06",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-23"
+      "planRenewalDate": "2026-09-23",
+      "paymentDate": "2025-09-23"
     },
     {
       "id": "92",
@@ -1023,7 +1113,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-05",
       "userId": "user-1",
-      "planRenewalDate": "2026-04-09"
+      "planRenewalDate": "2025-12-26",
+      "paymentDate": "2025-09-26"
     },
     {
       "id": "93",
@@ -1034,7 +1125,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-04",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-20"
+      "planRenewalDate": "2025-10-29",
+      "paymentDate": "2025-09-29"
     },
     {
       "id": "94",
@@ -1045,7 +1137,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-03",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-28"
+      "planRenewalDate": "2026-10-02",
+      "paymentDate": "2025-10-02"
     },
     {
       "id": "95",
@@ -1056,7 +1149,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-02",
       "userId": "user-1",
-      "planRenewalDate": "2026-04-02"
+      "planRenewalDate": "2026-01-05",
+      "paymentDate": "2025-10-05"
     },
     {
       "id": "96",
@@ -1067,7 +1161,8 @@
       "status": "Ativo",
       "lastVisit": "2025-10-01",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-19"
+      "planRenewalDate": "2025-11-08",
+      "paymentDate": "2025-10-08"
     },
     {
       "id": "97",
@@ -1078,7 +1173,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-30",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-23"
+      "planRenewalDate": "2026-10-11",
+      "paymentDate": "2025-10-11"
     },
     {
       "id": "98",
@@ -1089,7 +1185,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-29",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-27"
+      "planRenewalDate": "2026-01-14",
+      "paymentDate": "2025-10-14"
     },
     {
       "id": "99",
@@ -1100,7 +1197,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-28",
       "userId": "user-1",
-      "planRenewalDate": "2026-02-08"
+      "planRenewalDate": "2025-11-17",
+      "paymentDate": "2025-10-17"
     },
     {
       "id": "100",
@@ -1111,7 +1209,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-27",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-13"
+      "planRenewalDate": "2026-10-20",
+      "paymentDate": "2025-10-20"
     },
     {
       "id": "101",
@@ -1122,7 +1221,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-26",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-30"
+      "planRenewalDate": "2026-01-23",
+      "paymentDate": "2025-10-23"
     },
     {
       "id": "102",
@@ -1133,7 +1233,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-25",
       "userId": "user-1",
-      "planRenewalDate": "2026-02-03"
+      "planRenewalDate": "2025-11-26",
+      "paymentDate": "2025-10-26"
     },
     {
       "id": "103",
@@ -1144,7 +1245,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-24",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-26"
+      "planRenewalDate": "2026-10-29",
+      "paymentDate": "2025-10-29"
     },
     {
       "id": "104",
@@ -1155,7 +1257,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-23",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-21"
+      "planRenewalDate": "2026-02-01",
+      "paymentDate": "2025-11-01"
     },
     {
       "id": "105",
@@ -1166,7 +1269,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-22",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-24"
+      "planRenewalDate": "2025-12-04",
+      "paymentDate": "2025-11-04"
     },
     {
       "id": "106",
@@ -1177,7 +1281,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-21",
       "userId": "user-1",
-      "planRenewalDate": "2027-01-06"
+      "planRenewalDate": "2026-11-07",
+      "paymentDate": "2025-11-07"
     },
     {
       "id": "107",
@@ -1188,7 +1293,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-20",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-30"
+      "planRenewalDate": "2026-02-10",
+      "paymentDate": "2025-11-10"
     },
     {
       "id": "108",
@@ -1199,7 +1305,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-19",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-17"
+      "planRenewalDate": "2025-12-13",
+      "paymentDate": "2025-11-13"
     },
     {
       "id": "109",
@@ -1210,7 +1317,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-18",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-25"
+      "planRenewalDate": "2026-11-16",
+      "paymentDate": "2025-11-16"
     },
     {
       "id": "110",
@@ -1221,7 +1329,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-17",
       "userId": "user-1",
-      "planRenewalDate": "2026-04-03"
+      "planRenewalDate": "2026-02-19",
+      "paymentDate": "2025-11-19"
     },
     {
       "id": "111",
@@ -1232,7 +1341,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-16",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-25"
+      "planRenewalDate": "2025-12-22",
+      "paymentDate": "2025-11-22"
     },
     {
       "id": "112",
@@ -1243,7 +1353,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-15",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-12"
+      "planRenewalDate": "2026-11-25",
+      "paymentDate": "2025-11-25"
     },
     {
       "id": "113",
@@ -1254,7 +1365,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-14",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-27"
+      "planRenewalDate": "2026-02-28",
+      "paymentDate": "2025-11-28"
     },
     {
       "id": "114",
@@ -1265,7 +1377,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-13",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-30"
+      "planRenewalDate": "2026-01-01",
+      "paymentDate": "2025-12-01"
     },
     {
       "id": "115",
@@ -1276,7 +1389,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-12",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-24"
+      "planRenewalDate": "2026-12-04",
+      "paymentDate": "2025-12-04"
     },
     {
       "id": "116",
@@ -1287,7 +1401,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-11",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-19"
+      "planRenewalDate": "2026-03-07",
+      "paymentDate": "2025-12-07"
     },
     {
       "id": "117",
@@ -1298,7 +1413,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-10",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-26"
+      "planRenewalDate": "2026-01-10",
+      "paymentDate": "2025-12-10"
     },
     {
       "id": "118",
@@ -1309,7 +1425,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-09",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-23"
+      "planRenewalDate": "2026-12-13",
+      "paymentDate": "2025-12-13"
     },
     {
       "id": "119",
@@ -1320,7 +1437,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-08",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-19"
+      "planRenewalDate": "2026-03-16",
+      "paymentDate": "2025-12-16"
     },
     {
       "id": "120",
@@ -1331,7 +1449,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-07",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-29"
+      "planRenewalDate": "2026-01-19",
+      "paymentDate": "2025-12-19"
     },
     {
       "id": "121",
@@ -1342,7 +1461,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-06",
       "userId": "user-1",
-      "planRenewalDate": "2027-01-05"
+      "planRenewalDate": "2026-12-22",
+      "paymentDate": "2025-12-22"
     },
     {
       "id": "122",
@@ -1353,7 +1473,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-05",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-28"
+      "planRenewalDate": "2026-03-25",
+      "paymentDate": "2025-12-25"
     },
     {
       "id": "123",
@@ -1364,7 +1485,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-04",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-26"
+      "planRenewalDate": "2026-01-28",
+      "paymentDate": "2025-12-28"
     },
     {
       "id": "124",
@@ -1375,7 +1497,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-03",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-20"
+      "planRenewalDate": "2026-01-01",
+      "paymentDate": "2025-01-01"
     },
     {
       "id": "125",
@@ -1386,7 +1509,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-02",
       "userId": "user-1",
-      "planRenewalDate": "2026-04-08"
+      "planRenewalDate": "2025-04-04",
+      "paymentDate": "2025-01-04"
     },
     {
       "id": "126",
@@ -1397,7 +1521,8 @@
       "status": "Ativo",
       "lastVisit": "2025-09-01",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-19"
+      "planRenewalDate": "2025-02-07",
+      "paymentDate": "2025-01-07"
     },
     {
       "id": "127",
@@ -1408,7 +1533,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-31",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-28"
+      "planRenewalDate": "2026-01-10",
+      "paymentDate": "2025-01-10"
     },
     {
       "id": "128",
@@ -1419,7 +1545,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-30",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-12"
+      "planRenewalDate": "2025-04-13",
+      "paymentDate": "2025-01-13"
     },
     {
       "id": "129",
@@ -1430,7 +1557,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-29",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-30"
+      "planRenewalDate": "2025-02-16",
+      "paymentDate": "2025-01-16"
     },
     {
       "id": "130",
@@ -1441,7 +1569,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-28",
       "userId": "user-1",
-      "planRenewalDate": "2027-01-02"
+      "planRenewalDate": "2026-01-19",
+      "paymentDate": "2025-01-19"
     },
     {
       "id": "131",
@@ -1452,7 +1581,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-27",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-26"
+      "planRenewalDate": "2025-04-22",
+      "paymentDate": "2025-01-22"
     },
     {
       "id": "132",
@@ -1463,7 +1593,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-26",
       "userId": "user-1",
-      "planRenewalDate": "2026-02-06"
+      "planRenewalDate": "2025-02-25",
+      "paymentDate": "2025-01-25"
     },
     {
       "id": "133",
@@ -1474,7 +1605,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-25",
       "userId": "user-1",
-      "planRenewalDate": "2027-01-09"
+      "planRenewalDate": "2026-01-28",
+      "paymentDate": "2025-01-28"
     },
     {
       "id": "134",
@@ -1485,7 +1617,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-24",
       "userId": "user-1",
-      "planRenewalDate": "2026-04-02"
+      "planRenewalDate": "2025-04-30",
+      "paymentDate": "2025-01-31"
     },
     {
       "id": "135",
@@ -1496,7 +1629,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-23",
       "userId": "user-1",
-      "planRenewalDate": "2026-02-06"
+      "planRenewalDate": "2025-03-03",
+      "paymentDate": "2025-02-03"
     },
     {
       "id": "136",
@@ -1507,7 +1641,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-22",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-24"
+      "planRenewalDate": "2026-02-06",
+      "paymentDate": "2025-02-06"
     },
     {
       "id": "137",
@@ -1518,7 +1653,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-21",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-26"
+      "planRenewalDate": "2025-05-09",
+      "paymentDate": "2025-02-09"
     },
     {
       "id": "138",
@@ -1529,7 +1665,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-20",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-26"
+      "planRenewalDate": "2025-03-12",
+      "paymentDate": "2025-02-12"
     },
     {
       "id": "139",
@@ -1540,7 +1677,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-19",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-24"
+      "planRenewalDate": "2026-02-15",
+      "paymentDate": "2025-02-15"
     },
     {
       "id": "140",
@@ -1551,7 +1689,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-18",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-17"
+      "planRenewalDate": "2025-05-18",
+      "paymentDate": "2025-02-18"
     },
     {
       "id": "141",
@@ -1562,7 +1701,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-17",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-21"
+      "planRenewalDate": "2025-03-21",
+      "paymentDate": "2025-02-21"
     },
     {
       "id": "142",
@@ -1573,7 +1713,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-16",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-15"
+      "planRenewalDate": "2026-02-24",
+      "paymentDate": "2025-02-24"
     },
     {
       "id": "143",
@@ -1584,7 +1725,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-15",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-30"
+      "planRenewalDate": "2025-05-27",
+      "paymentDate": "2025-02-27"
     },
     {
       "id": "144",
@@ -1595,7 +1737,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-14",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-16"
+      "planRenewalDate": "2025-04-01",
+      "paymentDate": "2025-03-01"
     },
     {
       "id": "145",
@@ -1606,7 +1749,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-13",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-21"
+      "planRenewalDate": "2026-03-04",
+      "paymentDate": "2025-03-04"
     },
     {
       "id": "146",
@@ -1617,7 +1761,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-12",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-22"
+      "planRenewalDate": "2025-06-07",
+      "paymentDate": "2025-03-07"
     },
     {
       "id": "147",
@@ -1628,7 +1773,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-11",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-29"
+      "planRenewalDate": "2025-04-10",
+      "paymentDate": "2025-03-10"
     },
     {
       "id": "148",
@@ -1639,7 +1785,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-10",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-30"
+      "planRenewalDate": "2026-03-13",
+      "paymentDate": "2025-03-13"
     },
     {
       "id": "149",
@@ -1650,7 +1797,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-09",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-24"
+      "planRenewalDate": "2025-06-16",
+      "paymentDate": "2025-03-16"
     },
     {
       "id": "150",
@@ -1661,7 +1809,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-08",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-23"
+      "planRenewalDate": "2025-04-19",
+      "paymentDate": "2025-03-19"
     },
     {
       "id": "151",
@@ -1672,7 +1821,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-07",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-19"
+      "planRenewalDate": "2026-03-22",
+      "paymentDate": "2025-03-22"
     },
     {
       "id": "152",
@@ -1683,7 +1833,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-06",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-24"
+      "planRenewalDate": "2025-06-25",
+      "paymentDate": "2025-03-25"
     },
     {
       "id": "153",
@@ -1694,7 +1845,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-05",
       "userId": "user-1",
-      "planRenewalDate": "2026-02-03"
+      "planRenewalDate": "2025-04-28",
+      "paymentDate": "2025-03-28"
     },
     {
       "id": "154",
@@ -1705,7 +1857,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-04",
       "userId": "user-1",
-      "planRenewalDate": "2027-01-08"
+      "planRenewalDate": "2026-03-31",
+      "paymentDate": "2025-03-31"
     },
     {
       "id": "155",
@@ -1716,7 +1869,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-03",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-29"
+      "planRenewalDate": "2025-07-03",
+      "paymentDate": "2025-04-03"
     },
     {
       "id": "156",
@@ -1727,7 +1881,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-02",
       "userId": "user-1",
-      "planRenewalDate": "2026-02-01"
+      "planRenewalDate": "2025-05-06",
+      "paymentDate": "2025-04-06"
     },
     {
       "id": "157",
@@ -1738,7 +1893,8 @@
       "status": "Ativo",
       "lastVisit": "2025-08-01",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-30"
+      "planRenewalDate": "2026-04-09",
+      "paymentDate": "2025-04-09"
     },
     {
       "id": "158",
@@ -1749,7 +1905,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-31",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-13"
+      "planRenewalDate": "2025-07-12",
+      "paymentDate": "2025-04-12"
     },
     {
       "id": "159",
@@ -1760,7 +1917,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-30",
       "userId": "user-1",
-      "planRenewalDate": "2026-02-02"
+      "planRenewalDate": "2025-05-15",
+      "paymentDate": "2025-04-15"
     },
     {
       "id": "160",
@@ -1771,7 +1929,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-29",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-24"
+      "planRenewalDate": "2026-04-18",
+      "paymentDate": "2025-04-18"
     },
     {
       "id": "161",
@@ -1782,7 +1941,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-28",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-23"
+      "planRenewalDate": "2025-07-21",
+      "paymentDate": "2025-04-21"
     },
     {
       "id": "162",
@@ -1793,7 +1953,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-27",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-12"
+      "planRenewalDate": "2025-05-24",
+      "paymentDate": "2025-04-24"
     },
     {
       "id": "163",
@@ -1804,7 +1965,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-26",
       "userId": "user-1",
-      "planRenewalDate": "2027-01-06"
+      "planRenewalDate": "2026-04-27",
+      "paymentDate": "2025-04-27"
     },
     {
       "id": "164",
@@ -1815,7 +1977,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-25",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-31"
+      "planRenewalDate": "2025-07-30",
+      "paymentDate": "2025-04-30"
     },
     {
       "id": "165",
@@ -1826,7 +1989,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-24",
       "userId": "user-1",
-      "planRenewalDate": "2026-02-04"
+      "planRenewalDate": "2025-06-03",
+      "paymentDate": "2025-05-03"
     },
     {
       "id": "166",
@@ -1837,7 +2001,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-23",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-30"
+      "planRenewalDate": "2026-05-06",
+      "paymentDate": "2025-05-06"
     },
     {
       "id": "167",
@@ -1848,7 +2013,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-22",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-29"
+      "planRenewalDate": "2025-08-09",
+      "paymentDate": "2025-05-09"
     },
     {
       "id": "168",
@@ -1859,7 +2025,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-21",
       "userId": "user-1",
-      "planRenewalDate": "2026-02-09"
+      "planRenewalDate": "2025-06-12",
+      "paymentDate": "2025-05-12"
     },
     {
       "id": "169",
@@ -1870,7 +2037,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-20",
       "userId": "user-1",
-      "planRenewalDate": "2027-01-01"
+      "planRenewalDate": "2026-05-15",
+      "paymentDate": "2025-05-15"
     },
     {
       "id": "170",
@@ -1881,7 +2049,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-19",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-30"
+      "planRenewalDate": "2025-08-18",
+      "paymentDate": "2025-05-18"
     },
     {
       "id": "171",
@@ -1892,7 +2061,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-18",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-19"
+      "planRenewalDate": "2025-06-21",
+      "paymentDate": "2025-05-21"
     },
     {
       "id": "172",
@@ -1903,7 +2073,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-17",
       "userId": "user-1",
-      "planRenewalDate": "2027-01-09"
+      "planRenewalDate": "2026-05-24",
+      "paymentDate": "2025-05-24"
     },
     {
       "id": "173",
@@ -1914,7 +2085,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-16",
       "userId": "user-1",
-      "planRenewalDate": "2026-04-05"
+      "planRenewalDate": "2025-08-27",
+      "paymentDate": "2025-05-27"
     },
     {
       "id": "174",
@@ -1925,7 +2097,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-15",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-28"
+      "planRenewalDate": "2025-06-30",
+      "paymentDate": "2025-05-30"
     },
     {
       "id": "175",
@@ -1936,7 +2109,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-14",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-11"
+      "planRenewalDate": "2026-06-02",
+      "paymentDate": "2025-06-02"
     },
     {
       "id": "176",
@@ -1947,7 +2121,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-13",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-31"
+      "planRenewalDate": "2025-09-05",
+      "paymentDate": "2025-06-05"
     },
     {
       "id": "177",
@@ -1958,7 +2133,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-12",
       "userId": "user-1",
-      "planRenewalDate": "2026-02-02"
+      "planRenewalDate": "2025-07-08",
+      "paymentDate": "2025-06-08"
     },
     {
       "id": "178",
@@ -1969,7 +2145,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-11",
       "userId": "user-1",
-      "planRenewalDate": "2027-01-07"
+      "planRenewalDate": "2026-06-11",
+      "paymentDate": "2025-06-11"
     },
     {
       "id": "179",
@@ -1980,7 +2157,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-10",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-31"
+      "planRenewalDate": "2025-09-14",
+      "paymentDate": "2025-06-14"
     },
     {
       "id": "180",
@@ -1991,7 +2169,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-09",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-12"
+      "planRenewalDate": "2025-07-17",
+      "paymentDate": "2025-06-17"
     },
     {
       "id": "181",
@@ -2002,7 +2181,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-08",
       "userId": "user-1",
-      "planRenewalDate": "2027-01-02"
+      "planRenewalDate": "2026-06-20",
+      "paymentDate": "2025-06-20"
     },
     {
       "id": "182",
@@ -2013,7 +2193,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-07",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-22"
+      "planRenewalDate": "2025-09-23",
+      "paymentDate": "2025-06-23"
     },
     {
       "id": "183",
@@ -2024,7 +2205,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-06",
       "userId": "user-1",
-      "planRenewalDate": "2026-02-09"
+      "planRenewalDate": "2025-07-26",
+      "paymentDate": "2025-06-26"
     },
     {
       "id": "184",
@@ -2035,7 +2217,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-05",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-15"
+      "planRenewalDate": "2026-06-29",
+      "paymentDate": "2025-06-29"
     },
     {
       "id": "185",
@@ -2046,7 +2229,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-04",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-12"
+      "planRenewalDate": "2025-10-02",
+      "paymentDate": "2025-07-02"
     },
     {
       "id": "186",
@@ -2057,7 +2241,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-03",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-19"
+      "planRenewalDate": "2025-08-05",
+      "paymentDate": "2025-07-05"
     },
     {
       "id": "187",
@@ -2068,7 +2253,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-02",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-20"
+      "planRenewalDate": "2026-07-08",
+      "paymentDate": "2025-07-08"
     },
     {
       "id": "188",
@@ -2079,7 +2265,8 @@
       "status": "Ativo",
       "lastVisit": "2025-07-01",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-14"
+      "planRenewalDate": "2025-10-11",
+      "paymentDate": "2025-07-11"
     },
     {
       "id": "189",
@@ -2090,7 +2277,8 @@
       "status": "Ativo",
       "lastVisit": "2025-06-30",
       "userId": "user-1",
-      "planRenewalDate": "2026-02-01"
+      "planRenewalDate": "2025-08-14",
+      "paymentDate": "2025-07-14"
     },
     {
       "id": "190",
@@ -2101,7 +2289,8 @@
       "status": "Ativo",
       "lastVisit": "2025-06-29",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-24"
+      "planRenewalDate": "2026-07-17",
+      "paymentDate": "2025-07-17"
     },
     {
       "id": "191",
@@ -2112,7 +2301,8 @@
       "status": "Ativo",
       "lastVisit": "2025-06-28",
       "userId": "user-1",
-      "planRenewalDate": "2026-04-07"
+      "planRenewalDate": "2025-10-20",
+      "paymentDate": "2025-07-20"
     },
     {
       "id": "192",
@@ -2123,7 +2313,8 @@
       "status": "Ativo",
       "lastVisit": "2025-06-27",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-28"
+      "planRenewalDate": "2025-08-23",
+      "paymentDate": "2025-07-23"
     },
     {
       "id": "193",
@@ -2134,7 +2325,8 @@
       "status": "Ativo",
       "lastVisit": "2025-06-26",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-28"
+      "planRenewalDate": "2026-07-26",
+      "paymentDate": "2025-07-26"
     },
     {
       "id": "194",
@@ -2145,7 +2337,8 @@
       "status": "Ativo",
       "lastVisit": "2025-06-25",
       "userId": "user-1",
-      "planRenewalDate": "2026-04-09"
+      "planRenewalDate": "2025-10-29",
+      "paymentDate": "2025-07-29"
     },
     {
       "id": "195",
@@ -2156,7 +2349,8 @@
       "status": "Ativo",
       "lastVisit": "2025-06-24",
       "userId": "user-1",
-      "planRenewalDate": "2026-02-01"
+      "planRenewalDate": "2025-09-01",
+      "paymentDate": "2025-08-01"
     },
     {
       "id": "196",
@@ -2167,7 +2361,8 @@
       "status": "Ativo",
       "lastVisit": "2025-06-23",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-28"
+      "planRenewalDate": "2026-08-04",
+      "paymentDate": "2025-08-04"
     },
     {
       "id": "197",
@@ -2178,7 +2373,8 @@
       "status": "Ativo",
       "lastVisit": "2025-06-22",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-15"
+      "planRenewalDate": "2025-11-07",
+      "paymentDate": "2025-08-07"
     },
     {
       "id": "198",
@@ -2189,7 +2385,8 @@
       "status": "Ativo",
       "lastVisit": "2025-06-21",
       "userId": "user-1",
-      "planRenewalDate": "2026-01-28"
+      "planRenewalDate": "2025-09-10",
+      "paymentDate": "2025-08-10"
     },
     {
       "id": "199",
@@ -2200,7 +2397,8 @@
       "status": "Ativo",
       "lastVisit": "2025-06-20",
       "userId": "user-1",
-      "planRenewalDate": "2026-12-23"
+      "planRenewalDate": "2026-08-13",
+      "paymentDate": "2025-08-13"
     },
     {
       "id": "200",
@@ -2211,7 +2409,8 @@
       "status": "Ativo",
       "lastVisit": "2025-06-19",
       "userId": "user-1",
-      "planRenewalDate": "2026-03-28"
+      "planRenewalDate": "2025-11-16",
+      "paymentDate": "2025-08-16"
     },
     {
       "name": "Sicrano de Tals",
@@ -2222,7 +2421,8 @@
       "lastVisit": "2025-12-26",
       "userId": "user-1",
       "id": "member-1766770935997-egp8u63c5",
-      "planRenewalDate": "2026-01-20"
+      "planRenewalDate": "2026-01-27",
+      "paymentDate": "2025-12-27"
     }
   ],
   "trainers": [
@@ -2640,19 +2840,19 @@
   "financial": [
     {
       "id": "1",
-      "date": "2025-12-01",
+      "date": "2025-12-21",
       "description": "Mensalidade - João Silva",
       "type": "Receita",
-      "amount": 120,
+      "amount": 100,
       "category": "Mensalidades",
       "userId": "user-1"
     },
     {
       "id": "2",
-      "date": "2025-12-01",
+      "date": "2025-01-20",
       "description": "Mensalidade - Maria Oliveira",
       "type": "Receita",
-      "amount": 120,
+      "amount": 250,
       "category": "Mensalidades",
       "userId": "user-1"
     },
@@ -2685,109 +2885,109 @@
     },
     {
       "id": "6",
-      "date": "2025-12-01",
+      "date": "2025-12-24",
       "description": "Mensalidade - Ana Costa",
       "type": "Receita",
-      "amount": 120,
+      "amount": 100,
       "category": "Mensalidades",
       "userId": "user-1"
     },
     {
       "id": "7",
-      "date": "2025-12-01",
+      "date": "2025-01-09",
       "description": "Mensalidade - Pedro Almeida",
       "type": "Receita",
-      "amount": 120,
+      "amount": 250,
       "category": "Mensalidades",
       "userId": "user-1"
     },
     {
       "id": "8",
-      "date": "2025-12-01",
+      "date": "2025-01-12",
       "description": "Mensalidade - Fernanda Santos",
       "type": "Receita",
-      "amount": 120,
+      "amount": 100,
       "category": "Mensalidades",
       "userId": "user-1"
     },
     {
       "id": "9",
-      "date": "2025-12-02",
+      "date": "2025-01-15",
       "description": "Mensalidade - Roberto Pereira",
       "type": "Receita",
-      "amount": 120,
+      "amount": 900,
       "category": "Mensalidades Anuais",
       "userId": "user-1"
     },
     {
       "id": "10",
-      "date": "2025-12-02",
+      "date": "2025-01-18",
       "description": "Mensalidade - Juliana Ribeiro",
       "type": "Receita",
-      "amount": 120,
+      "amount": 100,
       "category": "Mensalidades",
       "userId": "user-1"
     },
     {
       "id": "11",
-      "date": "2025-12-02",
+      "date": "2025-01-21",
       "description": "Mensalidade - Marcos Andrade",
       "type": "Receita",
-      "amount": 120,
+      "amount": 250,
       "category": "Mensalidades",
       "userId": "user-1"
     },
     {
       "id": "12",
-      "date": "2025-12-02",
+      "date": "2025-01-24",
       "description": "Mensalidade - Carla Mendes",
       "type": "Receita",
-      "amount": 120,
+      "amount": 100,
       "category": "Mensalidades",
       "userId": "user-1"
     },
     {
       "id": "13",
-      "date": "2025-12-03",
+      "date": "2025-01-27",
       "description": "Mensalidade - Ricardo Lima",
       "type": "Receita",
-      "amount": 120,
+      "amount": 900,
       "category": "Mensalidades Trimestrais",
       "userId": "user-1"
     },
     {
       "id": "14",
-      "date": "2025-12-03",
+      "date": "2025-01-30",
       "description": "Mensalidade - Patricia Souza",
       "type": "Receita",
-      "amount": 120,
+      "amount": 250,
       "category": "Mensalidades Trimestrais",
       "userId": "user-1"
     },
     {
       "id": "15",
-      "date": "2025-12-03",
+      "date": "2025-02-02",
       "description": "Mensalidade - Anderson Costa",
       "type": "Receita",
-      "amount": 120,
+      "amount": 100,
       "category": "Mensalidades",
       "userId": "user-1"
     },
     {
       "id": "16",
-      "date": "2025-12-03",
+      "date": "2025-02-05",
       "description": "Mensalidade - Sandra Oliveira",
       "type": "Receita",
-      "amount": 120,
+      "amount": 900,
       "category": "Mensalidades Anuais",
       "userId": "user-1"
     },
     {
       "id": "17",
-      "date": "2025-12-03",
+      "date": "2025-02-08",
       "description": "Mensalidade - Daniel Silva",
       "type": "Receita",
-      "amount": 120,
+      "amount": 250,
       "category": "Mensalidades Trimestrais",
       "userId": "user-1"
     },
@@ -2816,6 +3016,1806 @@
       "type": "Despesa",
       "amount": 1200,
       "category": "Marketing",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-1-2024-12-25",
+      "date": "2024-12-25",
+      "description": "Mensalidade - João Silva",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-2-2024-12-25",
+      "date": "2024-12-25",
+      "description": "Mensalidade - Maria Oliveira",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-4-2024-12-25",
+      "date": "2024-12-25",
+      "description": "Mensalidade - Ana Costa",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-5-2024-12-25",
+      "date": "2024-12-25",
+      "description": "Mensalidade - Pedro Almeida",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-6-2024-12-25",
+      "date": "2024-12-25",
+      "description": "Mensalidade - Fernanda Santos",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-7-2024-12-25",
+      "date": "2024-12-25",
+      "description": "Mensalidade - Roberto Pereira",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-8-2024-12-25",
+      "date": "2024-12-25",
+      "description": "Mensalidade - Juliana Ribeiro",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-9-2024-12-25",
+      "date": "2024-12-25",
+      "description": "Mensalidade - Marcos Andrade",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-10-2024-12-25",
+      "date": "2024-12-25",
+      "description": "Mensalidade - Carla Mendes",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-11-2024-12-25",
+      "date": "2024-12-25",
+      "description": "Mensalidade - Ricardo Lima",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-12-2024-12-25",
+      "date": "2024-12-25",
+      "description": "Mensalidade - Patricia Souza",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-13-2024-12-25",
+      "date": "2024-12-25",
+      "description": "Mensalidade - Anderson Costa",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-14-2024-12-25",
+      "date": "2024-12-25",
+      "description": "Mensalidade - Sandra Oliveira",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-15-2024-12-25",
+      "date": "2024-12-25",
+      "description": "Mensalidade - Daniel Silva",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-16-2024-12-25",
+      "date": "2025-02-11",
+      "description": "Mensalidade - Mariana Santos",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-17-2024-12-25",
+      "date": "2025-02-14",
+      "description": "Mensalidade - Lucas Oliveira",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-18-2024-12-25",
+      "date": "2025-02-17",
+      "description": "Mensalidade - Camila Silva",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-19-2024-12-25",
+      "date": "2025-02-20",
+      "description": "Mensalidade - Rafael Costa",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-20-2024-12-25",
+      "date": "2025-02-23",
+      "description": "Mensalidade - Julia Pereira",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-21-2024-12-25",
+      "date": "2025-02-26",
+      "description": "Mensalidade - Fábio Santos",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-22-2024-12-25",
+      "date": "2025-02-29",
+      "description": "Mensalidade - Larissa Oliveira",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-23-2024-12-25",
+      "date": "2025-03-03",
+      "description": "Mensalidade - Gustavo Silva",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-24-2024-12-25",
+      "date": "2025-03-06",
+      "description": "Mensalidade - Aline Costa",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-25-2024-12-25",
+      "date": "2025-03-09",
+      "description": "Mensalidade - Roberto Almeida",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-26-2024-12-25",
+      "date": "2025-03-12",
+      "description": "Mensalidade - Tatiane Santos",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-27-2024-12-25",
+      "date": "2025-03-15",
+      "description": "Mensalidade - Eduardo Oliveira",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-28-2024-12-25",
+      "date": "2025-03-18",
+      "description": "Mensalidade - Fernanda Silva",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-29-2024-12-25",
+      "date": "2025-03-21",
+      "description": "Mensalidade - Ricardo Costa",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-30-2024-12-25",
+      "date": "2025-03-24",
+      "description": "Mensalidade - Priscila Pereira",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-31-2024-12-25",
+      "date": "2025-03-27",
+      "description": "Mensalidade - Marcelo Santos",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-32-2024-12-25",
+      "date": "2025-03-30",
+      "description": "Mensalidade - Vanessa Oliveira",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-33-2024-12-25",
+      "date": "2025-04-02",
+      "description": "Mensalidade - Alexandre Silva",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-34-2024-12-25",
+      "date": "2025-04-05",
+      "description": "Mensalidade - Patricia Costa",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-35-2024-12-25",
+      "date": "2025-04-08",
+      "description": "Mensalidade - Rodrigo Almeida",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-36-2024-12-25",
+      "date": "2025-04-11",
+      "description": "Mensalidade - Simone Santos",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-37-2024-12-25",
+      "date": "2025-04-14",
+      "description": "Mensalidade - Thiago Oliveira",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-38-2024-12-25",
+      "date": "2025-04-17",
+      "description": "Mensalidade - Renata Silva",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-39-2024-12-25",
+      "date": "2025-04-20",
+      "description": "Mensalidade - César Costa",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-40-2024-12-25",
+      "date": "2025-04-23",
+      "description": "Mensalidade - Amanda Almeida",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-41-2024-12-25",
+      "date": "2025-04-26",
+      "description": "Mensalidade - Vinícius Santos",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-42-2024-12-25",
+      "date": "2025-04-29",
+      "description": "Mensalidade - Bianca Oliveira",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-43-2024-12-25",
+      "date": "2025-05-02",
+      "description": "Mensalidade - Rogério Silva",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-44-2024-12-25",
+      "date": "2025-05-05",
+      "description": "Mensalidade - Cláudia Costa",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-45-2024-12-25",
+      "date": "2025-05-08",
+      "description": "Mensalidade - Maurício Almeida",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-46-2024-12-25",
+      "date": "2025-05-11",
+      "description": "Mensalidade - Lívia Santos",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-47-2024-12-25",
+      "date": "2025-05-14",
+      "description": "Mensalidade - Hugo Oliveira",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-48-2024-12-25",
+      "date": "2025-05-17",
+      "description": "Mensalidade - Isabela Silva",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-49-2024-12-25",
+      "date": "2025-05-20",
+      "description": "Mensalidade - Jorge Costa",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-50-2024-12-25",
+      "date": "2025-05-23",
+      "description": "Mensalidade - Monica Almeida",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-51-2024-12-25",
+      "date": "2025-05-26",
+      "description": "Mensalidade - Nelson Santos",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-52-2024-12-25",
+      "date": "2025-05-29",
+      "description": "Mensalidade - Otávio Oliveira",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-53-2024-12-25",
+      "date": "2025-06-01",
+      "description": "Mensalidade - Paula Silva",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-54-2024-12-25",
+      "date": "2025-06-04",
+      "description": "Mensalidade - Quésia Costa",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-55-2024-12-25",
+      "date": "2025-06-07",
+      "description": "Mensalidade - Ronaldo Almeida",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-56-2024-12-25",
+      "date": "2025-06-10",
+      "description": "Mensalidade - Sofia Santos",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-57-2024-12-25",
+      "date": "2025-06-13",
+      "description": "Mensalidade - Tiago Oliveira",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-58-2024-12-25",
+      "date": "2025-06-16",
+      "description": "Mensalidade - Ursula Silva",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-59-2024-12-25",
+      "date": "2025-06-19",
+      "description": "Mensalidade - Valter Costa",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-60-2024-12-25",
+      "date": "2025-06-22",
+      "description": "Mensalidade - Wagner Almeida",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-61-2024-12-25",
+      "date": "2025-06-25",
+      "description": "Mensalidade - Xavier Santos",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-62-2024-12-25",
+      "date": "2025-06-28",
+      "description": "Mensalidade - Yasmin Oliveira",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-63-2024-12-25",
+      "date": "2025-07-01",
+      "description": "Mensalidade - Zélia Silva",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-64-2024-12-25",
+      "date": "2025-07-04",
+      "description": "Mensalidade - Antônio Costa",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-65-2024-12-25",
+      "date": "2025-07-07",
+      "description": "Mensalidade - Beatriz Almeida",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-66-2024-12-25",
+      "date": "2025-07-10",
+      "description": "Mensalidade - Carlos Eduardo Santos",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-67-2024-12-25",
+      "date": "2025-07-13",
+      "description": "Mensalidade - Daniela Oliveira",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-68-2024-12-25",
+      "date": "2025-07-16",
+      "description": "Mensalidade - Elton Silva",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-69-2024-12-25",
+      "date": "2025-07-19",
+      "description": "Mensalidade - Fátima Costa",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-70-2024-12-25",
+      "date": "2025-07-22",
+      "description": "Mensalidade - Giovanni Almeida",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-71-2024-12-25",
+      "date": "2025-07-25",
+      "description": "Mensalidade - Helena Santos",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-72-2024-12-25",
+      "date": "2025-07-28",
+      "description": "Mensalidade - Igor Oliveira",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-73-2024-12-25",
+      "date": "2025-07-31",
+      "description": "Mensalidade - Juliana Silva",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-74-2024-12-25",
+      "date": "2025-08-03",
+      "description": "Mensalidade - Kléber Costa",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-75-2024-12-25",
+      "date": "2025-08-06",
+      "description": "Mensalidade - Lídia Almeida",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-76-2024-12-25",
+      "date": "2025-08-09",
+      "description": "Mensalidade - Mário Santos",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-77-2024-12-25",
+      "date": "2025-08-12",
+      "description": "Mensalidade - Nádia Oliveira",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-78-2024-12-25",
+      "date": "2025-08-15",
+      "description": "Mensalidade - Orlando Silva",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-79-2024-12-25",
+      "date": "2025-08-18",
+      "description": "Mensalidade - Paulo Costa",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-80-2024-12-25",
+      "date": "2025-08-21",
+      "description": "Mensalidade - Quitéria Almeida",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-81-2024-12-25",
+      "date": "2025-08-24",
+      "description": "Mensalidade - Renato Santos",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-82-2024-12-25",
+      "date": "2025-08-27",
+      "description": "Mensalidade - Sílvia Oliveira",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-83-2024-12-25",
+      "date": "2025-08-30",
+      "description": "Mensalidade - Tobias Silva",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-84-2024-12-25",
+      "date": "2025-09-02",
+      "description": "Mensalidade - Úrsula Costa",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-85-2024-12-25",
+      "date": "2025-09-05",
+      "description": "Mensalidade - Vicente Almeida",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-86-2024-12-25",
+      "date": "2025-09-08",
+      "description": "Mensalidade - Wanda Santos",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-87-2024-12-25",
+      "date": "2025-09-11",
+      "description": "Mensalidade - Xerxes Oliveira",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-88-2024-12-25",
+      "date": "2025-09-14",
+      "description": "Mensalidade - Yara Silva",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-89-2024-12-25",
+      "date": "2025-09-17",
+      "description": "Mensalidade - Zélia Costa",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-90-2024-12-25",
+      "date": "2025-09-20",
+      "description": "Mensalidade - Aarão Almeida",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-91-2024-12-25",
+      "date": "2025-09-23",
+      "description": "Mensalidade - Bárbara Santos",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-92-2024-12-25",
+      "date": "2025-09-26",
+      "description": "Mensalidade - Caio Oliveira",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-93-2024-12-25",
+      "date": "2025-09-29",
+      "description": "Mensalidade - Débora Silva",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-94-2024-12-25",
+      "date": "2025-10-02",
+      "description": "Mensalidade - Érico Costa",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-95-2024-12-25",
+      "date": "2025-10-05",
+      "description": "Mensalidade - Fabrícia Almeida",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-96-2024-12-25",
+      "date": "2025-10-08",
+      "description": "Mensalidade - Gilberto Santos",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-97-2024-12-25",
+      "date": "2025-10-11",
+      "description": "Mensalidade - Helena Oliveira",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-98-2024-12-25",
+      "date": "2025-10-14",
+      "description": "Mensalidade - Iris Silva",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-99-2024-12-25",
+      "date": "2025-10-17",
+      "description": "Mensalidade - Jairo Costa",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-100-2024-12-25",
+      "date": "2025-10-20",
+      "description": "Mensalidade - Kátia Almeida",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-101-2024-12-25",
+      "date": "2025-10-23",
+      "description": "Mensalidade - Leandro Santos",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-102-2024-12-25",
+      "date": "2025-10-26",
+      "description": "Mensalidade - Marília Oliveira",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-103-2024-12-25",
+      "date": "2025-10-29",
+      "description": "Mensalidade - Norberto Silva",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-104-2024-12-25",
+      "date": "2025-11-01",
+      "description": "Mensalidade - Olga Costa",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-105-2024-12-25",
+      "date": "2025-11-04",
+      "description": "Mensalidade - Paulo Roberto Almeida",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-106-2024-12-25",
+      "date": "2025-11-07",
+      "description": "Mensalidade - Quitéria Silva",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-107-2024-12-25",
+      "date": "2025-11-10",
+      "description": "Mensalidade - Renata Oliveira",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-108-2024-12-25",
+      "date": "2025-11-13",
+      "description": "Mensalidade - Sérgio Costa",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-109-2024-12-25",
+      "date": "2025-11-16",
+      "description": "Mensalidade - Tânia Almeida",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-110-2024-12-25",
+      "date": "2025-11-19",
+      "description": "Mensalidade - Ulisses Santos",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-111-2024-12-25",
+      "date": "2025-11-22",
+      "description": "Mensalidade - Vera Oliveira",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-112-2024-12-25",
+      "date": "2025-11-25",
+      "description": "Mensalidade - Walter Silva",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-113-2024-12-25",
+      "date": "2025-11-28",
+      "description": "Mensalidade - Ximena Costa",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-114-2024-12-25",
+      "date": "2025-12-01",
+      "description": "Mensalidade - Yolanda Almeida",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-115-2024-12-25",
+      "date": "2025-12-04",
+      "description": "Mensalidade - Ziraldo Santos",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-116-2024-12-25",
+      "date": "2025-12-07",
+      "description": "Mensalidade - Amanda Oliveira",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-117-2024-12-25",
+      "date": "2025-12-10",
+      "description": "Mensalidade - Breno Silva",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-118-2024-12-25",
+      "date": "2025-12-13",
+      "description": "Mensalidade - Célia Costa",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-119-2024-12-25",
+      "date": "2025-12-16",
+      "description": "Mensalidade - Davi Almeida",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-120-2024-12-25",
+      "date": "2025-12-19",
+      "description": "Mensalidade - Eliane Santos",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-121-2024-12-25",
+      "date": "2025-12-22",
+      "description": "Mensalidade - Fernando Oliveira",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-122-2024-12-25",
+      "date": "2025-12-25",
+      "description": "Mensalidade - Gisele Silva",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-123-2024-12-25",
+      "date": "2025-12-28",
+      "description": "Mensalidade - Humberto Costa",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-124-2024-12-25",
+      "date": "2025-01-01",
+      "description": "Mensalidade - Ingrid Almeida",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-125-2024-12-25",
+      "date": "2025-01-04",
+      "description": "Mensalidade - Joaquim Santos",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-126-2024-12-25",
+      "date": "2025-01-07",
+      "description": "Mensalidade - Karina Oliveira",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-127-2024-12-25",
+      "date": "2025-01-10",
+      "description": "Mensalidade - Lorival Silva",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-128-2024-12-25",
+      "date": "2025-01-13",
+      "description": "Mensalidade - Marcela Costa",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-129-2024-12-25",
+      "date": "2025-01-16",
+      "description": "Mensalidade - Nilton Almeida",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-130-2024-12-25",
+      "date": "2025-01-19",
+      "description": "Mensalidade - Olívia Santos",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-131-2024-12-25",
+      "date": "2025-01-22",
+      "description": "Mensalidade - Pedro Henrique Oliveira",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-132-2024-12-25",
+      "date": "2024-12-25",
+      "description": "Mensalidade - Quitéria Silva",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-133-2024-12-25",
+      "date": "2025-01-28",
+      "description": "Mensalidade - Roberta Costa",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-134-2024-12-25",
+      "date": "2025-01-31",
+      "description": "Mensalidade - Sérgio Almeida",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-135-2024-12-25",
+      "date": "2025-02-03",
+      "description": "Mensalidade - Tereza Santos",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-136-2024-12-25",
+      "date": "2025-02-06",
+      "description": "Mensalidade - Ulisses Oliveira",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-137-2024-12-25",
+      "date": "2025-02-09",
+      "description": "Mensalidade - Valéria Silva",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-138-2024-12-25",
+      "date": "2025-02-12",
+      "description": "Mensalidade - Wilton Costa",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-139-2024-12-25",
+      "date": "2025-02-15",
+      "description": "Mensalidade - Ximena Almeida",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-140-2024-12-25",
+      "date": "2025-02-18",
+      "description": "Mensalidade - Yasmin Santos",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-141-2024-12-25",
+      "date": "2025-02-21",
+      "description": "Mensalidade - Zoraide Oliveira",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-142-2024-12-25",
+      "date": "2025-02-24",
+      "description": "Mensalidade - Álvaro Silva",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-143-2024-12-25",
+      "date": "2025-02-27",
+      "description": "Mensalidade - Bianca Costa",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-144-2024-12-25",
+      "date": "2025-03-01",
+      "description": "Mensalidade - Cristiano Almeida",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-145-2024-12-25",
+      "date": "2025-03-04",
+      "description": "Mensalidade - Dorival Santos",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-146-2024-12-25",
+      "date": "2025-03-07",
+      "description": "Mensalidade - Elisabeth Oliveira",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-147-2024-12-25",
+      "date": "2025-03-10",
+      "description": "Mensalidade - Flávio Silva",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-148-2024-12-25",
+      "date": "2025-03-13",
+      "description": "Mensalidade - Geralda Costa",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-149-2024-12-25",
+      "date": "2025-03-16",
+      "description": "Mensalidade - Heloísa Almeida",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-150-2024-12-25",
+      "date": "2025-03-19",
+      "description": "Mensalidade - Ivan Santos",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-151-2024-12-25",
+      "date": "2025-03-22",
+      "description": "Mensalidade - Jéssica Oliveira",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-152-2024-12-25",
+      "date": "2025-03-25",
+      "description": "Mensalidade - Kleber Silva",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-153-2024-12-25",
+      "date": "2025-03-28",
+      "description": "Mensalidade - Lúcia Costa",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-154-2024-12-25",
+      "date": "2025-03-31",
+      "description": "Mensalidade - Márcio Almeida",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-155-2024-12-25",
+      "date": "2025-04-03",
+      "description": "Mensalidade - Neide Santos",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-156-2024-12-25",
+      "date": "2025-04-06",
+      "description": "Mensalidade - Osmar Oliveira",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-157-2024-12-25",
+      "date": "2025-04-09",
+      "description": "Mensalidade - Priscila Silva",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-158-2024-12-25",
+      "date": "2025-04-12",
+      "description": "Mensalidade - Quitéria Costa",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-159-2024-12-25",
+      "date": "2025-04-15",
+      "description": "Mensalidade - Renan Almeida",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-160-2024-12-25",
+      "date": "2025-04-18",
+      "description": "Mensalidade - Sandra Santos",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-161-2024-12-25",
+      "date": "2025-04-21",
+      "description": "Mensalidade - Talita Oliveira",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-162-2024-12-25",
+      "date": "2025-04-24",
+      "description": "Mensalidade - Ubirajara Silva",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-163-2024-12-25",
+      "date": "2025-04-27",
+      "description": "Mensalidade - Viviane Costa",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-164-2024-12-25",
+      "date": "2025-04-30",
+      "description": "Mensalidade - Wendel Almeida",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-165-2024-12-25",
+      "date": "2025-05-03",
+      "description": "Mensalidade - Xênia Santos",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-166-2024-12-25",
+      "date": "2025-05-06",
+      "description": "Mensalidade - Yuri Oliveira",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-167-2024-12-25",
+      "date": "2024-12-25",
+      "description": "Mensalidade - Zélia Silva",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-168-2024-12-25",
+      "date": "2024-12-25",
+      "description": "Mensalidade - Aline Costa",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-169-2024-12-25",
+      "date": "2025-05-15",
+      "description": "Mensalidade - Beto Almeida",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-170-2024-12-25",
+      "date": "2025-05-18",
+      "description": "Mensalidade - Carmen Santos",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-171-2024-12-25",
+      "date": "2025-05-21",
+      "description": "Mensalidade - Djalma Oliveira",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-172-2024-12-25",
+      "date": "2025-05-24",
+      "description": "Mensalidade - Elizabete Silva",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-173-2024-12-25",
+      "date": "2025-05-27",
+      "description": "Mensalidade - Fábio Costa",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-174-2024-12-25",
+      "date": "2025-05-30",
+      "description": "Mensalidade - Geraldo Almeida",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-175-2024-12-25",
+      "date": "2024-12-25",
+      "description": "Mensalidade - Helena Santos",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-176-2024-12-25",
+      "date": "2025-06-05",
+      "description": "Mensalidade - Ivone Oliveira",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-177-2024-12-25",
+      "date": "2025-06-08",
+      "description": "Mensalidade - Jair Silva",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-178-2024-12-25",
+      "date": "2025-06-11",
+      "description": "Mensalidade - Kátia Costa",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-179-2024-12-25",
+      "date": "2025-06-14",
+      "description": "Mensalidade - Leandro Almeida",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-180-2024-12-25",
+      "date": "2025-06-17",
+      "description": "Mensalidade - Márcia Santos",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-181-2024-12-25",
+      "date": "2025-06-20",
+      "description": "Mensalidade - Nilson Oliveira",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-182-2024-12-25",
+      "date": "2025-06-23",
+      "description": "Mensalidade - Olga Silva",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-183-2024-12-25",
+      "date": "2024-12-25",
+      "description": "Mensalidade - Paulo Costa",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-184-2024-12-25",
+      "date": "2024-12-25",
+      "description": "Mensalidade - Quitéria Almeida",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-185-2024-12-25",
+      "date": "2025-07-02",
+      "description": "Mensalidade - Rita Santos",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-186-2024-12-25",
+      "date": "2025-07-05",
+      "description": "Mensalidade - Sílvio Oliveira",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-187-2024-12-25",
+      "date": "2025-07-08",
+      "description": "Mensalidade - Teresa Silva",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-188-2024-12-25",
+      "date": "2025-07-11",
+      "description": "Mensalidade - Ulisses Costa",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-189-2024-12-25",
+      "date": "2025-07-14",
+      "description": "Mensalidade - Valdir Almeida",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-190-2024-12-25",
+      "date": "2025-07-17",
+      "description": "Mensalidade - Wanessa Santos",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-191-2024-12-25",
+      "date": "2025-07-20",
+      "description": "Mensalidade - Xande Oliveira",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-192-2024-12-25",
+      "date": "2025-07-23",
+      "description": "Mensalidade - Yasmin Silva",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-193-2024-12-25",
+      "date": "2024-12-25",
+      "description": "Mensalidade - Zélia Costa",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-194-2024-12-25",
+      "date": "2025-07-29",
+      "description": "Mensalidade - Ari Santos",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-195-2024-12-25",
+      "date": "2025-08-01",
+      "description": "Mensalidade - Bianca Almeida",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-196-2024-12-25",
+      "date": "2025-08-04",
+      "description": "Mensalidade - César Oliveira",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-197-2024-12-25",
+      "date": "2025-08-07",
+      "description": "Mensalidade - Dalva Silva",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-198-2024-12-25",
+      "date": "2025-08-10",
+      "description": "Mensalidade - Eduardo Costa",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-199-2024-12-25",
+      "date": "2025-08-13",
+      "description": "Mensalidade - Fátima Almeida",
+      "type": "Receita",
+      "amount": 900,
+      "category": "Mensalidades Anuais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-200-2024-12-25",
+      "date": "2025-08-16",
+      "description": "Mensalidade - Gustavo Santos",
+      "type": "Receita",
+      "amount": 250,
+      "category": "Mensalidades Trimestrais",
+      "userId": "user-1"
+    },
+    {
+      "id": "payment-member-1766770935997-egp8u63c5-2024-12-25",
+      "date": "2025-12-27",
+      "description": "Mensalidade - Sicrano de Tals",
+      "type": "Receita",
+      "amount": 100,
+      "category": "Mensalidades",
       "userId": "user-1"
     }
   ],

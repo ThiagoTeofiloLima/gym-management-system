@@ -4,7 +4,7 @@ import { jsonDb } from '@/services/json-db';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, phone, plan, userId, planRenewalDate } = body;
+    const { name, email, phone, plan, userId, planRenewalDate, paymentDate } = body;
 
     // Validate required fields
     if (!name || !email || !phone || !plan || !userId) {
@@ -27,24 +27,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate renewal date if not provided
+    // Calculate renewal date based on payment date and plan
     let renewalDate = planRenewalDate;
+    let paymentDateValue = paymentDate;
+
+    if (!paymentDateValue) {
+      // If no payment date provided, use today's date
+      paymentDateValue = new Date().toISOString().split('T')[0];
+    }
+
     if (!renewalDate) {
-      const today = new Date();
+      // Calculate renewal date based on payment date and plan
+      const paymentDateObj = new Date(paymentDateValue);
       switch (plan.toLowerCase()) {
         case 'mensal':
-          today.setMonth(today.getMonth() + 1);
+          paymentDateObj.setMonth(paymentDateObj.getMonth() + 1);
           break;
         case 'trimestral':
-          today.setMonth(today.getMonth() + 3);
+          paymentDateObj.setMonth(paymentDateObj.getMonth() + 3);
           break;
         case 'anual':
-          today.setFullYear(today.getFullYear() + 1);
+          paymentDateObj.setFullYear(paymentDateObj.getFullYear() + 1);
           break;
         default:
-          today.setMonth(today.getMonth() + 1); // Default to monthly
+          paymentDateObj.setMonth(paymentDateObj.getMonth() + 1); // Default to monthly
       }
-      renewalDate = today.toISOString().split('T')[0];
+      renewalDate = paymentDateObj.toISOString().split('T')[0];
     }
 
     // Create new member
@@ -56,6 +64,7 @@ export async function POST(request: NextRequest) {
       status: 'Ativo', // Default status
       lastVisit: new Date().toISOString().split('T')[0], // Today's date in YYYY-MM-DD format
       planRenewalDate: renewalDate,
+      paymentDate: paymentDateValue,
       userId
     });
 

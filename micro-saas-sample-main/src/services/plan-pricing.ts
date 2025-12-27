@@ -39,7 +39,7 @@ export function getPlanPrice(planType: string): number {
 export function calculateRevenueFromMembers(members: any[]): number {
   return members.reduce((total, member) => {
     // Only include revenue from members with active plans
-    const planStatus = getPlanStatus(member.planRenewalDate);
+    const planStatus = getPaymentStatus(member.paymentDate, member.plan);
     if (planStatus.label !== "Inativo" && planStatus.label !== "Vencido") {
       return total + getPlanPrice(member.plan);
     }
@@ -49,8 +49,70 @@ export function calculateRevenueFromMembers(members: any[]): number {
 
 // Get the plan status based on renewal date
 export function getPlanStatus(planRenewalDate: string) {
+  // Parse dates to avoid timezone issues
   const today = new Date();
-  const renewalDate = new Date(planRenewalDate);
+  const [renewalYear, renewalMonth, renewalDay] = planRenewalDate.split('-').map(Number);
+  const renewalDate = new Date(renewalYear, renewalMonth - 1, renewalDay); // month is 0-indexed in JS Date
+
+  const diffTime = renewalDate.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays < -7) {
+    // Mais de 7 dias atrasado - membro inativo
+    return {
+      label: "Inativo",
+      variant: "destructive"
+    };
+  } else if (diffDays < 0) {
+    // Menos de 7 dias atrasado - vencido
+    return {
+      label: "Vencido",
+      variant: "secondary"
+    };
+  } else if (diffDays <= 7) {
+    // A vencer em até 7 dias - aviso
+    return {
+      label: `Vence em ${diffDays} dia(s)`,
+      variant: "default"
+    };
+  } else {
+    // Mais de 7 dias para vencer - normal
+    return {
+      label: "Ativo",
+      variant: "default"
+    };
+  }
+}
+
+// Get the payment status based on payment date and plan
+export function getPaymentStatus(paymentDate: string, plan: string) {
+  // Parse dates to avoid timezone issues
+  const today = new Date();
+  const [paymentYear, paymentMonth, paymentDay] = paymentDate.split('-').map(Number);
+  const paymentDateObj = new Date(paymentYear, paymentMonth - 1, paymentDay); // month is 0-indexed in JS Date
+
+  // Calculate when the plan should renew based on the payment date and plan type
+  let renewalYear = paymentYear;
+  let renewalMonth = paymentMonth - 1; // month is 0-indexed in JS Date
+  let renewalDay = paymentDay;
+
+  switch (plan.toLowerCase()) {
+    case 'mensal':
+      renewalMonth += 1;
+      break;
+    case 'trimestral':
+      renewalMonth += 3;
+      break;
+    case 'anual':
+      renewalYear += 1;
+      break;
+    default:
+      renewalMonth += 1; // Default to monthly
+  }
+
+  // Handle month overflow
+  const renewalDate = new Date(renewalYear, renewalMonth, renewalDay);
+
   const diffTime = renewalDate.getTime() - today.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
@@ -95,7 +157,7 @@ export function getPlanPricingBreakdown(members: any[]): Record<string, { count:
       breakdown[planType].count += 1;
 
       // Only count as active and add to revenue if the plan is not expired or inactive
-      const planStatus = getPlanStatus(member.planRenewalDate);
+      const planStatus = getPaymentStatus(member.paymentDate, member.plan);
       if (planStatus.label !== "Inativo" && planStatus.label !== "Vencido") {
         breakdown[planType].activeCount += 1;
         breakdown[planType].total += getPlanPrice(planType);
@@ -106,41 +168,31 @@ export function getPlanPricingBreakdown(members: any[]): Record<string, { count:
   return breakdown;
 }
 
-// Generate financial records based on member plan renewals
+// Generate financial records based on member payment dates
 export function generateFinancialRecordsFromMembers(members: any[]): any[] {
   const financialRecords: any[] = [];
-  const today = new Date();
 
   members.forEach(member => {
     // Check if member has required fields
-    if (!member.plan || !member.planRenewalDate || !member.name || !member.id) {
+    if (!member.plan || !member.paymentDate || !member.name || !member.id) {
       console.warn('Member missing required fields for financial record generation:', member);
       return; // Skip this member if required fields are missing
     }
 
-    // Create a financial record for each member's plan renewal
+    // Create a financial record for each member's payment
     const planPrice = getPlanPrice(member.plan);
 
-    // Only create records for members with active plans
-    const planStatus = getPlanStatus(member.planRenewalDate);
-    if (planStatus.label !== "Inativo" && planStatus.label !== "Vencido") {
-      // Use a date in the last 7 days for the financial record to make it visible
-      // This simulates recent payments based on their plan renewal schedule
-      const recordDate = new Date();
-      // Random date within the last 7 days
-      recordDate.setDate(today.getDate() - Math.floor(Math.random() * 7));
-      const formattedDate = recordDate.toISOString().split('T')[0];
-
-      financialRecords.push({
-        id: `renewal-${member.id}-${formattedDate}`,
-        date: formattedDate,
-        description: `Mensalidade - ${member.name}`,
-        type: 'Receita',
-        amount: planPrice,
-        category: 'Mensalidades',
-        userId: member.userId || 'user-1' // Default to user-1 if not specified
-      });
-    }
+    // Create a financial record based on the actual payment date
+    financialRecords.push({
+      id: `payment-${member.id}-${member.paymentDate}`,
+      date: member.paymentDate,
+      description: `Mensalidade - ${member.name}`,
+      type: 'Receita',
+      amount: planPrice,
+      category: member.plan === 'Anual' ? 'Mensalidades Anuais' :
+               member.plan === 'Trimestral' ? 'Mensalidades Trimestrais' : 'Mensalidades',
+      userId: member.userId || 'user-1' // Default to user-1 if not specified
+    });
   });
 
   return financialRecords;

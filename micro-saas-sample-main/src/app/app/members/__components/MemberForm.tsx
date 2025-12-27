@@ -43,40 +43,15 @@ interface Member {
     lastVisit: string;
     userId: string;
     planRenewalDate: string; // Data de renovação do plano
+    paymentDate: string; // Data de pagamento
 }
 
-// Função para determinar o status do plano com base na data de renovação
-function getPlanStatus(planRenewalDate: string) {
-  const today = new Date();
-  const renewalDate = new Date(planRenewalDate);
-  const diffTime = renewalDate.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+// Import the payment status function from the plan pricing service
+import { getPaymentStatus } from "@/services/plan-pricing";
 
-  if (diffDays < -7) {
-    // Mais de 7 dias atrasado - membro inativo
-    return {
-      label: "Inativo",
-      variant: "destructive" as const
-    };
-  } else if (diffDays < 0) {
-    // Menos de 7 dias atrasado - vencido
-    return {
-      label: "Vencido",
-      variant: "secondary" as const
-    };
-  } else if (diffDays <= 7) {
-    // A vencer em até 7 dias - aviso
-    return {
-      label: `Vence em ${diffDays} dia(s)`,
-      variant: "default" as const
-    };
-  } else {
-    // Mais de 7 dias para vencer - normal
-    return {
-      label: "Ativo",
-      variant: "default" as const
-    };
-  }
+// Função para determinar o status do plano com base na data de pagamento e plano
+function getPlanStatus(paymentDate: string, plan: string) {
+  return getPaymentStatus(paymentDate, plan);
 }
 
 // Mock auth function to get the current user - in a real app, this would come from next-auth
@@ -103,7 +78,7 @@ export default function MembersPageClient({ initialMembers }: { initialMembers: 
         email: '',
         phone: '',
         plan: 'Mensal',
-        planRenewalDate: new Date().toISOString().split('T')[0], // Data atual por padrão
+        paymentDate: new Date().toISOString().split('T')[0], // Data atual por padrão
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -143,6 +118,26 @@ export default function MembersPageClient({ initialMembers }: { initialMembers: 
             const session = await getCurrentUser();
             const userId = session.user.id;
 
+            // Calculate renewal date based on payment date and plan
+            const paymentDate = new Date(formData.paymentDate);
+            let renewalDate = new Date(paymentDate);
+
+            switch(formData.plan.toLowerCase()) {
+                case 'mensal':
+                    renewalDate.setMonth(renewalDate.getMonth() + 1);
+                    break;
+                case 'trimestral':
+                    renewalDate.setMonth(renewalDate.getMonth() + 3);
+                    break;
+                case 'anual':
+                    renewalDate.setFullYear(renewalDate.getFullYear() + 1);
+                    break;
+                default:
+                    renewalDate.setMonth(renewalDate.getMonth() + 1); // Default to monthly
+            }
+
+            const planRenewalDate = renewalDate.toISOString().split('T')[0];
+
             const response = await fetch('/api/members', {
                 method: 'POST',
                 headers: {
@@ -150,6 +145,7 @@ export default function MembersPageClient({ initialMembers }: { initialMembers: 
                 },
                 body: JSON.stringify({
                     ...formData,
+                    planRenewalDate, // Include calculated renewal date
                     userId
                 }),
             });
@@ -173,7 +169,7 @@ export default function MembersPageClient({ initialMembers }: { initialMembers: 
                     email: '',
                     phone: '',
                     plan: 'Mensal',
-                    planRenewalDate: new Date().toISOString().split('T')[0],
+                    paymentDate: new Date().toISOString().split('T')[0],
                 });
                 setIsOpen(false);
                 router.refresh(); // Refresh the page to get updated data
@@ -268,14 +264,14 @@ export default function MembersPageClient({ initialMembers }: { initialMembers: 
                                         </select>
                                     </div>
                                     <div className="grid grid-cols-4 items-center gap-4">
-                                        <label htmlFor="planRenewalDate" className="text-right">
-                                            Data de Renovação
+                                        <label htmlFor="paymentDate" className="text-right">
+                                            Data de Pagamento
                                         </label>
                                         <Input
-                                            id="planRenewalDate"
+                                            id="paymentDate"
                                             type="date"
                                             className="col-span-3"
-                                            value={formData.planRenewalDate}
+                                            value={formData.paymentDate}
                                             onChange={handleChange}
                                             required
                                         />
@@ -315,7 +311,7 @@ export default function MembersPageClient({ initialMembers }: { initialMembers: 
                                     <TableHead>Plano</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead>Última Visita</TableHead>
-                                    <TableHead>Data de Renovação</TableHead>
+                                    <TableHead>Data de Pagamento</TableHead>
                                     <TableHead>Status do Plano</TableHead>
                                     <TableHead>Ações</TableHead>
                                 </TableRow>
@@ -333,10 +329,10 @@ export default function MembersPageClient({ initialMembers }: { initialMembers: 
                                             </Badge>
                                         </TableCell>
                                         <TableCell>{member.lastVisit}</TableCell>
-                                        <TableCell>{new Date(member.planRenewalDate).toLocaleDateString('pt-BR')}</TableCell>
+                                        <TableCell>{new Date(member.paymentDate).toLocaleDateString('pt-BR')}</TableCell>
                                         <TableCell>
-                                            <Badge variant={getPlanStatus(member.planRenewalDate).variant}>
-                                                {getPlanStatus(member.planRenewalDate).label}
+                                            <Badge variant={getPlanStatus(member.paymentDate, member.plan).variant}>
+                                                {getPlanStatus(member.paymentDate, member.plan).label}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>

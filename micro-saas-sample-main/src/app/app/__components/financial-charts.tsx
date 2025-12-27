@@ -36,161 +36,291 @@ export function FinancialCharts() {
         profit: 0
     });
     const [selectedDate, setSelectedDate] = useState<string>('');
+    const [selectedMonth, setSelectedMonth] = useState<string>('');
 
-    useEffect(() => {
-        const loadFinancialData = async () => {
-            try {
-                const response = await fetch('/api/data');
-                if (!response.ok) {
-                    throw new Error('Failed to fetch data');
-                }
-                const allData = await response.json();
-                const financial = allData.financial;
-                const members = allData.members;
+    // Define the data loading function separately so it can be reused
+    const loadFinancialData = async (preserveSelection?: string) => {
+        try {
+            const response = await fetch('/api/data');
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+            const allData = await response.json();
+            const financial = allData.financial;
+            const members = allData.members;
 
-                // Generate financial records based on member plan renewals
-                const planBasedFinancialRecords = generateFinancialRecordsFromMembers(members);
+            // Use only the existing financial records from the database
+            // These should already include the member payment records that were properly updated
+            // when member payment dates were changed, thanks to our json-db update
+            const allFinancialRecords = [...financial];
 
-                // Combine with existing financial records
-                const allFinancialRecords = [...financial, ...planBasedFinancialRecords];
+            // Set all financial records
+            setFinancialRecords(allFinancialRecords);
 
-                // Set all financial records
-                setFinancialRecords(allFinancialRecords);
+            // Determine what to filter by - date, month, or default to last 7 days
+            let recordsToShow;
+            if (selectedMonth) {
+                // If a month is selected, show records for that month in the current year
+                const currentYear = new Date().getFullYear();
 
-                // Set default to show last 7 days
+                recordsToShow = allFinancialRecords.filter(record => {
+                    const [recordYear, recordMonth] = record.date.split('-');
+                    return recordMonth === selectedMonth && parseInt(recordYear) === currentYear;
+                }).sort((a, b) => {
+                    // Sort by date (ascending), then by type (Receita first), then by amount (descending)
+                    if (a.date !== b.date) {
+                        return a.date.localeCompare(b.date); // Sort dates ascending
+                    }
+                    if (a.type === 'Receita' && b.type !== 'Receita') return -1;
+                    if (a.type !== 'Receita' && b.type === 'Receita') return 1;
+                    return b.amount - a.amount;
+                });
+            } else if (preserveSelection && preserveSelection.length === 10) { // YYYY-MM-DD format has 10 characters
+                // If a specific date is selected (preserveSelection is in YYYY-MM-DD format), show records for that date
+                recordsToShow = allFinancialRecords.filter(record => {
+                    return record.date === preserveSelection;
+                }).sort((a, b) => {
+                    // Sort by type (Receita first), then by amount (descending)
+                    if (a.type === 'Receita' && b.type !== 'Receita') return -1;
+                    if (a.type !== 'Receita' && b.type === 'Receita') return 1;
+                    return b.amount - a.amount;
+                });
+            } else if (preserveSelection && preserveSelection.length === 2) { // MM format has 2 characters
+                // If preserveSelection is a month (when called from refresh with month selected)
+                const currentYear = new Date().getFullYear();
+
+                recordsToShow = allFinancialRecords.filter(record => {
+                    const [recordYear, recordMonth] = record.date.split('-');
+                    return recordMonth === preserveSelection && parseInt(recordYear) === currentYear;
+                }).sort((a, b) => {
+                    // Sort by date (ascending), then by type (Receita first), then by amount (descending)
+                    if (a.date !== b.date) {
+                        return a.date.localeCompare(b.date); // Sort dates ascending
+                    }
+                    if (a.type === 'Receita' && b.type !== 'Receita') return -1;
+                    if (a.type !== 'Receita' && b.type === 'Receita') return 1;
+                    return b.amount - a.amount;
+                });
+            } else {
+                // If no date or month is selected, show last 7 days
                 const today = new Date();
                 const sevenDaysAgo = new Date();
                 sevenDaysAgo.setDate(today.getDate() - 7);
 
-                // Filter records to show only those from the last 7 days
                 const recentRecords = allFinancialRecords.filter(record => {
                     const recordDate = new Date(record.date);
                     return recordDate >= sevenDaysAgo;
                 }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Sort by date descending
 
                 // If no recent records, show all records as fallback
-                const recordsToShow = recentRecords.length > 0 ? recentRecords : allFinancialRecords.slice(0, 20); // Show first 20 if no recent ones
-
-                setFilteredRecords(recordsToShow);
-                setSelectedDate(today.toISOString().split('T')[0]); // Set today as default selected date
-
-                // Calculate revenue from members based on their plans
-                const planBasedRevenue = calculateRevenueFromMembers(members);
-
-                // Calculate additional revenue from financial records (non-plan related)
-                const additionalRevenue = financial
-                    .filter((record: any) => record.type === 'Receita' && !record.description.includes('Mensalidade'))
-                    .reduce((sum: number, record: any) => sum + record.amount, 0);
-
-                // Calculate total revenue (plan-based + additional)
-                const totalRevenue = planBasedRevenue + additionalRevenue;
-
-                // Calculate expenses from financial records
-                const totalExpenses = financial
-                    .filter((record: any) => record.type === 'Despesa')
-                    .reduce((sum: number, record: any) => sum + record.amount, 0);
-
-                setFinancialSummary({
-                    totalRevenue,
-                    totalExpenses,
-                    profit: totalRevenue - totalExpenses
-                });
-
-                // Prepare monthly data (simplified for demo)
-                const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'];
-                const monthly = months.map(month => {
-                    // This is a simplified calculation - in a real app you'd group by month
-                    return {
-                        month,
-                        revenue: totalRevenue / 6 + Math.random() * 2000,
-                        expenses: totalExpenses / 6 + Math.random() * 1000,
-                        profit: (totalRevenue - totalExpenses) / 6 + Math.random() * 1000
-                    };
-                });
-                setMonthlyData(monthly);
-
-                // Prepare category data based on plan pricing breakdown
-                const planBreakdown = getPlanPricingBreakdown(members);
-
-                // Also include non-plan related revenue from financial records
-                const categories = financial.reduce((acc: Record<string, number>, record: any) => {
-                    if (!acc[record.category]) {
-                        acc[record.category] = 0;
-                    }
-                    if (record.type === 'Receita' && !record.description.includes('Mensalidade')) {
-                        acc[record.category] += record.amount;
-                    }
-                    return acc;
-                }, {});
-
-                // Add plan-based revenue to categories
-                Object.entries(planBreakdown).forEach(([planType, data]) => {
-                    if (data.total > 0) {
-                        categories[`${planType} (Mensalidades)`] = data.total;
-                    }
-                });
-
-                const catData = Object.entries(categories).map(([name, value]) => ({
-                    name,
-                    value: value as number
-                }));
-                setCategoryData(catData);
-
-            } catch (error) {
-                console.error("Error loading financial data:", error);
-
-                // Fallback to mock data if API fails
-                setFinancialRecords([
-                    { id: '1', date: '2025-12-01', description: 'Mensalidade - João Silva', type: 'Receita', amount: 120, category: 'Mensalidades' },
-                    { id: '2', date: '2025-12-01', description: 'Mensalidade - Maria Oliveira', type: 'Receita', amount: 120, category: 'Mensalidades' },
-                    { id: '3', date: '2025-12-05', description: 'Limpeza', type: 'Despesa', amount: 800, category: 'Manutenção' },
-                    { id: '4', date: '2025-12-10', description: 'Mensalidade - Carlos Souza', type: 'Receita', amount: 120, category: 'Mensalidades' },
-                    { id: '5', date: '2025-12-15', description: 'Salário Personal', type: 'Despesa', amount: 3500, category: 'Folha de Pagamento' },
-                ]);
-
-                setMonthlyData([
-                    { month: 'Jan', revenue: 12000, expenses: 8000, profit: 4000 },
-                    { month: 'Fev', revenue: 13500, expenses: 8200, profit: 5300 },
-                    { month: 'Mar', revenue: 14200, expenses: 8500, profit: 5700 },
-                    { month: 'Abr', revenue: 13800, expenses: 8300, profit: 5500 },
-                    { month: 'Mai', revenue: 15000, expenses: 8700, profit: 6300 },
-                    { month: 'Jun', revenue: 14500, expenses: 8600, profit: 5900 },
-                ]);
-
-                setCategoryData([
-                    { name: 'Mensalidades', value: 75 },
-                    { name: 'Personal Trainers', value: 15 },
-                    { name: 'Manutenção', value: 10 },
-                ]);
+                recordsToShow = recentRecords.length > 0 ? recentRecords : allFinancialRecords.slice(0, 20); // Show first 20 if no recent ones
             }
-        };
 
+            setFilteredRecords(recordsToShow);
+            // Don't update selectedDate if a month is selected, to preserve the UI state
+            if (!selectedMonth && preserveSelection && preserveSelection.length === 10) {
+                setSelectedDate(preserveSelection);
+            } else if (preserveSelection && preserveSelection.length === 2) {
+                setSelectedMonth(preserveSelection);
+            }
+
+            // Calculate total revenue from all financial records
+            const totalRevenue = allFinancialRecords
+                .filter((record: any) => record.type === 'Receita')
+                .reduce((sum: number, record: any) => sum + record.amount, 0);
+
+            // Calculate expenses from all financial records
+            const totalExpenses = allFinancialRecords
+                .filter((record: any) => record.type === 'Despesa')
+                .reduce((sum: number, record: any) => sum + record.amount, 0);
+
+            setFinancialSummary({
+                totalRevenue,
+                totalExpenses,
+                profit: totalRevenue - totalExpenses
+            });
+
+            // Prepare monthly data based on actual financial records
+            const allRecords = allFinancialRecords;
+
+            // Group records by month
+            const monthlyDataMap: Record<string, { revenue: number, expenses: number }> = {};
+
+            allRecords.forEach(record => {
+                // Parse date to avoid timezone issues
+                const [year, month] = record.date.split('-');
+                const monthKey = `${year}-${month}`;
+
+                if (!monthlyDataMap[monthKey]) {
+                    monthlyDataMap[monthKey] = { revenue: 0, expenses: 0 };
+                }
+
+                if (record.type === 'Receita') {
+                    monthlyDataMap[monthKey].revenue += record.amount;
+                } else if (record.type === 'Despesa') {
+                    monthlyDataMap[monthKey].expenses += record.amount;
+                }
+            });
+
+            // Convert to array and format month names
+            const months = Object.keys(monthlyDataMap).sort().slice(-6); // Get last 6 months
+            const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+
+            const monthly = months.map(monthKey => {
+                const [year, monthNum] = monthKey.split('-');
+                const monthName = monthNames[parseInt(monthNum) - 1];
+                const data = monthlyDataMap[monthKey];
+
+                return {
+                    month: `${monthName}/${year.substring(2)}`, // Format as "Jan/25"
+                    revenue: data.revenue,
+                    expenses: data.expenses,
+                    profit: data.revenue - data.expenses
+                };
+            });
+
+            setMonthlyData(monthly);
+
+            // Prepare category data based on all financial records
+            const categories: Record<string, number> = {};
+
+            // Add all revenue from financial records
+            allFinancialRecords.forEach(record => {
+                if (record.type === 'Receita') {
+                    if (!categories[record.category]) {
+                        categories[record.category] = 0;
+                    }
+                    categories[record.category] += record.amount;
+                }
+            });
+
+            const catData = Object.entries(categories).map(([name, value]) => ({
+                name,
+                value: value as number
+            }));
+            setCategoryData(catData);
+
+        } catch (error) {
+            console.error("Error loading financial data:", error);
+
+            // Fallback to mock data if API fails
+            const fallbackFinancial = [
+                { id: '1', date: '2025-12-01', description: 'Mensalidade - João Silva', type: 'Receita', amount: 120, category: 'Mensalidades' },
+                { id: '2', date: '2025-12-01', description: 'Mensalidade - Maria Oliveira', type: 'Receita', amount: 120, category: 'Mensalidades' },
+                { id: '3', date: '2025-12-05', description: 'Limpeza', type: 'Despesa', amount: 800, category: 'Manutenção' },
+                { id: '4', date: '2025-12-10', description: 'Mensalidade - Carlos Souza', type: 'Receita', amount: 120, category: 'Mensalidades' },
+                { id: '5', date: '2025-12-15', description: 'Salário Personal', type: 'Despesa', amount: 3500, category: 'Folha de Pagamento' },
+            ];
+
+            setFinancialRecords(fallbackFinancial);
+
+            // Calculate revenue from fallback data
+            const totalRevenue = fallbackFinancial
+                .filter((record: any) => record.type === 'Receita')
+                .reduce((sum: number, record: any) => sum + record.amount, 0);
+
+            // Calculate expenses from fallback data
+            const totalExpenses = fallbackFinancial
+                .filter((record: any) => record.type === 'Despesa')
+                .reduce((sum: number, record: any) => sum + record.amount, 0);
+
+            setFinancialSummary({
+                totalRevenue,
+                totalExpenses,
+                profit: totalRevenue - totalExpenses
+            });
+
+            setMonthlyData([
+                { month: 'Jan/25', revenue: 12000, expenses: 8000, profit: 4000 },
+                { month: 'Fev/25', revenue: 13500, expenses: 8200, profit: 5300 },
+                { month: 'Mar/25', revenue: 14200, expenses: 8500, profit: 5700 },
+                { month: 'Abr/25', revenue: 13800, expenses: 8300, profit: 5500 },
+                { month: 'Mai/25', revenue: 15000, expenses: 8700, profit: 6300 },
+                { month: 'Jun/25', revenue: 14500, expenses: 8600, profit: 5900 },
+            ]);
+
+            // Calculate categories from fallback data
+            const categories: Record<string, number> = {};
+            fallbackFinancial.forEach(record => {
+                if (record.type === 'Receita') {
+                    if (!categories[record.category]) {
+                        categories[record.category] = 0;
+                    }
+                    categories[record.category] += record.amount;
+                }
+            });
+
+            const catData = Object.entries(categories).map(([name, value]) => ({
+                name,
+                value: value as number
+            }));
+            setCategoryData(catData);
+        }
+    };
+
+    useEffect(() => {
         loadFinancialData();
     }, []);
 
-    // Filter records based on selected date
+    // Filter records based on selected date or month
     useEffect(() => {
-        if (selectedDate && financialRecords.length > 0) {
+        if (selectedMonth && financialRecords.length > 0) {
+            // If a month is selected, show records for that month in the current year
+            const currentYear = new Date().getFullYear();
+
+            const monthlyRecords = financialRecords.filter(record => {
+                const [recordYear, recordMonth] = record.date.split('-');
+                return recordMonth === selectedMonth && parseInt(recordYear) === currentYear;
+            }).sort((a, b) => {
+                // Sort by date (ascending), then by type (Receita first), then by amount (descending)
+                if (a.date !== b.date) {
+                    return a.date.localeCompare(b.date); // Sort dates ascending
+                }
+                if (a.type === 'Receita' && b.type !== 'Receita') return -1;
+                if (a.type !== 'Receita' && b.type === 'Receita') return 1;
+                return b.amount - a.amount;
+            });
+
+            setFilteredRecords(monthlyRecords);
+        } else if (selectedDate && financialRecords.length > 0) {
             // If a specific date is selected, show records for that date
+            // Using direct string comparison to avoid timezone issues
             const selectedDateRecords = financialRecords.filter(record => {
                 return record.date === selectedDate;
-            }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+            }).sort((a, b) => {
+                // Sort by type (Receita first), then by amount (descending)
+                if (a.type === 'Receita' && b.type !== 'Receita') return -1;
+                if (a.type !== 'Receita' && b.type === 'Receita') return 1;
+                return b.amount - a.amount;
+            });
 
             setFilteredRecords(selectedDateRecords);
         } else if (financialRecords.length > 0) {
-            // If no date is selected, show last 7 days
+            // If no date or month is selected, show last 7 days
             const today = new Date();
+            // Format today's date to YYYY-MM-DD to avoid timezone issues
+            const todayFormatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
             const sevenDaysAgo = new Date();
             sevenDaysAgo.setDate(today.getDate() - 7);
+            const sevenDaysAgoFormatted = `${sevenDaysAgo.getFullYear()}-${String(sevenDaysAgo.getMonth() + 1).padStart(2, '0')}-${String(sevenDaysAgo.getDate()).padStart(2, '0')}`;
 
             const recentRecords = financialRecords.filter(record => {
-                const recordDate = new Date(record.date);
-                return recordDate >= sevenDaysAgo;
-            }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                // Direct string comparison to avoid timezone issues
+                return record.date >= sevenDaysAgoFormatted;
+            }).sort((a, b) => {
+                // Sort by date (descending), then by type (Receita first), then by amount (descending)
+                if (a.date !== b.date) {
+                    return b.date.localeCompare(a.date); // Sort dates descending
+                }
+                if (a.type === 'Receita' && b.type !== 'Receita') return -1;
+                if (a.type !== 'Receita' && b.type === 'Receita') return 1;
+                return b.amount - a.amount;
+            });
 
             setFilteredRecords(recentRecords);
         }
-    }, [selectedDate, financialRecords]);
+    }, [selectedDate, selectedMonth, financialRecords]);
 
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
@@ -230,6 +360,34 @@ export function FinancialCharts() {
                         <p className="text-xs text-muted-foreground">Margem de {financialSummary.totalRevenue > 0 ? Math.round((financialSummary.profit/financialSummary.totalRevenue)*100) : 0}%</p>
                     </CardContent>
                 </Card>
+            </div>
+
+            {/* Refresh Button */}
+            <div className="flex justify-end">
+                <Button
+                    onClick={() => {
+                        // Clear current data and reload from API
+                        setFinancialRecords([]);
+                        setFilteredRecords([]);
+                        setMonthlyData([]);
+                        setCategoryData([]);
+                        setFinancialSummary({ totalRevenue: 0, totalExpenses: 0, profit: 0 });
+
+                        // Reload the data while preserving the selected date or month
+                        // Pass the selected month if it exists, otherwise pass the selected date
+                        loadFinancialData(selectedMonth || selectedDate);
+                    }}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                        <path d="M21 3v5h-5"/>
+                        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                        <path d="M8 16H3v5"/>
+                    </svg>
+                    Atualizar Dados
+                </Button>
             </div>
 
             {/* Charts */}
@@ -290,13 +448,60 @@ export function FinancialCharts() {
                             <Input
                                 type="date"
                                 value={selectedDate}
-                                onChange={(e) => setSelectedDate(e.target.value)}
+                                onChange={(e) => {
+                                    // Directly use the value from the input which is already in YYYY-MM-DD format
+                                    // This avoids any timezone conversion issues
+                                    setSelectedDate(e.target.value);
+                                    // Clear month selection when date is selected
+                                    setSelectedMonth('');
+                                }}
                                 className="max-w-[200px]"
                             />
+                            <select
+                                value={selectedMonth}
+                                onChange={(e) => {
+                                    // When a month is selected, clear the date selection
+                                    setSelectedMonth(e.target.value);
+                                    setSelectedDate('');
+                                }}
+                                className="border rounded-md px-3 py-2 max-w-[150px]"
+                            >
+                                <option value="">Mês</option>
+                                <option value="01">Janeiro</option>
+                                <option value="02">Fevereiro</option>
+                                <option value="03">Março</option>
+                                <option value="04">Abril</option>
+                                <option value="05">Maio</option>
+                                <option value="06">Junho</option>
+                                <option value="07">Julho</option>
+                                <option value="08">Agosto</option>
+                                <option value="09">Setembro</option>
+                                <option value="10">Outubro</option>
+                                <option value="11">Novembro</option>
+                                <option value="12">Dezembro</option>
+                            </select>
                             <Button
                                 onClick={() => {
-                                    const today = new Date().toISOString().split('T')[0];
-                                    setSelectedDate(today);
+                                    // Reset both date and month selections
+                                    setSelectedDate('');
+                                    setSelectedMonth('');
+                                }}
+                                variant="outline"
+                                className="whitespace-nowrap"
+                            >
+                                Limpar
+                            </Button>
+                            <Button
+                                onClick={() => {
+                                    // Get today's date in YYYY-MM-DD format without timezone conversion
+                                    const today = new Date();
+                                    const year = today.getFullYear();
+                                    const month = String(today.getMonth() + 1).padStart(2, '0');
+                                    const day = String(today.getDate()).padStart(2, '0');
+                                    const todayStr = `${year}-${month}-${day}`;
+                                    setSelectedDate(todayStr);
+                                    // Clear month selection when setting today's date
+                                    setSelectedMonth('');
                                 }}
                                 variant="outline"
                                 className="whitespace-nowrap"

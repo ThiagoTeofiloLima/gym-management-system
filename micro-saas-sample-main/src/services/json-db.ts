@@ -28,6 +28,7 @@ interface Member {
   lastVisit: string;
   userId: string;
   planRenewalDate: string; // Data de renovação do plano
+  paymentDate: string; // Data de pagamento
 }
 
 interface Trainer {
@@ -209,7 +210,8 @@ export class JsonDatabase {
     const db = await this.getData();
     const newMember = {
       ...memberData,
-      id: `member-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      id: `member-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      paymentDate: memberData.paymentDate || new Date().toISOString().split('T')[0] // Default to today if not provided
     };
 
     db.members.push(newMember);
@@ -224,11 +226,62 @@ export class JsonDatabase {
 
     if (memberIndex === -1) return null;
 
-    db.members[memberIndex] = { ...db.members[memberIndex], ...memberData };
+    const oldMember = { ...db.members[memberIndex] };
+    const updatedMember = {
+      ...db.members[memberIndex],
+      ...memberData,
+      paymentDate: memberData.paymentDate || db.members[memberIndex].paymentDate // Preserve paymentDate if not provided
+    };
+
+    db.members[memberIndex] = updatedMember;
+
+    // If payment date changed, update the corresponding financial record
+    if (memberData.paymentDate && oldMember.paymentDate !== memberData.paymentDate) {
+      // Find and update the financial record for this member's payment
+      const financialRecordIndex = db.financial.findIndex(record =>
+        record.description.includes(`Mensalidade - ${oldMember.name}`)
+      );
+
+      if (financialRecordIndex !== -1) {
+        // Update the financial record with the new payment date
+        db.financial[financialRecordIndex] = {
+          ...db.financial[financialRecordIndex],
+          date: memberData.paymentDate as string,
+          description: `Mensalidade - ${updatedMember.name}`
+        };
+      } else {
+        // If no existing record found, create a new one
+        const planPrice = this.getPlanPrice(updatedMember.plan);
+        db.financial.push({
+          id: `payment-${updatedMember.id}-${Date.now()}`,
+          date: memberData.paymentDate as string,
+          description: `Mensalidade - ${updatedMember.name}`,
+          type: 'Receita',
+          amount: planPrice,
+          category: updatedMember.plan === 'Anual' ? 'Mensalidades Anuais' :
+                   updatedMember.plan === 'Trimestral' ? 'Mensalidades Trimestrais' : 'Mensalidades',
+          userId: updatedMember.userId
+        });
+      }
+    }
 
     await this.saveData(db);
 
     return db.members[memberIndex];
+  }
+
+  // Helper function to get plan price
+  private getPlanPrice(planType: string): number {
+    switch (planType.toLowerCase()) {
+      case 'mensal':
+        return 100;
+      case 'trimestral':
+        return 250;
+      case 'anual':
+        return 900;
+      default:
+        return 0;
+    }
   }
 
   async deleteMember(id: string): Promise<boolean> {

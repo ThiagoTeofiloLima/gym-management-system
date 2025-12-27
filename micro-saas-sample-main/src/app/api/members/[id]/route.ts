@@ -9,7 +9,7 @@ export async function PUT(
   try {
     const { id } = params;
     const body = await request.json();
-    const { name, email, phone, plan, status, planRenewalDate } = body;
+    const { name, email, phone, plan, status, planRenewalDate, paymentDate } = body;
 
     // Validate required fields
     if (!name || !email || !phone || !plan || !status) {
@@ -28,27 +28,36 @@ export async function PUT(
       );
     }
 
-    // Calculate renewal date if plan changed and no new date provided
+    // Calculate renewal date based on payment date and plan
     let renewalDate = planRenewalDate;
-    if (!renewalDate && plan !== existingMember.plan) {
-      const today = new Date();
+    let paymentDateValue = paymentDate;
+
+    if (!paymentDateValue) {
+      // If no payment date provided, keep the existing one or use today's date
+      paymentDateValue = existingMember.paymentDate || new Date().toISOString().split('T')[0];
+    } else {
+      // If payment date is provided, use it and calculate renewal date
+      // Parse the date string to avoid timezone issues
+      const [year, month, day] = paymentDateValue.split('-').map(Number);
+      const paymentDateObj = new Date(year, month - 1, day); // month is 0-indexed in JS Date
       switch (plan.toLowerCase()) {
         case 'mensal':
-          today.setMonth(today.getMonth() + 1);
+          paymentDateObj.setMonth(paymentDateObj.getMonth() + 1);
           break;
         case 'trimestral':
-          today.setMonth(today.getMonth() + 3);
+          paymentDateObj.setMonth(paymentDateObj.getMonth() + 3);
           break;
         case 'anual':
-          today.setFullYear(today.getFullYear() + 1);
+          paymentDateObj.setFullYear(paymentDateObj.getFullYear() + 1);
           break;
         default:
-          today.setMonth(today.getMonth() + 1); // Default to monthly
+          paymentDateObj.setMonth(paymentDateObj.getMonth() + 1); // Default to monthly
       }
-      renewalDate = today.toISOString().split('T')[0];
-    } else if (!renewalDate) {
-      // Keep the original renewal date if not provided
-      renewalDate = existingMember.planRenewalDate;
+      // Format date back to YYYY-MM-DD format to avoid timezone conversion
+      const year_renewal = paymentDateObj.getFullYear();
+      const month_renewal = String(paymentDateObj.getMonth() + 1).padStart(2, '0');
+      const day_renewal = String(paymentDateObj.getDate()).padStart(2, '0');
+      renewalDate = `${year_renewal}-${month_renewal}-${day_renewal}`;
     }
 
     // Update member
@@ -59,6 +68,7 @@ export async function PUT(
       plan,
       status,
       planRenewalDate: renewalDate,
+      paymentDate: paymentDateValue,
       lastVisit: existingMember.lastVisit, // Keep the original lastVisit unless explicitly changed
       userId: existingMember.userId
     });
