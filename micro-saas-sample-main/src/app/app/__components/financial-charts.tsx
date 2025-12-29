@@ -24,6 +24,19 @@ import { Badge } from "@/components/ui/badge";
 import { PlusIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import { calculateRevenueFromMembers, getPlanPricingBreakdown, getPlanPrice, generateFinancialRecordsFromMembers } from "@/services/plan-pricing";
+import Link from "next/link";
+
+interface Expense {
+  id: string;
+  title: string;
+  description?: string;
+  amount: number;
+  category: string;
+  date: string;
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
+}
 
 export function FinancialCharts() {
     const [monthlyData, setMonthlyData] = useState<any[]>([]);
@@ -41,18 +54,35 @@ export function FinancialCharts() {
     // Define the data loading function separately so it can be reused
     const loadFinancialData = async (preserveSelection?: string) => {
         try {
-            const response = await fetch('/api/data');
-            if (!response.ok) {
+            const [financialResponse, expenseResponse] = await Promise.all([
+                fetch('/api/data'),
+                fetch('/api/expenses?userId=user-1') // Using a placeholder user ID for now
+            ]);
+
+            if (!financialResponse.ok || !expenseResponse.ok) {
                 throw new Error('Failed to fetch data');
             }
-            const allData = await response.json();
+
+            const allData = await financialResponse.json();
             const financial = allData.financial;
             const members = allData.members;
+            const expenses: Expense[] = await expenseResponse.json();
+
+            // Convert expenses to financial records format for integration
+            const expenseFinancialRecords = expenses.map(expense => ({
+                id: expense.id,
+                date: expense.date,
+                description: expense.title,
+                type: 'Despesa',
+                amount: expense.amount,
+                category: expense.category,
+                userId: expense.userId
+            }));
 
             // Use only the existing financial records from the database
             // These should already include the member payment records that were properly updated
             // when member payment dates were changed, thanks to our json-db update
-            const allFinancialRecords = [...financial];
+            const allFinancialRecords = [...financial, ...expenseFinancialRecords];
 
             // Set all financial records
             setFinancialRecords(allFinancialRecords);
@@ -212,15 +242,23 @@ export function FinancialCharts() {
                 { id: '5', date: '2025-12-15', description: 'Salário Personal', type: 'Despesa', amount: 3500, category: 'Folha de Pagamento' },
             ];
 
-            setFinancialRecords(fallbackFinancial);
+            // Add some expense records for fallback
+            const fallbackExpenses = [
+                { id: '6', date: '2025-12-08', description: 'Suprimentos de limpeza', type: 'Despesa', amount: 150, category: 'Suprimentos' },
+                { id: '7', date: '2025-12-12', description: 'Internet', type: 'Despesa', amount: 300, category: 'Utilidades' },
+                { id: '8', date: '2025-12-18', description: 'Marketing digital', type: 'Despesa', amount: 500, category: 'Marketing' },
+            ];
 
-            // Calculate revenue from fallback data
-            const totalRevenue = fallbackFinancial
+            const allFinancialRecords = [...fallbackFinancial, ...fallbackExpenses];
+            setFinancialRecords(allFinancialRecords);
+
+            // Calculate revenue from all records
+            const totalRevenue = allFinancialRecords
                 .filter((record: any) => record.type === 'Receita')
                 .reduce((sum: number, record: any) => sum + record.amount, 0);
 
-            // Calculate expenses from fallback data
-            const totalExpenses = fallbackFinancial
+            // Calculate expenses from all records
+            const totalExpenses = allFinancialRecords
                 .filter((record: any) => record.type === 'Despesa')
                 .reduce((sum: number, record: any) => sum + record.amount, 0);
 
@@ -239,9 +277,9 @@ export function FinancialCharts() {
                 { month: 'Jun/25', revenue: 14500, expenses: 8600, profit: 5900 },
             ]);
 
-            // Calculate categories from fallback data
+            // Calculate categories from all records (for revenue)
             const categories: Record<string, number> = {};
-            fallbackFinancial.forEach(record => {
+            allFinancialRecords.forEach(record => {
                 if (record.type === 'Receita') {
                     if (!categories[record.category]) {
                         categories[record.category] = 0;
@@ -569,12 +607,15 @@ export function FinancialCharts() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="mb-4">
+                    <div className="flex justify-between items-center mb-4">
                         <p className="text-sm text-muted-foreground">
                             {selectedDate
                                 ? `Mostrando registros para: ${new Date(selectedDate).toLocaleDateString('pt-BR')}`
                                 : 'Mostrando registros dos últimos 7 dias'}
                         </p>
+                        <Button variant="outline" className="text-sm">
+                            <Link href="/app/expenses">Ver todas as despesas</Link>
+                        </Button>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full">

@@ -26,6 +26,8 @@ interface Member {
   plan: string;
   status: string;
   lastVisit: string;
+  trainerId?: string; // ID of the assigned trainer
+  assignedWorkoutIds?: string[]; // IDs of assigned workouts
   userId: string;
   planRenewalDate: string; // Data de renovação do plano
   paymentDate: string; // Data de pagamento
@@ -34,10 +36,12 @@ interface Member {
 interface Trainer {
   id: string;
   name: string;
-  specialty: string;
+  email: string;
   phone: string;
+  specialty: string;
   status: string;
   certifications: string[];
+  assignedMemberIds: string[]; // IDs of members assigned to this trainer
   userId: string;
 }
 
@@ -47,8 +51,9 @@ interface Workout {
   type: string;
   duration: string;
   level: string;
-  trainer: string;
-  members: number;
+  description?: string;
+  trainerId: string; // ID of the assigned trainer
+  assignedMemberIds: string[]; // IDs of members assigned to this workout
   userId: string;
 }
 
@@ -81,6 +86,18 @@ interface ToDo {
   userId: string;
 }
 
+interface Expense {
+  id: string;
+  title: string;
+  description?: string;
+  amount: number;
+  category: string;
+  date: string;
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
+}
+
 interface Database {
   users: User[];
   members: Member[];
@@ -89,6 +106,7 @@ interface Database {
   attendance: Attendance[];
   financial: Financial[];
   toDos: ToDo[];
+  expenses: Expense[];
   accounts: any[];
   sessions: any[];
   verificationTokens: any[];
@@ -115,6 +133,7 @@ export class JsonDatabase {
       if (!parsedData.attendance) parsedData.attendance = [];
       if (!parsedData.financial) parsedData.financial = [];
       if (!parsedData.toDos) parsedData.toDos = [];
+      if (!parsedData.expenses) parsedData.expenses = [];
       if (!parsedData.accounts) parsedData.accounts = [];
       if (!parsedData.sessions) parsedData.sessions = [];
       if (!parsedData.verificationTokens) parsedData.verificationTokens = [];
@@ -131,6 +150,7 @@ export class JsonDatabase {
         attendance: [],
         financial: [],
         toDos: [],
+        expenses: [],
         accounts: [],
         sessions: [],
         verificationTokens: []
@@ -198,12 +218,26 @@ export class JsonDatabase {
   // Member operations
   async findMembersByUserId(userId: string): Promise<Member[]> {
     const db = await this.getData();
-    return db.members.filter(member => member.userId === userId);
+    return db.members
+      .filter(member => member.userId === userId)
+      .map(member => ({
+        ...member,
+        trainerId: member.trainerId || undefined,
+        assignedWorkoutIds: member.assignedWorkoutIds || []
+      }));
   }
 
   async findMemberById(id: string): Promise<Member | undefined> {
     const db = await this.getData();
-    return db.members.find(member => member.id === id);
+    const member = db.members.find(member => member.id === id);
+    if (member) {
+      return {
+        ...member,
+        trainerId: member.trainerId || undefined,
+        assignedWorkoutIds: member.assignedWorkoutIds || []
+      };
+    }
+    return undefined;
   }
 
   async createMember(memberData: Omit<Member, 'id'>): Promise<Member> {
@@ -211,6 +245,8 @@ export class JsonDatabase {
     const newMember = {
       ...memberData,
       id: `member-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      trainerId: memberData.trainerId || undefined, // Initialize trainerId if provided
+      assignedWorkoutIds: memberData.assignedWorkoutIds || [], // Initialize assignedWorkoutIds if provided
       paymentDate: memberData.paymentDate || new Date().toISOString().split('T')[0] // Default to today if not provided
     };
 
@@ -265,6 +301,55 @@ export class JsonDatabase {
       }
     }
 
+    // If trainerId changed, update the trainer's assignedMemberIds
+    if (memberData.trainerId !== undefined && oldMember.trainerId !== memberData.trainerId) {
+      // Remove member from old trainer's assigned list if there was one
+      if (oldMember.trainerId) {
+        const oldTrainer = db.trainers.find(trainer => trainer.id === oldMember.trainerId);
+        if (oldTrainer) {
+          oldTrainer.assignedMemberIds = oldTrainer.assignedMemberIds.filter(memberId => memberId !== updatedMember.id);
+        }
+      }
+
+      // Add member to new trainer's assigned list if there is one
+      if (memberData.trainerId) {
+        const newTrainer = db.trainers.find(trainer => trainer.id === memberData.trainerId);
+        if (newTrainer) {
+          if (!newTrainer.assignedMemberIds.includes(updatedMember.id)) {
+            newTrainer.assignedMemberIds.push(updatedMember.id);
+          }
+        }
+      }
+    }
+
+    // If assignedWorkoutIds changed, update the workouts' assignedMemberIds
+    if (memberData.assignedWorkoutIds !== undefined && oldMember.assignedWorkoutIds && JSON.stringify(oldMember.assignedWorkoutIds) !== JSON.stringify(memberData.assignedWorkoutIds)) {
+      // Remove member from workouts that are no longer assigned
+      const oldWorkoutIds = oldMember.assignedWorkoutIds || [];
+      const newWorkoutIds = memberData.assignedWorkoutIds || [];
+
+      for (const workoutId of oldWorkoutIds) {
+        if (!newWorkoutIds.includes(workoutId)) {
+          const workout = db.workouts.find(w => w.id === workoutId);
+          if (workout) {
+            workout.assignedMemberIds = workout.assignedMemberIds.filter(memberId => memberId !== updatedMember.id);
+          }
+        }
+      }
+
+      // Add member to newly assigned workouts
+      for (const workoutId of newWorkoutIds) {
+        if (!oldWorkoutIds.includes(workoutId)) {
+          const workout = db.workouts.find(w => w.id === workoutId);
+          if (workout) {
+            if (!workout.assignedMemberIds.includes(updatedMember.id)) {
+              workout.assignedMemberIds.push(updatedMember.id);
+            }
+          }
+        }
+      }
+    }
+
     await this.saveData(db);
 
     return db.members[memberIndex];
@@ -300,19 +385,32 @@ export class JsonDatabase {
   // Trainer operations
   async findTrainersByUserId(userId: string): Promise<Trainer[]> {
     const db = await this.getData();
-    return db.trainers.filter(trainer => trainer.userId === userId);
+    return db.trainers
+      .filter(trainer => trainer.userId === userId)
+      .map(trainer => ({
+        ...trainer,
+        assignedMemberIds: trainer.assignedMemberIds || []
+      }));
   }
 
   async findTrainerById(id: string): Promise<Trainer | undefined> {
     const db = await this.getData();
-    return db.trainers.find(trainer => trainer.id === id);
+    const trainer = db.trainers.find(trainer => trainer.id === id);
+    if (trainer) {
+      return {
+        ...trainer,
+        assignedMemberIds: trainer.assignedMemberIds || []
+      };
+    }
+    return undefined;
   }
 
   async createTrainer(trainerData: Omit<Trainer, 'id'>): Promise<Trainer> {
     const db = await this.getData();
     const newTrainer = {
       ...trainerData,
-      id: `trainer-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      id: `trainer-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      assignedMemberIds: trainerData.assignedMemberIds || [] // Initialize with empty array if not provided
     };
 
     db.trainers.push(newTrainer);
@@ -327,7 +425,36 @@ export class JsonDatabase {
 
     if (trainerIndex === -1) return null;
 
-    db.trainers[trainerIndex] = { ...db.trainers[trainerIndex], ...trainerData };
+    // Handle member assignment updates
+    if (trainerData.assignedMemberIds !== undefined) {
+      // Update the trainer's assigned members
+      db.trainers[trainerIndex] = {
+        ...db.trainers[trainerIndex],
+        ...trainerData
+      };
+
+      // Update the members to reference their assigned trainer
+      const updatedTrainer = db.trainers[trainerIndex];
+      const newAssignedMemberIds = trainerData.assignedMemberIds || [];
+
+      // Remove trainer reference from members that are no longer assigned
+      for (const member of db.members) {
+        if (member.trainerId === updatedTrainer.id && !newAssignedMemberIds.includes(member.id)) {
+          delete member.trainerId; // Remove the trainer reference
+        }
+      }
+
+      // Add trainer reference to newly assigned members
+      for (const memberId of newAssignedMemberIds) {
+        const member = db.members.find(m => m.id === memberId);
+        if (member) {
+          member.trainerId = updatedTrainer.id; // Add trainer reference to member
+        }
+      }
+    } else {
+      // Regular update without member assignment changes
+      db.trainers[trainerIndex] = { ...db.trainers[trainerIndex], ...trainerData };
+    }
 
     await this.saveData(db);
 
@@ -350,19 +477,32 @@ export class JsonDatabase {
   // Workout operations
   async findWorkoutsByUserId(userId: string): Promise<Workout[]> {
     const db = await this.getData();
-    return db.workouts.filter(workout => workout.userId === userId);
+    return db.workouts
+      .filter(workout => workout.userId === userId)
+      .map(workout => ({
+        ...workout,
+        assignedMemberIds: workout.assignedMemberIds || []
+      }));
   }
 
   async findWorkoutById(id: string): Promise<Workout | undefined> {
     const db = await this.getData();
-    return db.workouts.find(workout => workout.id === id);
+    const workout = db.workouts.find(workout => workout.id === id);
+    if (workout) {
+      return {
+        ...workout,
+        assignedMemberIds: workout.assignedMemberIds || []
+      };
+    }
+    return undefined;
   }
 
   async createWorkout(workoutData: Omit<Workout, 'id'>): Promise<Workout> {
     const db = await this.getData();
     const newWorkout = {
       ...workoutData,
-      id: `workout-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      id: `workout-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      assignedMemberIds: workoutData.assignedMemberIds || [] // Initialize with empty array if not provided
     };
 
     db.workouts.push(newWorkout);
@@ -377,7 +517,41 @@ export class JsonDatabase {
 
     if (workoutIndex === -1) return null;
 
-    db.workouts[workoutIndex] = { ...db.workouts[workoutIndex], ...workoutData };
+    // Handle member assignment updates
+    if (workoutData.assignedMemberIds !== undefined) {
+      // Update the workout's assigned members
+      db.workouts[workoutIndex] = {
+        ...db.workouts[workoutIndex],
+        ...workoutData
+      };
+
+      // Update the members to reference their assigned workouts
+      const updatedWorkout = db.workouts[workoutIndex];
+      const newAssignedMemberIds = workoutData.assignedMemberIds || [];
+
+      // Remove workout reference from members that are no longer assigned
+      for (const member of db.members) {
+        if (member.assignedWorkoutIds && member.assignedWorkoutIds.includes(updatedWorkout.id) && !newAssignedMemberIds.includes(member.id)) {
+          member.assignedWorkoutIds = member.assignedWorkoutIds.filter(workoutId => workoutId !== updatedWorkout.id);
+        }
+      }
+
+      // Add workout reference to newly assigned members
+      for (const memberId of newAssignedMemberIds) {
+        const member = db.members.find(m => m.id === memberId);
+        if (member) {
+          if (!member.assignedWorkoutIds) {
+            member.assignedWorkoutIds = [];
+          }
+          if (!member.assignedWorkoutIds.includes(updatedWorkout.id)) {
+            member.assignedWorkoutIds.push(updatedWorkout.id);
+          }
+        }
+      }
+    } else {
+      // Regular update without member assignment changes
+      db.workouts[workoutIndex] = { ...db.workouts[workoutIndex], ...workoutData };
+    }
 
     await this.saveData(db);
 
@@ -553,6 +727,65 @@ export class JsonDatabase {
     db.toDos = db.toDos.filter(todo => todo.userId !== userId);
 
     if (db.toDos.length < initialLength) {
+      await this.saveData(db);
+      return true;
+    }
+
+    return false;
+  }
+
+  // Expense operations
+  async findExpensesByUserId(userId: string): Promise<Expense[]> {
+    const db = await this.getData();
+    return db.expenses.filter(expense => expense.userId === userId);
+  }
+
+  async findExpenseById(id: string): Promise<Expense | undefined> {
+    const db = await this.getData();
+    return db.expenses.find(expense => expense.id === id);
+  }
+
+  async createExpense(expenseData: Omit<Expense, 'id' | 'createdAt' | 'updatedAt'>): Promise<Expense> {
+    const db = await this.getData();
+    const now = new Date().toISOString();
+    const newExpense = {
+      ...expenseData,
+      id: `expense-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      createdAt: now,
+      updatedAt: now
+    };
+
+    db.expenses.push(newExpense);
+    await this.saveData(db);
+
+    return newExpense;
+  }
+
+  async updateExpense(id: string, expenseData: Partial<Omit<Expense, 'id' | 'createdAt' | 'userId'>>): Promise<Expense | null> {
+    const db = await this.getData();
+    const expenseIndex = db.expenses.findIndex(expense => expense.id === id);
+
+    if (expenseIndex === -1) return null;
+
+    const oldExpense = { ...db.expenses[expenseIndex] };
+    const updatedExpense = {
+      ...db.expenses[expenseIndex],
+      ...expenseData,
+      updatedAt: new Date().toISOString()
+    };
+
+    db.expenses[expenseIndex] = updatedExpense;
+    await this.saveData(db);
+
+    return db.expenses[expenseIndex];
+  }
+
+  async deleteExpense(id: string): Promise<boolean> {
+    const db = await this.getData();
+    const initialLength = db.expenses.length;
+    db.expenses = db.expenses.filter(expense => expense.id !== id);
+
+    if (db.expenses.length < initialLength) {
       await this.saveData(db);
       return true;
     }

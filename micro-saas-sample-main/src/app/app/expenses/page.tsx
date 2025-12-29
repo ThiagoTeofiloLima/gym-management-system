@@ -4,17 +4,17 @@ import {
     DashboardPageHeaderTitle,
     DashboardPageMain,
 } from "@/components/dashboard/page";
-import { WorkoutManagement } from "../__components/workouts/workout-management";
+import { ExpenseManagement } from "../__components/expenses/expense-management";
 
-export default async function WorkoutsPage() {
+export default async function ExpensesPage() {
     return (
         <DashboardPage>
             <DashboardPageHeader>
-                <DashboardPageHeaderTitle>Treinos</DashboardPageHeaderTitle>
+                <DashboardPageHeaderTitle>Despesas</DashboardPageHeaderTitle>
             </DashboardPageHeader>
 
             <DashboardPageMain>
-                <WorkoutManagement />
+                <ExpenseManagement />
             </DashboardPageMain>
         </DashboardPage>
     );

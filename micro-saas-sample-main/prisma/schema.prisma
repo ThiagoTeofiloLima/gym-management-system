@@ -49,9 +49,13 @@ model User {
   stripeSubscriptionStatus String?
   stripePriceId            String?
 
-  accounts Account[]
-  sessions Session[]
-  todos    Todo[]
+  accounts  Account[]
+  sessions  Session[]
+  todos     Todo[]
+  expenses  Expense[]
+  trainers  Trainer[]
+  members   Member[]
+  workouts  Workout[]
 }
 
 model VerificationToken {
@@ -72,4 +76,94 @@ model Todo {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   doneAt    DateTime?
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  amount      Float
+  category    String
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("expenses")
+}
+
+model Trainer {
+  id                String   @id @default(cuid())
+  name              String
+  email             String
+  phone             String
+  specialty         String
+  status            String
+  certifications    String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  members   Member[]
+  workouts  Workout[]
+
+  @@map("trainers")
+}
+
+model Member {
+  id                String   @id @default(cuid())
+  name              String
+  email             String
+  phone             String
+  plan              String
+  status            String
+  lastVisit         String
+  trainerId         String?
+  userId            String
+  planRenewalDate   String
+  paymentDate       String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id])
+  trainer   Trainer?  @relation(fields: [trainerId], references: [id])
+  workoutMembers    WorkoutMember[]
+
+  @@map("members")
+}
+
+model Workout {
+  id                String   @id @default(cuid())
+  name              String
+  type              String
+  duration          String
+  level             String
+  description       String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  trainerId String?
+  trainer   Trainer?  @relation(fields: [trainerId], references: [id])
+  workoutMembers    WorkoutMember[]
+
+  @@map("workouts")
+}
+
+// Join table for many-to-many relationship between Workout and Member
+model WorkoutMember {
+  id        String @id @default(cuid())
+  workoutId String
+  memberId  String
+  assignedAt DateTime @default(now())
+
+  workout Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+  member  Member  @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([workoutId, memberId])
+  @@map("workout_members")
 }

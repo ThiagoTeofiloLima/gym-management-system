@@ -95,6 +95,14 @@ export function MainSidebar({ user }: MainSidebarProps) {
                         </DashboardSidebarNavLink>
                         <DashboardSidebarNavLink
                             className="flex items-center gap-2"
+                            href="/app/expenses"
+                            active={isActive("/app/expenses")}
+                        >
+                            <CardStackIcon />
+                            Despesas
+                        </DashboardSidebarNavLink>
+                        <DashboardSidebarNavLink
+                            className="flex items-center gap-2"
                             href="/app/analytics"
                             active={isActive("/app/analytics")}
                         >

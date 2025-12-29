@@ -2422,7 +2422,8 @@
       "userId": "user-1",
       "id": "member-1766770935997-egp8u63c5",
       "planRenewalDate": "2026-01-27",
-      "paymentDate": "2025-12-27"
+      "paymentDate": "2025-12-27",
+      "trainerId": "1"
     }
   ],
   "trainers": [
@@ -2436,7 +2437,11 @@
         "Personal Trainer",
         "Nutrição Esportiva"
       ],
-      "userId": "user-1"
+      "userId": "user-1",
+      "email": "roberto@gmail.com",
+      "assignedMemberIds": [
+        "member-1766770935997-egp8u63c5"
+      ]
     },
     {
       "id": "2",
@@ -4822,5 +4827,18 @@
   "accounts": [],
   "sessions": [],
   "verificationTokens": [],
-  "toDos": []
+  "toDos": [],
+  "expenses": [
+    {
+      "title": "limpeza",
+      "description": "10 águas sanitárias e 8 desinfetantes",
+      "amount": 70,
+      "category": "Suprimentos",
+      "date": "2025-12-29",
+      "userId": "user-1",
+      "id": "expense-1767029770578-2t16gw7fc",
+      "createdAt": "2025-12-29T17:36:10.578Z",
+      "updatedAt": "2025-12-29T17:36:10.578Z"
+    }
+  ]
 }
