@@ -391,7 +391,7 @@
       "phone": "(11) 54321-0970",
       "plan": "Trimestral",
       "status": "Ativo",
-      "lastVisit": "2025-12-04",
+      "lastVisit": "2025-12-30",
       "userId": "user-1",
       "planRenewalDate": "2025-06-30",
       "paymentDate": "2025-03-30"
@@ -2840,6 +2840,16 @@
       "status": "Presente",
       "userId": "user-1",
       "id": "attendance-1766779314563-8766plxc2"
+    },
+    {
+      "date": "2025-12-30",
+      "member": "Vanessa Oliveira",
+      "memberEmail": "vanessa@example.com",
+      "checkIn": "13:16",
+      "checkOut": null,
+      "status": "Presente",
+      "userId": "user-1",
+      "id": "attendance-1767115001872-6z18njg9p"
     }
   ],
   "financial": [

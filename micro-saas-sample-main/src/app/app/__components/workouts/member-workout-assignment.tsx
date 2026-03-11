@@ -17,6 +17,9 @@ interface Member {
 interface Workout {
   id: string;
   name: string;
+  type: string;
+  duration: string;
+  level: string;
   assignedMemberIds: string[];
 }
 
@@ -66,7 +69,7 @@ export function MemberWorkoutAssignment() {
       // Update member's assignedWorkoutIds
       const updatedWorkoutIds = assign
         ? [...(member.assignedWorkoutIds || []), workoutId]
-        : (member.assignedWorkoutIds || []).filter(id => id !== workoutId);
+        : (member.assignedWorkoutIds || []).filter((id: string) => id !== workoutId);
       
       const updateMemberResponse = await fetch(`/api/members/${memberId}`, {
         method: 'PUT',
@@ -93,7 +96,7 @@ export function MemberWorkoutAssignment() {
       // Update workout's assignedMemberIds
       const updatedMemberIds = assign
         ? [...(workout.assignedMemberIds || []), memberId]
-        : (workout.assignedMemberIds || []).filter(id => id !== memberId);
+        : (workout.assignedMemberIds || []).filter((id: string) => id !== memberId);
       
       const updateWorkoutResponse = await fetch(`/api/workouts/${workoutId}`, {
         method: 'PUT',

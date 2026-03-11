@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
       specialty,
       status: 'Ativo', // Default status
       certifications: certifications || [],
+      assignedMemberIds: [], // Missing required property
       userId
     });
 

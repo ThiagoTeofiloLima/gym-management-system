@@ -277,15 +277,15 @@ export default function MemberDetailPageClient({ member }: { member: Member }) {
                                 </div>
                                 <div>
                                     <Label>Plano</Label>
-                                    <Badge variant={member.plan === 'Mensal' ? 'default' :
+                                    <Badge variant={(member.plan === 'Mensal' ? 'default' :
                                                   member.plan === 'Trimestral' ? 'secondary' :
-                                                  'outline'}>
+                                                  'outline') as any}>
                                         {member.plan}
                                     </Badge>
                                 </div>
                                 <div>
                                     <Label>Status</Label>
-                                    <Badge variant={member.status === 'Ativo' ? 'default' : 'destructive'}>
+                                    <Badge variant={(member.status === 'Ativo' ? 'default' : 'destructive') as any}>
                                         {member.status}
                                     </Badge>
                                 </div>
@@ -299,7 +299,7 @@ export default function MemberDetailPageClient({ member }: { member: Member }) {
                                 </div>
                                 <div>
                                     <Label>Status do Plano</Label>
-                                    <Badge variant={getPlanStatus(member.paymentDate, member.plan).variant}>
+                                    <Badge variant={getPlanStatus(member.paymentDate, member.plan).variant as any}>
                                         {getPlanStatus(member.paymentDate, member.plan).label}
                                     </Badge>
                                 </div>
@@ -413,7 +413,7 @@ export default function MemberDetailPageClient({ member }: { member: Member }) {
 
                                 <div>
                                     <h4 className="font-medium">Status de Pagamento</h4>
-                                    <Badge variant={getPlanStatus(member.paymentDate, member.plan).variant}>
+                                    <Badge variant={getPlanStatus(member.paymentDate, member.plan).variant as any}>
                                         {getPlanStatus(member.paymentDate, member.plan).label}
                                     </Badge>
                                 </div>
@@ -521,7 +521,7 @@ export default function MemberDetailPageClient({ member }: { member: Member }) {
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Badge variant={record.status === 'Presente' ? 'default' : 'secondary'}>
+                                                    <Badge variant={(record.status === 'Presente' ? 'default' : 'secondary') as any}>
                                                         {record.status}
                                                     </Badge>
                                                 </TableCell>

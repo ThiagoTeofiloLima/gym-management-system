@@ -324,14 +324,14 @@ export default function MembersPageClient({ initialMembers }: { initialMembers: 
                                         <TableCell>{member.phone}</TableCell>
                                         <TableCell>{member.plan}</TableCell>
                                         <TableCell>
-                                            <Badge variant={member.status === 'Ativo' ? 'default' : 'secondary'}>
+                                            <Badge variant={(member.status === 'Ativo' ? 'default' : 'secondary') as any}>
                                                 {member.status}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>{member.lastVisit}</TableCell>
                                         <TableCell>{new Date(member.paymentDate).toLocaleDateString('pt-BR')}</TableCell>
                                         <TableCell>
-                                            <Badge variant={getPlanStatus(member.paymentDate, member.plan).variant}>
+                                            <Badge variant={getPlanStatus(member.paymentDate, member.plan).variant as any}>
                                                 {getPlanStatus(member.paymentDate, member.plan).label}
                                             </Badge>
                                         </TableCell>
