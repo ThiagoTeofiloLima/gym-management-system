@@ -299,7 +299,7 @@ export default function MemberDetailPageClient({ member }: { member: Member }) {
                                 </div>
                                 <div>
                                     <Label>Status do Plano</Label>
-                                    <Badge variant={getPlanStatus(member.paymentDate, member.plan).variant as any}>
+                                    <Badge variant={getPlanStatus(member.paymentDate, member.plan).variant === 'active' ? 'default' : 'secondary'}>
                                         {getPlanStatus(member.paymentDate, member.plan).label}
                                     </Badge>
                                 </div>
@@ -402,7 +402,7 @@ export default function MemberDetailPageClient({ member }: { member: Member }) {
                     {/* Member Activity Card */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Atividade Recentee</CardTitle>
+                            <CardTitle>Atividade Recente</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
@@ -413,7 +413,7 @@ export default function MemberDetailPageClient({ member }: { member: Member }) {
 
                                 <div>
                                     <h4 className="font-medium">Status de Pagamento</h4>
-                                    <Badge variant={getPlanStatus(member.paymentDate, member.plan).variant as any}>
+                                    <Badge variant={getPlanStatus(member.paymentDate, member.plan).variant === 'active' ? 'default' : 'secondary'}>
                                         {getPlanStatus(member.paymentDate, member.plan).label}
                                     </Badge>
                                 </div>

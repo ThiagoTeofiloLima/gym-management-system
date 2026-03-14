@@ -1,75 +1,103 @@
-import { NextRequest } from 'next/server';
-import { jsonDb } from '@/services/json-db';
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/services/database'
+import { auth } from '@/services/auth'
 
-export async function POST(request: NextRequest) {
+/**
+ * GET /api/expenses
+ * Lista despesas da academia
+ */
+export async function GET(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { title, description, amount, category, date, userId } = body;
+    const session = await auth()
 
-    // Validate required fields
-    if (!title || amount === undefined || !category || !userId) {
-      return Response.json(
-        { message: 'Missing required fields: title, amount, category, or userId' },
-        { status: 400 }
-      );
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Validate amount is a number
-    if (typeof amount !== 'number' || isNaN(amount)) {
-      return Response.json(
-        { message: 'Amount must be a valid number' },
-        { status: 400 }
-      );
+    const url = new URL(request.url)
+    const gymId = url.searchParams.get('gymId')
+
+    if (!gymId) {
+      return NextResponse.json([])
     }
 
-    // Validate date if provided
-    if (date && isNaN(Date.parse(date))) {
-      return Response.json(
-        { message: 'Date must be a valid date string' },
-        { status: 400 }
-      );
-    }
+    const whereClause: any = { gymId }
 
-    // Create new expense
-    const newExpense = await jsonDb.createExpense({
-      title,
-      description,
-      amount,
-      category,
-      date: date || new Date().toISOString().split('T')[0],
-      userId
-    });
+    const expenses = await prisma.expense.findMany({
+      where: whereClause,
+      include: {
+        gym: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        date: 'desc',
+      },
+    })
 
-    return Response.json(newExpense, { status: 201 });
+    return NextResponse.json(expenses)
   } catch (error) {
-    console.error('Error creating expense:', error);
-    return Response.json(
-      { message: 'Internal server error' },
+    console.error('Error fetching expenses:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
       { status: 500 }
-    );
+    )
   }
 }
 
-export async function GET(request: NextRequest) {
+/**
+ * POST /api/expenses
+ * Cria nova despesa
+ */
+export async function POST(request: NextRequest) {
   try {
-    const url = new URL(request.url);
-    const userId = url.searchParams.get('userId');
+    const session = await auth()
 
-    if (!userId) {
-      return Response.json(
-        { message: 'User ID is required' },
-        { status: 400 }
-      );
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const userExpenses = await jsonDb.findExpensesByUserId(userId);
+    const url = new URL(request.url)
+    const gymId = url.searchParams.get('gymId')
 
-    return Response.json(userExpenses);
+    if (!gymId) {
+      return NextResponse.json(
+        { error: 'gymId is required' },
+        { status: 400 }
+      )
+    }
+
+    const body = await request.json()
+    const { title, description, amount, category, date } = body
+
+    if (!title || amount === undefined || !category) {
+      return NextResponse.json(
+        { error: 'Missing required fields: title, amount, category' },
+        { status: 400 }
+      )
+    }
+
+    const newExpense = await prisma.expense.create({
+      data: {
+        title,
+        description,
+        amount,
+        category,
+        date: date ? new Date(date) : new Date(),
+        gymId,
+        userId: session.user.id,
+      },
+    })
+
+    return NextResponse.json(newExpense, { status: 201 })
   } catch (error) {
-    console.error('Error fetching expenses:', error);
-    return Response.json(
-      { message: 'Internal server error' },
+    console.error('Error creating expense:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
       { status: 500 }
-    );
+    )
   }
 }

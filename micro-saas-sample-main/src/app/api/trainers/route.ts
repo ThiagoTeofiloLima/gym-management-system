@@ -1,91 +1,110 @@
-import { NextRequest } from 'next/server';
-import { jsonDb } from '@/services/json-db';
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/services/database'
+import { auth } from '@/services/auth'
 
-export async function POST(request: NextRequest) {
+/**
+ * GET /api/trainers
+ * Lista treinadores da academia
+ */
+export async function GET(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { name, email, phone, specialty, certifications, userId } = body;
+    const session = await auth()
 
-    // Validate required fields
-    if (!name || !email || !phone || !specialty || !userId) {
-      return Response.json(
-        { message: 'Missing required fields: name, email, phone, specialty, or userId' },
-        { status: 400 }
-      );
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if trainer with this email already exists for this user
-    const allData = await jsonDb.getData();
-    const existingTrainer = allData.trainers.find(
-      (trainer) => trainer.email === email && trainer.userId === userId
-    );
+    const url = new URL(request.url)
+    const gymId = url.searchParams.get('gymId')
 
-    if (existingTrainer) {
-      return Response.json(
-        { message: 'Trainer with this email already exists' },
-        { status: 409 }
-      );
+    if (!gymId) {
+      return NextResponse.json([])
     }
 
-    // Create new trainer
-    const newTrainer = await jsonDb.createTrainer({
-      name,
-      email,
-      phone,
-      specialty,
-      status: 'Ativo', // Default status
-      certifications: certifications || [],
-      assignedMemberIds: [], // Missing required property
-      userId
-    });
+    const whereClause: any = { gymId }
 
-    return Response.json(newTrainer, { status: 201 });
+    const trainers = await prisma.trainer.findMany({
+      where: whereClause,
+      include: {
+        gym: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        members: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+
+    return NextResponse.json(trainers)
   } catch (error) {
-    console.error('Error creating trainer:', error);
-    return Response.json(
-      { message: 'Internal server error' },
+    console.error('Error fetching trainers:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
       { status: 500 }
-    );
+    )
   }
 }
 
-export async function GET(request: NextRequest) {
+/**
+ * POST /api/trainers
+ * Cria novo treinador
+ */
+export async function POST(request: NextRequest) {
   try {
-    const url = new URL(request.url);
-    const userId = url.searchParams.get('userId');
+    const session = await auth()
 
-    if (!userId) {
-      return Response.json(
-        { message: 'User ID is required' },
-        { status: 400 }
-      );
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const userTrainers = await jsonDb.findTrainersByUserId(userId);
+    const url = new URL(request.url)
+    const gymId = url.searchParams.get('gymId')
 
-    // Get member information for each trainer
-    const allData = await jsonDb.getData();
-    const userMembers = allData.members.filter(member => member.userId === userId);
+    if (!gymId) {
+      return NextResponse.json(
+        { error: 'gymId is required' },
+        { status: 400 }
+      )
+    }
 
-    const trainersWithMembers = userTrainers.map(trainer => {
-      const assignedMemberIds = trainer.assignedMemberIds || [];
-      const assignedMembers = assignedMemberIds.map(memberId => {
-        const member = userMembers.find(m => m.id === memberId);
-        return member ? { id: member.id, name: member.name, email: member.email } : null;
-      }).filter(Boolean);
+    const body = await request.json()
+    const { name, email, phone, specialty, certifications } = body
 
-      return {
-        ...trainer,
-        members: assignedMembers
-      };
-    });
+    if (!name || !email || !phone || !specialty) {
+      return NextResponse.json(
+        { error: 'Missing required fields: name, email, phone, specialty' },
+        { status: 400 }
+      )
+    }
 
-    return Response.json(trainersWithMembers);
+    const newTrainer = await prisma.trainer.create({
+      data: {
+        name,
+        email,
+        phone,
+        specialty,
+        status: 'Ativo',
+        certifications: certifications || '',
+        gymId,
+        userId: session.user.id,
+      },
+    })
+
+    return NextResponse.json(newTrainer, { status: 201 })
   } catch (error) {
-    console.error('Error fetching trainers:', error);
-    return Response.json(
-      { message: 'Internal server error' },
+    console.error('Error creating trainer:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
       { status: 500 }
-    );
+    )
   }
 }

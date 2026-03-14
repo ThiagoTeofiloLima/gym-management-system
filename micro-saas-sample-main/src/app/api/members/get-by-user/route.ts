@@ -1,12 +1,12 @@
 import { NextRequest } from 'next/server';
-import { jsonDb } from '@/services/json-db';
+import { prisma } from '@/lib/prisma';
 
 // This API route allows getting members by user ID from the client side
 export async function GET(request: NextRequest) {
   try {
     const url = new URL(request.url);
     const userId = url.searchParams.get('userId');
-    
+
     if (!userId) {
       return Response.json(
         { message: 'User ID is required' },
@@ -14,10 +14,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const allData = await jsonDb.getData();
-    const userMembers = allData.members.filter(
-      (member) => member.userId === userId
-    );
+    const userMembers = await prisma.member.findMany({
+      where: { userId },
+      include: {
+        trainer: true,
+      },
+      orderBy: { name: 'asc' },
+    });
 
     return Response.json(userMembers);
   } catch (error) {

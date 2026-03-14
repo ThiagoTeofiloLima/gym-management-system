@@ -8,24 +8,27 @@ datasource db {
 }
 
 model Gym {
-  id        String    @id @default(cuid())
-  name      String
-  cnpj      String?   @unique
-  email     String?   @unique
-  phone     String?
-  address   String?
-  city      String?
-  state     String?
-  isActive  Boolean   @default(true)
-  plan      String    @default("basic")
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  expenses  Expense[]
-  members   Member[]
-  todos     Todo[]
-  trainers  Trainer[]
-  users     User[]
-  workouts  Workout[]
+  id            String    @id @default(cuid())
+  name          String
+  cnpj          String?   @unique
+  email         String?   @unique
+  phone         String?
+  address       String?
+  city          String?
+  state         String?
+  isActive      Boolean   @default(true)
+  plan          String    @default("basic")
+  planExpiresAt DateTime?
+  maxMembers    Int       @default(100)
+  maxUsers      Int       @default(5)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  expenses      Expense[]
+  members       Member[]
+  todos         Todo[]
+  trainers      Trainer[]
+  users         UserGym[]
+  workouts      Workout[]
 
   @@map("gyms")
 }
@@ -65,22 +68,39 @@ model User {
   email                    String?   @unique
   emailVerified            DateTime?
   image                    String?
+  passwordHash             String?
   stripeCustomerId         String?
   stripeSubscriptionId     String?
   stripeSubscriptionStatus String?
   stripePriceId            String?
-  gymId                    String?
-  role                     String    @default("user")
+  role                     UserRole  @default(USER)
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
   accounts                 Account[]
   expenses                 Expense[]
   members                  Member[]
   sessions                 Session[]
   todos                    Todo[]
   trainers                 Trainer[]
-  gym                      Gym?      @relation(fields: [gymId], references: [id])
+  gyms                     UserGym[]
   workouts                 Workout[]
 
   @@map("users")
+}
+
+model UserGym {
+  id        String        @id @default(cuid())
+  userId    String
+  gymId     String
+  role      UserRole      @default(USER)
+  status    UserGymStatus @default(ACTIVE)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  gym       Gym           @relation(fields: [gymId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, gymId])
+  @@map("user_gyms")
 }
 
 model VerificationToken {
@@ -158,9 +178,10 @@ model Member {
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   gymId           String?
-  gym             Gym?            @relation(fields: [gymId], references: [id])
+  attendances     Attendance[]
+  gym             Gym?            @relation(fields: [gymId], references: [id], onDelete: Cascade)
   trainer         Trainer?        @relation(fields: [trainerId], references: [id])
-  user            User            @relation(fields: [userId], references: [id])
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   workoutMembers  WorkoutMember[]
 
   @@map("members")
@@ -196,4 +217,32 @@ model WorkoutMember {
 
   @@unique([workoutId, memberId])
   @@map("workout_members")
+}
+
+model Attendance {
+  id          String   @id @default(cuid())
+  date        String
+  memberId    String
+  memberEmail String
+  checkIn     String?
+  checkOut    String?
+  status      String
+  userId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  member      Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@map("attendance")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  GYM_ADMIN
+  USER
+}
+
+enum UserGymStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
 }

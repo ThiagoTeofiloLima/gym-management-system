@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { jsonDb } from '@/services/json-db';
+import { prisma } from '@/lib/prisma';
 
 // API route to get attendance records for a specific member
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
@@ -16,7 +16,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     }
 
     // Verify that the member belongs to the user
-    const member = await jsonDb.findMemberById(memberId);
+    const member = await prisma.member.findUnique({
+      where: { id: memberId },
+    });
+
     if (!member || member.userId !== userId) {
       return Response.json(
         { message: 'Member not found or does not belong to user' },
@@ -24,11 +27,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       );
     }
 
-    // Get all attendance records for this user
-    const allAttendance = await jsonDb.getData();
-    const memberAttendance = allAttendance.attendance.filter(
-      (record) => record.userId === userId && record.memberEmail === member.email
-    ).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Sort by date, newest first
+    // Get all attendance records for this member
+    const memberAttendance = await prisma.attendance.findMany({
+      where: { memberId },
+      include: { member: true },
+      orderBy: { date: 'desc' },
+    });
 
     return Response.json(memberAttendance);
   } catch (error) {
@@ -56,7 +60,10 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     }
 
     // Check if member exists and belongs to the user
-    const member = await jsonDb.findMemberById(memberId);
+    const member = await prisma.member.findUnique({
+      where: { id: memberId },
+    });
+
     if (!member || member.userId !== userId) {
       return Response.json(
         { message: 'Member not found or does not belong to user' },
@@ -65,19 +72,24 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     }
 
     // Create attendance record
-    const attendance = await jsonDb.createAttendance({
-      date,
-      member: member.name,
-      memberEmail: member.email,
-      checkIn: checkIn || null,
-      checkOut: checkOut || null,
-      status: 'Presente', // Default status
-      userId
+    const attendance = await prisma.attendance.create({
+      data: {
+        date,
+        memberId,
+        memberEmail: member.email,
+        checkIn: checkIn || null,
+        checkOut: checkOut || null,
+        status: 'Presente',
+        userId,
+      },
     });
 
     // Update the member's last visit date
-    await jsonDb.updateMember(memberId, {
-      lastVisit: date
+    await prisma.member.update({
+      where: { id: memberId },
+      data: {
+        lastVisit: date,
+      },
     });
 
     return Response.json(attendance, { status: 201 });
@@ -100,13 +112,12 @@ export async function PUT(
     const body = await request.json();
     const { date, checkIn, checkOut, status, userId } = body;
 
-    // Check if attendance record exists and belongs to the user
-    const allData = await jsonDb.getData();
-    const attendanceRecord = allData.attendance.find(
-      (record) => record.id === attendanceId && record.userId === userId
-    );
+    // Check if attendance record exists
+    const attendanceRecord = await prisma.attendance.findUnique({
+      where: { id: attendanceId },
+    });
 
-    if (!attendanceRecord) {
+    if (!attendanceRecord || attendanceRecord.userId !== userId) {
       return Response.json(
         { message: 'Attendance record not found or does not belong to user' },
         { status: 404 }
@@ -114,12 +125,14 @@ export async function PUT(
     }
 
     // Update attendance record
-    const updatedAttendance = await jsonDb.updateAttendance(attendanceId, {
-      date,
-      checkIn,
-      checkOut,
-      status,
-      userId
+    const updatedAttendance = await prisma.attendance.update({
+      where: { id: attendanceId },
+      data: {
+        date,
+        checkIn,
+        checkOut,
+        status,
+      },
     });
 
     return Response.json(updatedAttendance);
@@ -150,12 +163,11 @@ export async function DELETE(
     }
 
     // Check if attendance record exists and belongs to the user
-    const allData = await jsonDb.getData();
-    const attendanceRecord = allData.attendance.find(
-      (record) => record.id === attendanceId && record.userId === userId
-    );
+    const attendanceRecord = await prisma.attendance.findUnique({
+      where: { id: attendanceId },
+    });
 
-    if (!attendanceRecord) {
+    if (!attendanceRecord || attendanceRecord.userId !== userId) {
       return Response.json(
         { message: 'Attendance record not found or does not belong to user' },
         { status: 404 }
@@ -163,16 +175,11 @@ export async function DELETE(
     }
 
     // Delete attendance record
-    const deleted = await jsonDb.deleteAttendance(attendanceId);
+    await prisma.attendance.delete({
+      where: { id: attendanceId },
+    });
 
-    if (deleted) {
-      return Response.json({ message: 'Attendance record deleted successfully' });
-    } else {
-      return Response.json(
-        { message: 'Failed to delete attendance record' },
-        { status: 500 }
-      );
-    }
+    return Response.json({ message: 'Attendance record deleted successfully' });
   } catch (error) {
     console.error('Error deleting attendance:', error);
     return Response.json(

@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@/services/auth";
-import { jsonDb } from "@/services/json-db";
+import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { upsertToDoSchema } from "./schema";
 
@@ -15,17 +15,14 @@ export interface ToDo {
 
 // Get gym dashboard data
 export async function getDashboardData() {
-    // Try to get session, but provide fallback for development
     let session;
     try {
         session = await auth();
     } catch (error) {
-        // If auth fails, use a default user for development
         session = { user: { id: "user-1" } };
     }
 
     if (!session?.user?.id) {
-        // Return empty data if no user
         return {
             totalMembers: 0,
             activeMembers: 0,
@@ -37,31 +34,40 @@ export async function getDashboardData() {
         };
     }
 
-    // Get all members for the gym (not just for this user)
-    const allMembers = await jsonDb.getData();
-    const members = allMembers.members;
+    const userId = session.user.id;
+
+    // Get all members for the user
+    const members = await prisma.member.findMany({
+        where: { userId },
+    });
     const activeMembers = members.filter(member => member.status === 'Ativo');
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const newMembers = members.filter(member =>
-        new Date(member.lastVisit).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000 // Last 30 days
+        new Date(member.lastVisit).getTime() > thirtyDaysAgo.getTime()
     );
 
-    // Calculate attendance rate (simplified calculation)
-    const allAttendance = await jsonDb.getData();
-    const attendance = allAttendance.attendance;
+    // Calculate attendance rate
+    const attendance = await prisma.attendance.findMany({
+        where: { userId },
+    });
     const presentRecords = attendance.filter(record => record.status === 'Presente');
     const attendanceRate = attendance.length > 0
         ? Math.round((presentRecords.length / attendance.length) * 100)
         : 0;
 
     // Calculate financial data
-    const allFinancial = await jsonDb.getData();
-    const financial = allFinancial.financial;
+    const financial = await prisma.expense.findMany({
+        where: { userId },
+    });
+    // Expenses com categoria que indica receita (ex: "Receita", "Mensalidades") são receitas, outras são despesas
+    const revenueCategories = ['Receita', 'Mensalidades', 'Mensalidades Anuais', 'Mensalidades Trimestrais'];
     const revenue = financial
-        .filter(record => record.type === 'Receita')
-        .reduce((sum, record) => sum + record.amount, 0);
+        .filter(record => revenueCategories.includes(record.category))
+        .reduce((sum, record) => sum + Number(record.amount), 0);
     const expenses = financial
-        .filter(record => record.type === 'Despesa')
-        .reduce((sum, record) => sum + record.amount, 0);
+        .filter(record => !revenueCategories.includes(record.category))
+        .reduce((sum, record) => sum + Number(record.amount), 0);
     const profit = revenue - expenses;
 
     return {
@@ -81,7 +87,6 @@ export async function getToDos() {
     try {
         session = await auth();
     } catch (error) {
-        // If auth fails, use a default user for development
         session = { user: { id: "user-1" } };
     }
 
@@ -91,8 +96,12 @@ export async function getToDos() {
 
     const userId = session.user.id;
 
-    // Get ToDos for the user from the database
-    return await jsonDb.findToDosByUserId(userId);
+    const todos = await prisma.todo.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+    });
+
+    return todos;
 }
 
 export async function upsertToDo(data: { id?: string; title: string; doneAt?: Date | null }) {
@@ -100,7 +109,6 @@ export async function upsertToDo(data: { id?: string; title: string; doneAt?: Da
     try {
         session = await auth();
     } catch (error) {
-        // If auth fails, use a default user for development
         session = { user: { id: "user-1" } };
     }
 
@@ -117,19 +125,18 @@ export async function upsertToDo(data: { id?: string; title: string; doneAt?: Da
     const userId = session.user.id;
 
     if (id) {
-        // Update existing ToDo
-        const updatedTodo = await jsonDb.updateToDo(id, { title, doneAt: doneAt || null });
-        if (!updatedTodo) {
-            return { error: "ToDo not found", data: null };
-        }
+        const updatedTodo = await prisma.todo.update({
+            where: { id },
+            data: { title, doneAt: doneAt || null },
+        });
         return { error: null, data: updatedTodo };
     } else {
-        // Create new ToDo
-        const newTodo = await jsonDb.createToDo({
-            title,
-            doneAt: doneAt || null,
-            createdAt: new Date(),
-            userId
+        const newTodo = await prisma.todo.create({
+            data: {
+                title,
+                doneAt: doneAt || null,
+                userId,
+            },
         });
         return { error: null, data: newTodo };
     }
@@ -140,7 +147,6 @@ export async function deleteToDo(data: { id: string }) {
     try {
         session = await auth();
     } catch (error) {
-        // If auth fails, use a default user for development
         session = { user: { id: "user-1" } };
     }
 
@@ -148,8 +154,14 @@ export async function deleteToDo(data: { id: string }) {
         return { error: "Unauthorized", success: false };
     }
 
-    const success = await jsonDb.deleteToDo(data.id);
-    return { error: success ? null : "Failed to delete ToDo", success };
+    try {
+        await prisma.todo.delete({
+            where: { id: data.id },
+        });
+        return { error: null, success: true };
+    } catch (error) {
+        return { error: "Failed to delete ToDo", success: false };
+    }
 }
 
 export async function deleteAllToDos() {
@@ -157,7 +169,6 @@ export async function deleteAllToDos() {
     try {
         session = await auth();
     } catch (error) {
-        // If auth fails, use a default user for development
         session = { user: { id: "user-1" } };
     }
 
@@ -166,7 +177,12 @@ export async function deleteAllToDos() {
     }
 
     const userId = session.user.id;
-    const success = await jsonDb.deleteAllToDosByUserId(userId);
-    return { error: success ? null : "Failed to delete all ToDos", success };
+    try {
+        await prisma.todo.deleteMany({
+            where: { userId },
+        });
+        return { error: null, success: true };
+    } catch (error) {
+        return { error: "Failed to delete all ToDos", success: false };
+    }
 }
-

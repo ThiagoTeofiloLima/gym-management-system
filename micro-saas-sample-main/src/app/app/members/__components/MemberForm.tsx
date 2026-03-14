@@ -28,10 +28,11 @@ import {
     DialogTrigger,
     DialogClose
 } from "@/components/ui/dialog";
-import { PlusIcon } from "@radix-ui/react-icons";
+import { PlusIcon, Pencil1Icon, TrashIcon } from "@radix-ui/react-icons";
 import { Dumbbell } from "lucide-react";
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from "next/link";
+import { toast } from "sonner";
 
 interface Member {
     id: string;
@@ -44,6 +45,8 @@ interface Member {
     userId: string;
     planRenewalDate: string; // Data de renovação do plano
     paymentDate: string; // Data de pagamento
+    trainerId?: string | null;
+    gymId?: string | null;
 }
 
 // Import the payment status function from the plan pricing service
@@ -54,21 +57,8 @@ function getPlanStatus(paymentDate: string, plan: string) {
   return getPaymentStatus(paymentDate, plan);
 }
 
-// Mock auth function to get the current user - in a real app, this would come from next-auth
-async function getCurrentUser() {
-  // Return a mock session with a default user
-  return {
-    user: {
-      id: "user-1",
-      name: "Thiago Lima",
-      email: "thiago.lima.amazoniatelecom@gmail.com",
-      image: null,
-    },
-    expires: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 hours from now
-  };
-}
-
-export default function MembersPageClient({ initialMembers }: { initialMembers: Member[] }) {
+export default function MembersPageClient({ initialMembers, gymId }: { initialMembers: Member[], gymId: string }) {
+    const searchParams = useSearchParams();
     const [members, setMembers] = useState<Member[]>(initialMembers);
     const [filteredMembers, setFilteredMembers] = useState<Member[]>(initialMembers);
     const [isOpen, setIsOpen] = useState(false);
@@ -78,10 +68,12 @@ export default function MembersPageClient({ initialMembers }: { initialMembers: 
         email: '',
         phone: '',
         plan: 'Mensal',
-        paymentDate: new Date().toISOString().split('T')[0], // Data atual por padrão
+        paymentDate: new Date().toISOString().split('T')[0],
+        status: 'Ativo',
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [editingMember, setEditingMember] = useState<Member | null>(null);
     const router = useRouter();
 
     // Filter members based on search term
@@ -108,17 +100,55 @@ export default function MembersPageClient({ initialMembers }: { initialMembers: 
         }));
     };
 
+    const handleEdit = (member: Member) => {
+        setEditingMember(member);
+        setFormData({
+            name: member.name,
+            email: member.email,
+            phone: member.phone,
+            plan: member.plan,
+            paymentDate: member.paymentDate,
+            status: member.status,
+        });
+        setIsOpen(true);
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm("Tem certeza que deseja excluir este membro?")) {
+            return;
+        }
+
+        try {
+            if (!gymId) {
+                toast.error('Academia não selecionada');
+                return;
+            }
+
+            const url = `/api/members/${id}?gymId=${gymId}`;
+            const response = await fetch(url, {
+                method: 'DELETE',
+            });
+
+            if (response.ok) {
+                toast.success("Membro excluído com sucesso!");
+                router.refresh();
+            } else {
+                const errorData = await response.json();
+                toast.error(errorData.error || errorData.message || 'Erro ao excluir membro');
+            }
+        } catch (err) {
+            console.error('Error deleting member:', err);
+            toast.error('Erro ao excluir membro');
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
 
         try {
-            // Get the current user to get the userId
-            const session = await getCurrentUser();
-            const userId = session.user.id;
-
-            // Calculate renewal date based on payment date and plan
+            // Calcular data de renovação
             const paymentDate = new Date(formData.paymentDate);
             let renewalDate = new Date(paymentDate);
 
@@ -133,35 +163,44 @@ export default function MembersPageClient({ initialMembers }: { initialMembers: 
                     renewalDate.setFullYear(renewalDate.getFullYear() + 1);
                     break;
                 default:
-                    renewalDate.setMonth(renewalDate.getMonth() + 1); // Default to monthly
+                    renewalDate.setMonth(renewalDate.getMonth() + 1);
             }
 
             const planRenewalDate = renewalDate.toISOString().split('T')[0];
 
-            const response = await fetch('/api/members', {
-                method: 'POST',
+            if (!gymId) {
+                toast.error('Academia não selecionada');
+                return;
+            }
+
+            // PUT usa o ID do membro, POST usa a lista
+            const url = editingMember 
+                ? `/api/members/${editingMember.id}?gymId=${gymId}`
+                : `/api/members?gymId=${gymId}`;
+
+            const method = editingMember ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method,
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     ...formData,
-                    planRenewalDate, // Include calculated renewal date
-                    userId
+                    planRenewalDate,
+                    trainerId: editingMember?.trainerId || null,
                 }),
             });
 
             if (response.ok) {
-                // Instead of just adding to local state, fetch the updated list
-                const newMember = await response.json();
+                const updatedMember = await response.json();
 
-                // Fetch updated members list to ensure consistency
-                const updatedResponse = await fetch(`/api/members/get-by-user?userId=${userId}`);
-                if (updatedResponse.ok) {
-                    const updatedMembers = await updatedResponse.json();
-                    setMembers(updatedMembers);
+                if (editingMember) {
+                    setMembers(prev => prev.map(m => m.id === editingMember.id ? updatedMember : m));
+                    toast.success("Membro atualizado com sucesso!");
                 } else {
-                    // Fallback: just add the new member to the list
-                    setMembers(prev => [...prev, newMember]);
+                    setMembers(prev => [...prev, updatedMember]);
+                    toast.success("Membro adicionado com sucesso!");
                 }
 
                 setFormData({
@@ -170,16 +209,20 @@ export default function MembersPageClient({ initialMembers }: { initialMembers: 
                     phone: '',
                     plan: 'Mensal',
                     paymentDate: new Date().toISOString().split('T')[0],
+                    status: 'Ativo',
                 });
+                setEditingMember(null);
                 setIsOpen(false);
-                router.refresh(); // Refresh the page to get updated data
+                router.refresh();
             } else {
                 const errorData = await response.json();
-                setError(errorData.message || 'Erro ao adicionar membro');
+                setError(errorData.error || errorData.message || 'Erro ao salvar membro');
+                toast.error(errorData.error || errorData.message || 'Erro ao salvar membro');
             }
         } catch (err) {
-            console.error('Error adding member:', err);
+            console.error('Error saving member:', err);
             setError('Erro de conexão. Tente novamente.');
+            toast.error('Erro ao salvar membro');
         } finally {
             setLoading(false);
         }
@@ -204,9 +247,11 @@ export default function MembersPageClient({ initialMembers }: { initialMembers: 
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
-                                <DialogTitle>Adicionar Novo Membro</DialogTitle>
+                                <DialogTitle>{editingMember ? 'Editar Membro' : 'Adicionar Novo Membro'}</DialogTitle>
                                 <DialogDescription>
-                                    Preencha as informações do novo membro.
+                                    {editingMember
+                                        ? 'Edite as informações do membro.'
+                                        : 'Preencha as informações do novo membro.'}
                                 </DialogDescription>
                             </DialogHeader>
                             <form onSubmit={handleSubmit}>
@@ -276,6 +321,20 @@ export default function MembersPageClient({ initialMembers }: { initialMembers: 
                                             required
                                         />
                                     </div>
+                                    <div className="grid grid-cols-4 items-center gap-4">
+                                        <label htmlFor="status" className="text-right">
+                                            Status
+                                        </label>
+                                        <select
+                                            id="status"
+                                            className="col-span-3 border rounded-md px-3 py-2"
+                                            value={formData.status}
+                                            onChange={handleChange}
+                                        >
+                                            <option value="Ativo">Ativo</option>
+                                            <option value="Inativo">Inativo</option>
+                                        </select>
+                                    </div>
                                     {error && (
                                         <div className="col-span-4 text-red-500 text-sm">
                                             {error}
@@ -284,10 +343,20 @@ export default function MembersPageClient({ initialMembers }: { initialMembers: 
                                 </div>
                                 <div className="flex justify-end gap-2">
                                     <DialogClose asChild>
-                                        <Button type="button" variant="outline">Cancelar</Button>
+                                        <Button type="button" variant="outline" onClick={() => {
+                                            setEditingMember(null);
+                                            setFormData({
+                                                name: '',
+                                                email: '',
+                                                phone: '',
+                                                plan: 'Mensal',
+                                                paymentDate: new Date().toISOString().split('T')[0],
+                                                status: 'Ativo',
+                                            });
+                                        }}>Cancelar</Button>
                                     </DialogClose>
                                     <Button type="submit" disabled={loading}>
-                                        {loading ? 'Salvando...' : 'Salvar Membro'}
+                                        {loading ? 'Salvando...' : (editingMember ? 'Atualizar' : 'Salvar')}
                                     </Button>
                                 </div>
                             </form>
@@ -324,23 +393,35 @@ export default function MembersPageClient({ initialMembers }: { initialMembers: 
                                         <TableCell>{member.phone}</TableCell>
                                         <TableCell>{member.plan}</TableCell>
                                         <TableCell>
-                                            <Badge variant={(member.status === 'Ativo' ? 'default' : 'secondary') as any}>
+                                            <Badge variant={member.status === 'Ativo' ? 'default' : 'secondary'}>
                                                 {member.status}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>{member.lastVisit}</TableCell>
                                         <TableCell>{new Date(member.paymentDate).toLocaleDateString('pt-BR')}</TableCell>
                                         <TableCell>
-                                            <Badge variant={getPlanStatus(member.paymentDate, member.plan).variant as any}>
+                                            <Badge variant={getPlanStatus(member.paymentDate, member.plan).variant === 'active' ? 'default' : 'secondary'}>
                                                 {getPlanStatus(member.paymentDate, member.plan).label}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
-                                            <Link href={`/app/members/${member.id}`}>
-                                                <Button variant="outline" size="sm">
-                                                    Ver Detalhes
+                                            <div className="flex gap-2">
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="sm"
+                                                    onClick={() => handleEdit(member)}
+                                                >
+                                                    <Pencil1Icon className="h-4 w-4" />
                                                 </Button>
-                                            </Link>
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="sm"
+                                                    onClick={() => handleDelete(member.id)}
+                                                    className="text-red-500 hover:text-red-700"
+                                                >
+                                                    <TrashIcon className="h-4 w-4" />
+                                                </Button>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))}

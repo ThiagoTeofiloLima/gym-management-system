@@ -1,88 +1,111 @@
-import { NextRequest } from 'next/server';
-import { jsonDb } from '@/services/json-db';
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/services/database'
+import { auth } from '@/services/auth'
+import { getTenantContext } from '@/lib/multi-tenant'
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+/**
+ * PUT /api/expenses/[id]
+ * Atualiza uma despesa
+ */
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const expenseId = params.id;
-
-    if (!expenseId) {
-      return Response.json(
-        { message: 'Expense ID is required' },
-        { status: 400 }
-      );
+    const session = await auth()
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json();
-    const { title, description, amount, category, date } = body;
+    const url = new URL(request.url)
+    const gymId = url.searchParams.get('gymId')
 
-    // Validate amount if provided
-    if (amount !== undefined && (typeof amount !== 'number' || isNaN(amount))) {
-      return Response.json(
-        { message: 'Amount must be a valid number' },
-        { status: 400 }
-      );
+    if (!gymId) {
+      return NextResponse.json({ error: 'gymId is required' }, { status: 400 })
     }
 
-    // Validate date if provided
-    if (date && isNaN(Date.parse(date))) {
-      return Response.json(
-        { message: 'Date must be a valid date string' },
-        { status: 400 }
-      );
+    const { id } = await params
+    const body = await request.json()
+    const { title, description, amount, category, date } = body
+
+    const existingExpense = await prisma.expense.findUnique({
+      where: { id },
+    })
+
+    if (!existingExpense) {
+      return NextResponse.json({ error: 'Expense not found' }, { status: 404 })
     }
 
-    // Update the expense
-    const updatedExpense = await jsonDb.updateExpense(expenseId, {
-      title,
-      description,
-      amount,
-      category,
-      date
-    });
-
-    if (!updatedExpense) {
-      return Response.json(
-        { message: 'Expense not found' },
-        { status: 404 }
-      );
+    if (existingExpense.gymId !== gymId) {
+      return NextResponse.json({ error: 'Expense does not belong to this gym' }, { status: 403 })
     }
 
-    return Response.json(updatedExpense);
+    const expense = await prisma.expense.update({
+      where: { id },
+      data: {
+        title,
+        description,
+        amount: parseFloat(amount),
+        category,
+        date: date ? new Date(date) : undefined,
+      },
+    })
+
+    return NextResponse.json(expense)
   } catch (error) {
-    console.error('Error updating expense:', error);
-    return Response.json(
-      { message: 'Internal server error' },
+    console.error('Error updating expense:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
       { status: 500 }
-    );
+    )
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+/**
+ * DELETE /api/expenses/[id]
+ * Deleta uma despesa
+ */
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const expenseId = params.id;
-
-    if (!expenseId) {
-      return Response.json(
-        { message: 'Expense ID is required' },
-        { status: 400 }
-      );
+    const session = await auth()
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const deleted = await jsonDb.deleteExpense(expenseId);
+    const url = new URL(request.url)
+    const gymId = url.searchParams.get('gymId')
 
-    if (!deleted) {
-      return Response.json(
-        { message: 'Expense not found' },
-        { status: 404 }
-      );
+    if (!gymId) {
+      return NextResponse.json({ error: 'gymId is required' }, { status: 400 })
     }
 
-    return Response.json({ message: 'Expense deleted successfully' }, { status: 200 });
+    const { id } = await params
+
+    const expense = await prisma.expense.findUnique({
+      where: { id },
+    })
+
+    if (!expense) {
+      return NextResponse.json({ error: 'Expense not found' }, { status: 404 })
+    }
+
+    if (expense.gymId !== gymId) {
+      return NextResponse.json({ error: 'Expense does not belong to this gym' }, { status: 403 })
+    }
+
+    await prisma.expense.delete({
+      where: { id },
+    })
+
+    return NextResponse.json({ message: 'Expense deleted successfully' })
   } catch (error) {
-    console.error('Error deleting expense:', error);
-    return Response.json(
-      { message: 'Internal server error' },
+    console.error('Error deleting expense:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
       { status: 500 }
-    );
+    )
   }
 }

@@ -23,6 +23,7 @@ import {
 import { Dumbbell } from "lucide-react";
 import { DashboardData } from "../(home)/types";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 // The attendanceData and membershipData will be fetched from the gymData prop
 // and updated in state based on the fetched data
@@ -34,20 +35,25 @@ interface DashboardChartsProps {
 }
 
 export function DashboardCharts({ gymData }: DashboardChartsProps) {
+    const searchParams = useSearchParams()
+    const gymId = searchParams?.get('gymId')
     const [attendanceData, setAttendanceData] = useState<any[]>([]);
     const [membershipData, setMembershipData] = useState<any[]>([]);
 
     useEffect(() => {
         const loadChartData = async () => {
             try {
-                // Fetch data from API route instead of direct file access
-                const response = await fetch('/api/data');
+                // Fetch data com gymId para filtrar por academia
+                const url = gymId ? `/api/data?gymId=${gymId}` : '/api/data';
+                const response = await fetch(url);
                 if (!response.ok) {
                     throw new Error('Failed to fetch data');
                 }
                 const allData = await response.json();
                 const members = allData.members;
                 const attendance = allData.attendance;
+
+                console.log('[DashboardCharts] Loaded data for gymId:', gymId, 'Members:', members.length);
 
                 // Prepare attendance data for chart by grouping by day of week
                 const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];

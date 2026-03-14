@@ -1,29 +1,189 @@
-// Create a mock session for development without authentication
-export async function auth() {
-  // Return a mock session with a default user
-  return {
-    user: {
-      id: "user-1",
-      name: "Thiago Lima",
-      email: "thiago.lima.amazoniatelecom@gmail.com",
-      image: undefined,
+import NextAuth from "next-auth"
+import { PrismaAdapter } from "@auth/prisma-adapter"
+import Google from "next-auth/providers/google"
+import GitHub from "next-auth/providers/github"
+import Credentials from "next-auth/providers/credentials"
+import EmailProvider from "next-auth/providers/email"
+import { UserRole } from "@prisma/client"
+import { getUrl } from "@/lib/get-url"
+import { compare } from "bcryptjs"
+import { prisma } from "@/lib/prisma"
+
+export const { handlers, signIn, signOut, auth } = NextAuth({
+  adapter: PrismaAdapter(prisma) as any,
+
+  providers: [
+    // Credentials Provider (Email/Senha)
+    Credentials({
+      name: 'credentials',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Senha', type: 'password' }
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error('Email e senha são obrigatórios')
+        }
+
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email as string },
+          include: {
+            gyms: {
+              include: {
+                gym: true,
+              },
+            },
+          },
+        })
+
+        if (!user || !user.passwordHash) {
+          throw new Error('Email ou senha inválidos')
+        }
+
+        const isPasswordValid = await compare(
+          credentials.password as string,
+          user.passwordHash
+        )
+
+        if (!isPasswordValid) {
+          throw new Error('Email ou senha inválidos')
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image,
+          role: user.role,
+          emailVerified: user.emailVerified,
+        }
+      },
+    }),
+
+    // Google Provider
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true,
+    }),
+
+    // GitHub Provider
+    GitHub({
+      clientId: process.env.AUTH_GITHUB_ID,
+      clientSecret: process.env.AUTH_GITHUB_SECRET,
+      allowDangerousEmailAccountLinking: true,
+    }),
+
+    // Email Provider (Magic Link)
+    EmailProvider({
+      server: {
+        host: process.env.EMAIL_SERVER,
+        port: Number(process.env.EMAIL_PORT),
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASSWORD,
+        },
+      },
+      from: process.env.EMAIL_FROM,
+    }),
+  ],
+  
+  pages: {
+    signIn: '/auth',
+    verifyRequest: '/auth/verify',
+    error: '/auth/error',
+  },
+
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 dias
+  },
+
+  jwt: {
+    maxAge: 30 * 24 * 60 * 60, // 30 dias
+  },
+  
+  callbacks: {
+    async signIn({ user, account, profile, email, credentials }) {
+      // Permitir signIn para todos os providers
+      console.log('SignIn callback - User:', user?.email, 'Account:', account?.provider)
+      return true
     },
-    expires: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 hours from now
-  };
-}
 
-// Mock handlers for NextAuth compatibility
-export const handlers = {
-  GET: () => new Response('OK'),
-  POST: () => new Response('OK'),
-};
+    async jwt({ token, user, trigger, session }) {
+      // Quando o usuário faz login pela primeira vez, adiciona informações ao token
+      if (user) {
+        token.id = user.id
+        token.email = user.email
+        token.role = user.role
 
-// Mock signIn and signOut functions
-export async function signIn() {
-  return { url: '/app' };
-}
+        // Buscar informações do usuário no banco
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          include: {
+            gyms: {
+              include: {
+                gym: true,
+              },
+            },
+          },
+        })
 
-export async function signOut() {
-  return { url: '/auth' };
-}
+        if (dbUser) {
+          token.role = dbUser.role
+          token.gyms = dbUser.gyms.map((userGym) => ({
+            gymId: userGym.gymId,
+            gymName: userGym.gym.name,
+            role: userGym.role,
+            status: userGym.status,
+            plan: userGym.gym.plan,
+            isActive: userGym.gym.isActive,
+          }))
 
+          if (dbUser.gyms.length === 1) {
+            token.activeGymId = dbUser.gyms[0].gymId
+            token.activeGymRole = dbUser.gyms[0].role
+          }
+        }
+      }
+
+      // Atualizar token quando a sessão for atualizada
+      if (trigger === "update" && session) {
+        if (session.activeGymId) {
+          token.activeGymId = session.activeGymId
+        }
+        if (session.activeGymRole) {
+          token.activeGymRole = session.activeGymRole
+        }
+      }
+
+      console.log('JWT callback - Token ID:', token.id, 'Email:', token.email)
+      return token
+    },
+
+    async session({ session, token }) {
+      // Com JWT, usamos o token em vez do user
+      session.user.id = token.id as string
+      session.user.role = token.role as UserRole | undefined
+      session.user.gyms = token.gyms as any
+
+      if (token.activeGymId) {
+        session.user.activeGymId = token.activeGymId as string
+        session.user.activeGymRole = token.activeGymRole as any
+      }
+
+      console.log('Session callback - User:', session.user.email, 'ID:', session.user.id)
+      return session
+    },
+  },
+  
+  events: {
+    async createUser({ user }) {
+      // Quando um novo usuário é criado, definir role padrão
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { role: 'USER' },
+      })
+    },
+  },
+})

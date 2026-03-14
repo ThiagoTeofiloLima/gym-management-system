@@ -4,14 +4,13 @@ import { auth } from "@/services/auth";
 import { z } from "zod";
 import { updateProfileSchema } from "./schema";
 import capitalize from "@/lib/capitalize";
-import { jsonDb } from "@/services/json-db";
+import { prisma } from "@/lib/prisma";
 
 export async function upsertProfile(input: z.infer<typeof updateProfileSchema>) {
     let session;
     try {
         session = await auth();
     } catch (error) {
-        // If auth fails, use a default user for development
         session = { user: { id: "user-1" } };
     }
 
@@ -22,9 +21,11 @@ export async function upsertProfile(input: z.infer<typeof updateProfileSchema>) 
         };
     }
 
-    // Update user in JSON database
-    const updatedUser = await jsonDb.updateUser(session.user.id, {
-        name: capitalize(input.name)
+    const updatedUser = await prisma.user.update({
+        where: { id: session.user.id },
+        data: {
+            name: capitalize(input.name)
+        },
     });
 
     if (!updatedUser) {

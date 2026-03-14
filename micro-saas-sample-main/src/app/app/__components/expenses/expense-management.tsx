@@ -1,37 +1,35 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { TrashIcon, PlusIcon, PencilIcon } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/table";
 
 interface Expense {
   id: string;
   title: string;
-  description?: string;
+  description: string | null;
   amount: number;
   category: string;
   date: string;
-  createdAt: string;
-  updatedAt: string;
-  userId: string;
 }
 
-export function ExpenseManagement() {
-  const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedDate, setSelectedDate] = useState<string>('');
-  const [selectedMonth, setSelectedMonth] = useState<string>('');
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  
-  // Form state
+interface ExpenseManagementProps {
+  initialExpenses: Expense[];
+  gymId: string;
+}
+
+export function ExpenseManagement({ initialExpenses, gymId }: ExpenseManagementProps) {
+  const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
+  const [loading, setLoading] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -40,118 +38,58 @@ export function ExpenseManagement() {
     date: new Date().toISOString().split('T')[0]
   });
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  // Load expenses from API
-  const loadExpenses = async () => {
-    try {
-      const response = await fetch('/api/expenses?userId=user-1'); // Using a placeholder user ID for now
-      if (!response.ok) {
-        throw new Error('Failed to fetch expenses');
-      }
-      const data = await response.json();
-      setExpenses(data);
-    } catch (error) {
-      console.error("Error loading expenses:", error);
-      toast.error("Erro ao carregar despesas");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadExpenses();
-  }, []);
-
-  // Filter expenses based on date/month and search term
-  useEffect(() => {
-    let result = [...expenses];
-    
-    // Apply date/month filter
-    if (selectedMonth) {
-      const currentYear = new Date().getFullYear();
-      result = result.filter(expense => {
-        const [expenseYear, expenseMonth] = expense.date.split('-');
-        return expenseMonth === selectedMonth && parseInt(expenseYear) === currentYear;
-      });
-    } else if (selectedDate) {
-      result = result.filter(expense => expense.date === selectedDate);
-    } else {
-      // Show last 30 days by default
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split('T')[0];
-      
-      result = result.filter(expense => expense.date >= thirtyDaysAgoStr);
-    }
-    
-    // Apply search filter
-    if (searchTerm) {
-      result = result.filter(expense => 
-        expense.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        expense.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        expense.category.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    
-    setFilteredExpenses(result);
-  }, [expenses, selectedDate, selectedMonth, searchTerm]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.title || !formData.amount || !formData.category) {
-      toast.error("Por favor, preencha todos os campos obrigatórios");
+
+    if (!gymId) {
+      toast.error("Selecione uma academia primeiro");
       return;
     }
-    
+
+    if (!formData.title || !formData.amount || !formData.category) {
+      toast.error("Preencha os campos obrigatórios");
+      return;
+    }
+
+    setLoading(true);
     try {
       const expenseData = {
         ...formData,
         amount: parseFloat(formData.amount),
-        userId: "user-1" // Placeholder user ID
       };
-      
-      let response;
-      if (editingExpense) {
-        // Update existing expense
-        response = await fetch(`/api/expenses/${editingExpense.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(expenseData),
-        });
-        
-        if (response.ok) {
-          toast.success("Despesa atualizada com sucesso!");
-        }
-      } else {
-        // Create new expense
-        response = await fetch('/api/expenses', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(expenseData),
-        });
-        
-        if (response.ok) {
-          toast.success("Despesa adicionada com sucesso!");
-        }
-      }
-      
+
+      const url = editingExpense 
+        ? `/api/expenses/${editingExpense.id}?gymId=${gymId}`
+        : `/api/expenses?gymId=${gymId}`;
+
+      const method = editingExpense ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(expenseData),
+      });
+
       if (response.ok) {
-        loadExpenses(); // Reload expenses
+        const data = await response.json();
+        if (editingExpense) {
+          setExpenses(prev => prev.map(e => e.id === editingExpense.id ? data : e));
+          toast.success("Despesa atualizada!");
+        } else {
+          setExpenses(prev => [...prev, data]);
+          toast.success("Despesa adicionada!");
+        }
         resetForm();
         setIsDialogOpen(false);
       } else {
-        const errorData = await response.json();
-        toast.error(errorData.message || "Erro ao salvar despesa");
+        const error = await response.json();
+        toast.error(error.error || "Erro ao salvar");
       }
     } catch (error) {
-      console.error("Error saving expense:", error);
       toast.error("Erro ao salvar despesa");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -160,32 +98,34 @@ export function ExpenseManagement() {
     setFormData({
       title: expense.title,
       description: expense.description || '',
-      amount: expense.amount.toString(),
+      amount: String(expense.amount),
       category: expense.category,
-      date: expense.date
+      date: expense.date,
     });
     setIsDialogOpen(true);
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Tem certeza que deseja excluir esta despesa?")) {
+    if (!confirm("Excluir despesa?")) return;
+
+    if (!gymId) {
+      toast.error("Selecione uma academia primeiro");
       return;
     }
-    
+
     try {
-      const response = await fetch(`/api/expenses/${id}`, {
+      const response = await fetch(`/api/expenses/${id}?gymId=${gymId}`, {
         method: 'DELETE',
       });
-      
+
       if (response.ok) {
-        toast.success("Despesa excluída com sucesso!");
-        loadExpenses(); // Reload expenses
+        setExpenses(prev => prev.filter(e => e.id !== id));
+        toast.success("Despesa excluída!");
       } else {
-        const errorData = await response.json();
-        toast.error(errorData.message || "Erro ao excluir despesa");
+        const error = await response.json();
+        toast.error(error.error || "Erro ao excluir");
       }
     } catch (error) {
-      console.error("Error deleting expense:", error);
       toast.error("Erro ao excluir despesa");
     }
   };
@@ -201,250 +141,104 @@ export function ExpenseManagement() {
     setEditingExpense(null);
   };
 
-  const totalExpenses = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR');
+  };
 
   return (
     <div className="space-y-6">
-      {/* Summary Card */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Despesas</CardTitle>
-          <div className="text-2xl font-bold text-red-500">R$ {totalExpenses.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Total de {filteredExpenses.length} despesa(s) {selectedDate ? `em ${new Date(selectedDate).toLocaleDateString('pt-BR')}` : selectedMonth ? `no mês ${selectedMonth}` : 'nos últimos 30 dias'}
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Controls */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-          <Input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => {
-              setSelectedDate(e.target.value);
-              setSelectedMonth('');
-            }}
-            className="max-w-[200px]"
-          />
-          <select
-            value={selectedMonth}
-            onChange={(e) => {
-              setSelectedMonth(e.target.value);
-              setSelectedDate('');
-            }}
-            className="border rounded-md px-3 py-2 max-w-[150px]"
-          >
-            <option value="">Mês</option>
-            <option value="01">Janeiro</option>
-            <option value="02">Fevereiro</option>
-            <option value="03">Março</option>
-            <option value="04">Abril</option>
-            <option value="05">Maio</option>
-            <option value="06">Junho</option>
-            <option value="07">Julho</option>
-            <option value="08">Agosto</option>
-            <option value="09">Setembro</option>
-            <option value="10">Outubro</option>
-            <option value="11">Novembro</option>
-            <option value="12">Dezembro</option>
-          </select>
-          <Button
-            onClick={() => {
-              setSelectedDate('');
-              setSelectedMonth('');
-            }}
-            variant="outline"
-            className="whitespace-nowrap"
-          >
-            Limpar
-          </Button>
-        </div>
-        
-        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-          <Input
-            placeholder="Buscar despesas..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="max-w-[200px]"
-          />
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={() => resetForm()}>
-                <PlusIcon className="mr-2 h-4 w-4" /> Adicionar Despesa
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{editingExpense ? 'Editar Despesa' : 'Adicionar Nova Despesa'}</DialogTitle>
-                <DialogDescription>
-                  {editingExpense 
-                    ? 'Edite as informações da despesa.' 
-                    : 'Preencha as informações da nova despesa.'}
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Despesas</h2>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button onClick={resetForm}>
+              <PlusIcon className="mr-2 h-4 w-4" /> Adicionar
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{editingExpense ? 'Editar' : 'Adicionar'} Despesa</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSubmit}>
+              <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="title" className="text-right">
-                    Título *
-                  </Label>
-                  <Input
-                    id="title"
-                    value={formData.title}
-                    onChange={(e) => setFormData({...formData, title: e.target.value})}
-                    className="col-span-3"
-                    required
-                  />
+                  <Label htmlFor="title" className="text-right">Título</Label>
+                  <Input id="title" className="col-span-3" value={formData.title}
+                    onChange={(e) => setFormData({...formData, title: e.target.value})} required />
                 </div>
-                
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="description" className="text-right">
-                    Descrição
-                  </Label>
-                  <Input
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => setFormData({...formData, description: e.target.value})}
-                    className="col-span-3"
-                    placeholder="Descrição opcional"
-                  />
+                  <Label htmlFor="description" className="text-right">Descrição</Label>
+                  <Input id="description" className="col-span-3" value={formData.description}
+                    onChange={(e) => setFormData({...formData, description: e.target.value})} />
                 </div>
-                
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="amount" className="text-right">
-                    Valor *
-                  </Label>
-                  <Input
-                    id="amount"
-                    type="number"
-                    step="0.01"
-                    value={formData.amount}
-                    onChange={(e) => setFormData({...formData, amount: e.target.value})}
-                    className="col-span-3"
-                    placeholder="R$"
-                    required
-                  />
+                  <Label htmlFor="amount" className="text-right">Valor</Label>
+                  <Input id="amount" type="number" step="0.01" className="col-span-3" value={formData.amount}
+                    onChange={(e) => setFormData({...formData, amount: e.target.value})} required />
                 </div>
-                
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="category" className="text-right">
-                    Categoria *
-                  </Label>
-                  <Select 
-                    value={formData.category} 
-                    onValueChange={(value) => setFormData({...formData, category: value})}
-                  >
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="Selecione uma categoria" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Aluguel">Aluguel</SelectItem>
-                      <SelectItem value="Salários">Salários</SelectItem>
-                      <SelectItem value="Manutenção">Manutenção</SelectItem>
-                      <SelectItem value="Suprimentos">Suprimentos</SelectItem>
-                      <SelectItem value="Marketing">Marketing</SelectItem>
-                      <SelectItem value="Taxas e Impostos">Taxas e Impostos</SelectItem>
-                      <SelectItem value="Seguros">Seguros</SelectItem>
-                      <SelectItem value="Utilidades">Utilidades</SelectItem>
-                      <SelectItem value="Outros">Outros</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="category" className="text-right">Categoria</Label>
+                  <Input id="category" className="col-span-3" value={formData.category}
+                    onChange={(e) => setFormData({...formData, category: e.target.value})} required />
                 </div>
-                
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="date" className="text-right">
-                    Data *
-                  </Label>
-                  <Input
-                    id="date"
-                    type="date"
-                    value={formData.date}
-                    onChange={(e) => setFormData({...formData, date: e.target.value})}
-                    className="col-span-3"
-                    required
-                  />
+                  <Label htmlFor="date" className="text-right">Data</Label>
+                  <Input id="date" type="date" className="col-span-3" value={formData.date}
+                    onChange={(e) => setFormData({...formData, date: e.target.value})} required />
                 </div>
-                
-                <div className="flex justify-end gap-2 pt-4">
-                  <DialogClose asChild>
-                    <Button type="button" variant="outline">Cancelar</Button>
-                  </DialogClose>
-                  <Button type="submit">{editingExpense ? 'Atualizar' : 'Adicionar'}</Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <DialogClose asChild>
+                  <Button type="button" variant="outline">Cancelar</Button>
+                </DialogClose>
+                <Button type="submit" disabled={loading}>
+                  {loading ? 'Salvando...' : (editingExpense ? 'Atualizar' : 'Adicionar')}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
-      {/* Expenses Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Lista de Despesas</CardTitle>
+          <CardTitle>Lista de Despesas ({expenses.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          {filteredExpenses.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr>
-                    <th className="text-left py-2">Data</th>
-                    <th className="text-left py-2">Título</th>
-                    <th className="text-left py-2">Descrição</th>
-                    <th className="text-left py-2">Categoria</th>
-                    <th className="text-left py-2">Valor</th>
-                    <th className="text-left py-2">Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredExpenses.map((expense) => (
-                    <tr key={expense.id} className="border-t">
-                      <td className="py-2">{new Date(expense.date).toLocaleDateString('pt-BR')}</td>
-                      <td className="py-2 font-medium">{expense.title}</td>
-                      <td className="py-2 text-sm text-muted-foreground">{expense.description || '-'}</td>
-                      <td className="py-2">
-                        <Badge variant="outline">{expense.category}</Badge>
-                      </td>
-                      <td className="py-2 font-semibold text-red-500">- R$ {expense.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                      <td className="py-2">
-                        <div className="flex gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEdit(expense)}
-                          >
-                            <PencilIcon className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(expense.id)}
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          {expenses.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Data</TableHead>
+                  <TableHead>Título</TableHead>
+                  <TableHead>Categoria</TableHead>
+                  <TableHead>Valor</TableHead>
+                  <TableHead>Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {expenses.map((expense) => (
+                  <TableRow key={expense.id}>
+                    <TableCell>{formatDate(expense.date)}</TableCell>
+                    <TableCell>{expense.title}</TableCell>
+                    <TableCell>{expense.category}</TableCell>
+                    <TableCell>R$ {Number(expense.amount).toFixed(2)}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => handleEdit(expense)}>
+                          <PencilIcon className="h-4 w-4" />
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => handleDelete(expense.id)} className="text-red-500">
+                          <TrashIcon className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              Nenhuma despesa encontrada {selectedDate || selectedMonth ? 'para o período selecionado' : 'nos últimos 30 dias'}
-            </div>
+            <p className="text-muted-foreground">Nenhuma despesa encontrada.</p>
           )}
         </CardContent>
       </Card>

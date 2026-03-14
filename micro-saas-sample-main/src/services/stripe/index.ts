@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import { jsonDb } from "../json-db";
+import { prisma } from "@/lib/prisma";
 
 import { config } from "@/services/stripe/config";
 
@@ -31,14 +31,19 @@ export const createStripeCustomer = async (input: {
         items: [{ price: config.stripe.plans.free.priceId }],
     });
 
-    // Update user in JSON database
-    const user = await jsonDb.findUserByEmail(input.email);
+    // Update user in database
+    const user = await prisma.user.findUnique({
+        where: { email: input.email },
+    });
     if (user) {
-        await jsonDb.updateUser(user.id, {
-            stripeCustomerId: createdCustomer.id,
-            stripeSubscriptionId: createdCustomerSubscription.id,
-            stripeSubscriptionStatus: createdCustomerSubscription.status,
-            stripePriceId: config.stripe.plans.free.priceId,
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                stripeCustomerId: createdCustomer.id,
+                stripeSubscriptionId: createdCustomerSubscription.id,
+                stripeSubscriptionStatus: createdCustomerSubscription.status,
+                stripePriceId: config.stripe.plans.free.priceId,
+            },
         });
     }
 
@@ -102,22 +107,28 @@ export const handleProcessWebhookUpdatedSubscription = async (event: {
     const stripeSubscriptionStatus = event.object.status;
     const stripePriceId = event.object.items.data[0].price.id;
 
-    // Find user in JSON database
-    const users = await jsonDb.getData();
-    const userExists = users.users.find(user =>
-        user.stripeSubscriptionId === stripeSubscriptionId ||
-        user.stripeCustomerId === stripeCustomerId
-    );
+    // Find user in database
+    const user = await prisma.user.findFirst({
+        where: {
+            OR: [
+                { stripeSubscriptionId },
+                { stripeCustomerId },
+            ],
+        },
+    });
 
-    if (!userExists) {
+    if (!user) {
         throw new Error("user of stripeCustomerId not found");
     }
 
-    await jsonDb.updateUser(userExists.id, {
-        stripeCustomerId,
-        stripeSubscriptionId,
-        stripeSubscriptionStatus,
-        stripePriceId,
+    await prisma.user.update({
+        where: { id: user.id },
+        data: {
+            stripeCustomerId,
+            stripeSubscriptionId,
+            stripeSubscriptionStatus,
+            stripePriceId,
+        },
     });
 };
 
@@ -152,7 +163,9 @@ export const getPlanByPrice = (priceId: string) => {
 };
 
 export const getUserCurrentPlan = async (userId: string) => {
-    const user = await jsonDb.findUserById(userId);
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+    });
 
     if (!user || !user.stripePriceId) {
         // Default to free plan if no user or plan found
@@ -164,7 +177,9 @@ export const getUserCurrentPlan = async (userId: string) => {
         };
 
         // Count user's todos
-        const userTodos = await jsonDb.findToDosByUserId(userId);
+        const userTodos = await prisma.todo.findMany({
+            where: { userId },
+        });
         const currentTasks = userTodos.length;
         const availableTasks = plan.quota.TASKS;
         const usage = (currentTasks / availableTasks) * 100;
@@ -184,7 +199,9 @@ export const getUserCurrentPlan = async (userId: string) => {
     const plan = getPlanByPrice(user.stripePriceId);
 
     // Count user's todos
-    const userTodos = await jsonDb.findToDosByUserId(userId);
+    const userTodos = await prisma.todo.findMany({
+        where: { userId },
+    });
     const currentTasks = userTodos.length;
     const availableTasks = plan.quota.TASKS;
     const usage = (currentTasks / availableTasks) * 100;

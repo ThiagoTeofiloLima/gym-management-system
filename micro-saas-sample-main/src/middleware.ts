@@ -1,36 +1,47 @@
-import { getUrl } from "./lib/get-url";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server"
 
-// Define a função middleware que será usada para gerenciar redirecionamentos com base no estado de autenticação
 export function middleware(request: NextRequest) {
-    // Obtém o token de autenticação dos cookies da requisição
-    const token = request.cookies.get('authjs.session-token') ||
-                    request.cookies.get('__Secure-authjs.session-token');
-    // Obtém o caminho atual da URL acessada
-    const pathname = request.nextUrl.pathname;
+  const { pathname } = request.nextUrl
+  
+  const sessionToken = request.cookies.get('authjs.session-token')
+  const secureSessionToken = request.cookies.get('__Secure-authjs.session-token')
+  
+  const token = sessionToken || secureSessionToken
+  const isAuthenticated = !!token
 
-    // Se o usuário estiver tentando acessar a página de autenticação e já possua um token, redireciona para a página do app
-    // if (pathname === '/auth' && token) {
-    //     return NextResponse.redirect(new URL(getUrl('/app')));
-    // }
+  // API auth - sempre permite
+  if (pathname.startsWith('/api/auth')) {
+    return NextResponse.next()
+  }
 
-    // Se o usuário estiver tentando acessar qualquer página dentro de '/app' sem um token, redireciona para a página de autenticação
-    // if (pathname.includes('/app') && !token) {
-    //     return NextResponse.redirect(new URL(getUrl('/auth')));
-    // }
+  // Página de auth - se autenticado, redireciona para /app
+  if (pathname === '/auth') {
+    if (isAuthenticated) {
+      return NextResponse.redirect(new URL('/app', request.url))
+    }
+    return NextResponse.next()
+  }
 
-    // Temporary: Allow all routes without authentication
-    const response = NextResponse.next();
-    
-    // Adiciona headers para multi-tenancy (será usado pelas APIs)
-    // Em produção, isso viria da sessão do usuário autenticado
-    response.headers.set('X-Gym-ID', 'default-gym-id');
-    response.headers.set('X-User-Role', 'admin'); // Admin pode ver tudo
-    
-    return response;
+  // Página inicial - se autenticado, redireciona para /app
+  if (pathname === '/') {
+    if (isAuthenticated) {
+      return NextResponse.redirect(new URL('/app', request.url))
+    }
+    return NextResponse.redirect(new URL('/auth', request.url))
+  }
+
+  // Rotas protegidas - requer autenticação
+  if (!isAuthenticated) {
+    const authUrl = new URL('/auth', request.url)
+    authUrl.searchParams.set('callbackUrl', pathname)
+    return NextResponse.redirect(authUrl)
+  }
+
+  return NextResponse.next()
 }
 
-// Configuração do middleware para especificar quais caminhos ele deve interceptar
 export const config = {
-    matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)']
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
 }

@@ -25,6 +25,7 @@ import { PlusIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import { calculateRevenueFromMembers, getPlanPricingBreakdown, getPlanPrice, generateFinancialRecordsFromMembers } from "@/services/plan-pricing";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 interface Expense {
   id: string;
@@ -39,6 +40,9 @@ interface Expense {
 }
 
 export function FinancialCharts() {
+    const searchParams = useSearchParams()
+    const gymId = searchParams?.get('gymId')
+    
     const [monthlyData, setMonthlyData] = useState<any[]>([]);
     const [categoryData, setCategoryData] = useState<any[]>([]);
     const [financialRecords, setFinancialRecords] = useState<any[]>([]);
@@ -54,9 +58,13 @@ export function FinancialCharts() {
     // Define the data loading function separately so it can be reused
     const loadFinancialData = async (preserveSelection?: string) => {
         try {
+            // Fetch data com gymId para filtrar por academia
+            const financialUrl = gymId ? `/api/data?gymId=${gymId}` : '/api/data';
+            const expenseUrl = gymId ? `/api/expenses?gymId=${gymId}` : '/api/expenses';
+            
             const [financialResponse, expenseResponse] = await Promise.all([
-                fetch('/api/data'),
-                fetch('/api/expenses?userId=user-1') // Using a placeholder user ID for now
+                fetch(financialUrl),
+                fetch(expenseUrl)
             ]);
 
             if (!financialResponse.ok || !expenseResponse.ok) {
@@ -67,6 +75,8 @@ export function FinancialCharts() {
             const financial = allData.financial;
             const members = allData.members;
             const expenses: Expense[] = await expenseResponse.json();
+
+            console.log('[FinancialCharts] Loaded data for gymId:', gymId, 'Expenses:', expenses.length);
 
             // Convert expenses to financial records format for integration
             const expenseFinancialRecords = expenses.map(expense => ({
