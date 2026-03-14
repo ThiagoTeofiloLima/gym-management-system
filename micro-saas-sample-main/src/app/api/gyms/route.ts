@@ -5,40 +5,24 @@ import { getTenantContext } from '@/lib/multi-tenant'
 
 /**
  * GET /api/gyms
- * - Super Admin: vê todas as academias
- * - Gym Admin: vê apenas sua academia
- * - User: não tem acesso a esta endpoint
+ * Lista academias do usuário logado
  */
 export async function GET(request: NextRequest) {
   try {
     const session = await auth()
-    
+
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const context = await getTenantContext()
-    
-    if (!context) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const url = new URL(request.url)
+    const gymId = url.searchParams.get('gymId')
 
-    // Apenas Super Admin e Gym Admin podem acessar
-    if (!context.isSuperAdmin && !context.isGymAdmin) {
-      return NextResponse.json(
-        { error: 'Forbidden: Admin access required' },
-        { status: 403 }
-      )
-    }
-
-    const searchParams = request.nextUrl.searchParams
-    const gymId = searchParams.get('gymId')
-
-    // Super Admin pode ver todas ou uma específica
-    if (context.isSuperAdmin) {
-      if (gymId) {
-        const gym = await prisma.gym.findUnique({
-          where: { id: gymId },
+    // Buscar vínculo do usuário com academias
+    const userGyms = await prisma.userGym.findMany({
+      where: { userId: session.user.id, status: 'ACTIVE' },
+      include: {
+        gym: {
           include: {
             _count: {
               select: {
@@ -50,48 +34,27 @@ export async function GET(request: NextRequest) {
               },
             },
           },
-        })
-        return NextResponse.json(gym)
+        },
+      },
+    })
+
+    // Se tiver gymId específico e pertencer ao usuário
+    if (gymId) {
+      const userGym = userGyms.find(ug => ug.gymId === gymId)
+      if (!userGym) {
+        return NextResponse.json({ error: 'Gym not found or access denied' }, { status: 404 })
       }
-
-      // Lista todas as academias
-      const gyms = await prisma.gym.findMany({
-        include: {
-          _count: {
-            select: {
-              users: true,
-              members: true,
-              trainers: true,
-              workouts: true,
-              expenses: true,
-            },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-      })
-      return NextResponse.json(gyms)
+      return NextResponse.json(userGym.gym)
     }
 
-    // Gym Admin vê apenas sua academia
-    if (context.gymId) {
-      const gym = await prisma.gym.findUnique({
-        where: { id: context.gymId },
-        include: {
-          _count: {
-            select: {
-              users: true,
-              members: true,
-              trainers: true,
-              workouts: true,
-              expenses: true,
-            },
-          },
-        },
-      })
-      return NextResponse.json(gym)
-    }
-
-    return NextResponse.json({ error: 'No gym associated' }, { status: 400 })
+    // Retorna apenas as academias do usuário
+    const gyms = userGyms.map(ug => ({
+      ...ug.gym,
+      role: ug.role,
+      userGymStatus: ug.status,
+    }))
+    
+    return NextResponse.json(gyms)
   } catch (error) {
     console.error('Erro ao buscar academias:', error)
     return NextResponse.json(

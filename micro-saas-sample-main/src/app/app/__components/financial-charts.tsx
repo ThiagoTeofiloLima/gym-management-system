@@ -61,7 +61,7 @@ export function FinancialCharts() {
             // Fetch data com gymId para filtrar por academia
             const financialUrl = gymId ? `/api/data?gymId=${gymId}` : '/api/data';
             const expenseUrl = gymId ? `/api/expenses?gymId=${gymId}` : '/api/expenses';
-            
+
             const [financialResponse, expenseResponse] = await Promise.all([
                 fetch(financialUrl),
                 fetch(expenseUrl)
@@ -72,11 +72,16 @@ export function FinancialCharts() {
             }
 
             const allData = await financialResponse.json();
-            const financial = allData.financial;
-            const members = allData.members;
+            const financial = allData.financial || [];
+            const members = allData.members || [];
             const expenses: Expense[] = await expenseResponse.json();
 
-            console.log('[FinancialCharts] Loaded data for gymId:', gymId, 'Expenses:', expenses.length);
+            console.log('[FinancialCharts] Loaded data for gymId:', gymId, 'Expenses:', expenses.length, 'Financial:', financial.length);
+
+            // Se não houver dados, usa fallback
+            if ((!financial || financial.length === 0) && (!expenses || expenses.length === 0)) {
+                throw new Error('No data available');
+            }
 
             // Convert expenses to financial records format for integration
             const expenseFinancialRecords = expenses.map(expense => ({

@@ -13,28 +13,77 @@ import {
 } from "@radix-ui/react-icons";
 import { Dumbbell } from "lucide-react";
 import { AnalyticsCharts } from "../__components/dashboard-charts";
-import { jsonDb } from "@/services/json-db";
+import { prisma } from "@/lib/prisma";
+import { auth } from "@/services/auth";
+import { getTenantContext } from "@/lib/multi-tenant";
 
-export default async function AnalyticsPage() {
-    // Get all data from the database
-    const allData = await jsonDb.getData();
-    const members = allData.members;
-    const attendance = allData.attendance;
-    const financial = allData.financial;
+export default async function AnalyticsPage(props: {
+    searchParams: Promise<{ gymId?: string }>
+}) {
+    const searchParams = await props.searchParams
+    let queryGymId = searchParams.gymId
 
-    // Calculate analytics
-    const activeMembers = members.filter(member => member.status === 'Ativo').length;
-    const totalMembers = members.length;
-    const attendanceRate = attendance.length > 0 
-        ? Math.round((attendance.filter(record => record.status === 'Presente').length / attendance.length) * 100) 
-        : 0;
+    const session = await auth()
+    if (!session?.user) {
+        return <div>Unauthorized</div>
+    }
+
+    const context = await getTenantContext()
+    if (!context) {
+        return <div>Unauthorized</div>
+    }
+
+    // Obter gymId
+    let gymIdFilter: string | undefined
+    if (queryGymId) {
+        gymIdFilter = queryGymId
+    } else if (context.gymId) {
+        gymIdFilter = context.gymId
+    } else if (context.gyms && context.gyms.length > 0) {
+        const firstGym = context.gyms.find((g: any) => g.status === 'ACTIVE' && g.isActive)
+        gymIdFilter = firstGym?.gymId
+    }
+
+    // Buscar dados do banco
+    const whereClause = gymIdFilter ? { gymId: gymIdFilter } : {}
+
+    const [members, attendance] = await Promise.all([
+        prisma.member.findMany({ where: whereClause }),
+        prisma.attendance.findMany({ 
+            where: gymIdFilter ? {
+                memberId: {
+                    in: (await prisma.member.findMany({
+                        where: { gymId: gymIdFilter },
+                        select: { id: true }
+                    })).map(m => m.id)
+                }
+            } : {}
+        }),
+    ])
+
+    // Calcular analytics
+    const activeMembers = members.filter(m => m.status === 'Ativo').length
+    const totalMembers = members.length
     
-    const monthlyRevenue = financial
-        .filter(record => record.type === 'Receita')
-        .reduce((sum, record) => sum + record.amount, 0);
-    
-    // Calculate retention rate (simplified)
-    const retentionRate = 92; // This would be calculated based on historical data
+    // Taxa de frequência: membros únicos que vieram nos últimos 30 dias / total de membros
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+    const recentAttendance = attendance.filter(a => 
+        new Date(a.date) >= thirtyDaysAgo && a.status === 'Presente'
+    )
+    const uniqueMembersWhoAttended = new Set(recentAttendance.map(a => a.memberId)).size
+    const attendanceRate = totalMembers > 0 
+        ? Math.round((uniqueMembersWhoAttended / totalMembers) * 100) 
+        : 0
+
+    const monthlyRevenue = await prisma.expense.findMany({
+        where: whereClause,
+    })
+    const revenue = monthlyRevenue
+        .filter(r => ['Mensalidades', 'Mensalidades Anuais', 'Mensalidades Trimestrais', 'Receita'].includes(r.category))
+        .reduce((sum, r) => sum + Number(r.amount), 0)
+
+    const retentionRate = 92 // Fixo por enquanto
 
     return (
         <DashboardPage>
@@ -58,12 +107,12 @@ export default async function AnalyticsPage() {
 
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Frequência Média</CardTitle>
+                            <CardTitle className="text-sm font-medium">Taxa de Frequência</CardTitle>
                             <CalendarIcon className="h-5 w-5 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{attendanceRate}%</div>
-                            <p className="text-xs text-muted-foreground">baseado em registros</p>
+                            <p className="text-xs text-muted-foreground">membros únicos (30 dias)</p>
                         </CardContent>
                     </Card>
 
@@ -73,7 +122,7 @@ export default async function AnalyticsPage() {
                             <BarChartIcon className="h-5 w-5 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">R$ {monthlyRevenue.toLocaleString('pt-BR')}</div>
+                            <div className="text-2xl font-bold">R$ {revenue.toLocaleString('pt-BR')}</div>
                             <p className="text-xs text-muted-foreground">último mês</p>
                         </CardContent>
                     </Card>
@@ -90,7 +139,7 @@ export default async function AnalyticsPage() {
                     </Card>
                 </div>
 
-                <AnalyticsCharts />
+                <AnalyticsCharts gymId={gymIdFilter} />
 
                 {/* Insights */}
                 <Card>
