@@ -20,7 +20,7 @@ import {
     CardStackIcon,
     DashboardIcon,
 } from "@radix-ui/react-icons"
-import { Dumbbell, Building2, Crown, Check, Building } from "lucide-react"
+import { Dumbbell, Building2, Crown, Check, Building, DollarSign } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
 import { UserDropdown } from "./user-dropdown"
 import { Logo } from "@/components/logo"
@@ -246,14 +246,24 @@ export function MainSidebar({ user, context, accessibleGyms }: MainSidebarProps)
                         
                         {/* Link exclusivo para Super Admin */}
                         {isSuperAdmin && (
-                            <DashboardSidebarNavLink
-                                className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400"
-                                href="/app/gyms"
-                                active={Boolean(isActive("/app/gyms") || (pathname && pathname.includes("/app/gyms")))}
-                            >
-                                <Building2 className="h-4 w-4" />
-                                Gestão de Academias
-                            </DashboardSidebarNavLink>
+                            <>
+                                <DashboardSidebarNavLink
+                                    className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400"
+                                    href="/app/superadmin"
+                                    active={Boolean(isActive("/app/superadmin") || (pathname && pathname.includes("/app/superadmin")))}
+                                >
+                                    <Crown className="h-4 w-4" />
+                                    Painel Super Admin
+                                </DashboardSidebarNavLink>
+                                <DashboardSidebarNavLink
+                                    className="flex items-center gap-2"
+                                    href="/app/gyms"
+                                    active={Boolean(isActive("/app/gyms") || (pathname && pathname.includes("/app/gyms")))}
+                                >
+                                    <Building2 className="h-4 w-4" />
+                                    Gestão de Academias
+                                </DashboardSidebarNavLink>
+                            </>
                         )}
                         
                         <DashboardSidebarNavLink
@@ -263,6 +273,14 @@ export function MainSidebar({ user, context, accessibleGyms }: MainSidebarProps)
                         >
                             <GearIcon />
                             Configurações
+                        </DashboardSidebarNavLink>
+                        <DashboardSidebarNavLink
+                            className="flex items-center gap-2"
+                            href="/app/settings/pricing"
+                            active={isActive("/app/settings/pricing")}
+                        >
+                            <DollarSign className="h-4 w-4" />
+                            Planos e Preços
                         </DashboardSidebarNavLink>
                     </DashboardSidebarNavMain>
                 </DashboardSidebarNav>

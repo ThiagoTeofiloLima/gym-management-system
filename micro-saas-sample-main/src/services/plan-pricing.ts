@@ -5,6 +5,16 @@ export interface PlanPricing {
   anual: number;
 }
 
+export interface GymPlan {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  duration: number;
+  maxMembers: number | null;
+  isActive: boolean;
+}
+
 // Default plan prices
 export const DEFAULT_PLAN_PRICING: PlanPricing = {
   mensal: 100,
@@ -12,18 +22,67 @@ export const DEFAULT_PLAN_PRICING: PlanPricing = {
   anual: 900,
 };
 
-// Get current plan pricing (in a real app, this would come from a database)
+// Cache for gym plans
+let gymPlansCache: GymPlan[] = [];
+let lastFetchTime = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+// Get gym plans from API
+export async function getGymPlans(gymId?: string): Promise<GymPlan[]> {
+  const now = Date.now();
+  
+  // Return cached plans if still valid
+  if (gymPlansCache.length > 0 && now - lastFetchTime < CACHE_DURATION) {
+    return gymPlansCache;
+  }
+
+  try {
+    const url = gymId ? `/api/gym-plans?gymId=${gymId}` : '/api/gym-plans';
+    const res = await fetch(url);
+    
+    if (res.ok) {
+      const plans = await res.json();
+      gymPlansCache = plans;
+      lastFetchTime = now;
+      return plans;
+    }
+  } catch (error) {
+    console.error('Erro ao buscar planos:', error);
+  }
+  
+  return [];
+}
+
+// Get current plan pricing (from database or default)
 export function getCurrentPlanPricing(): PlanPricing {
-  // In a real application, this would fetch from a database or API
-  // For now, we'll use the default values
+  // For backward compatibility, return default values
+  // In a real app, this would fetch from database
   return DEFAULT_PLAN_PRICING;
 }
 
-// Get the price for a specific plan type
-export function getPlanPrice(planType: string): number {
-  const pricing = getCurrentPlanPricing();
+// Get the price for a specific plan type from gym plans
+export function getPlanPrice(planName: string): number {
+  // Try to get from global map (set by financial-charts.tsx)
+  if (typeof window !== 'undefined' && (window as any).__gymPlanPriceMap) {
+    const price = (window as any).__gymPlanPriceMap.get(planName.toLowerCase());
+    if (price !== undefined) {
+      return price;
+    }
+  }
   
-  switch (planType.toLowerCase()) {
+  // First try to find in gym plans cache
+  const gymPlan = gymPlansCache.find(
+    p => p.name.toLowerCase() === planName.toLowerCase() && p.isActive
+  );
+  
+  if (gymPlan) {
+    return gymPlan.price;
+  }
+
+  // Fallback to default pricing
+  const pricing = getCurrentPlanPricing();
+
+  switch (planName.toLowerCase()) {
     case 'mensal':
       return pricing.mensal;
     case 'trimestral':
@@ -31,7 +90,7 @@ export function getPlanPrice(planType: string): number {
     case 'anual':
       return pricing.anual;
     default:
-      return 0; // Default to 0 if plan type is not recognized
+      return 0;
   }
 }
 
@@ -43,7 +102,7 @@ export function calculateRevenueFromMembers(members: any[]): number {
     if (planStatus.label !== "Inativo" && planStatus.label !== "Vencido") {
       return total + getPlanPrice(member.plan);
     }
-    return total; // Don't add revenue for inactive or expired members
+    return total;
   }, 0);
 }
 

@@ -15,17 +15,18 @@ import {
 } from "recharts";
 import {
     BarChartIcon,
-    CardStackIcon
+    CardStackIcon,
+    DashboardIcon
 } from "@radix-ui/react-icons";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { PlusIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
-import { calculateRevenueFromMembers, getPlanPricingBreakdown, getPlanPrice, generateFinancialRecordsFromMembers } from "@/services/plan-pricing";
-import Link from "next/link";
+import { getGymPlans, getPlanPrice } from "@/services/plan-pricing";
 import { useSearchParams } from "next/navigation";
+import { BarChart3, TrendingUp, TrendingDown, DollarSign, Calendar } from "lucide-react";
 
 interface Expense {
   id: string;
@@ -39,10 +40,33 @@ interface Expense {
   userId: string;
 }
 
+interface GymPlan {
+  id: string;
+  name: string;
+  price: number;
+  duration: number;
+  isActive: boolean;
+}
+
+interface FinancialData {
+  members: any[];
+  expenses: Expense[];
+  gymPlans: GymPlan[];
+  projectedRevenue: number;
+  membersByPlan: Record<string, { count: number; revenue: number }>;
+  currentMonthRevenue: number;
+  currentMonthExpenses: number;
+  monthlyHistory: Array<{ month: string; revenue: number; expenses: number; profit: number }>;
+  categoryData: Array<{ name: string; value: number }>;
+  totalRevenue: number;
+  totalExpenses: number;
+}
+
 export function FinancialCharts() {
     const searchParams = useSearchParams()
     const gymId = searchParams?.get('gymId')
-    
+
+    const [financialData, setFinancialData] = useState<FinancialData | null>(null);
     const [monthlyData, setMonthlyData] = useState<any[]>([]);
     const [categoryData, setCategoryData] = useState<any[]>([]);
     const [financialRecords, setFinancialRecords] = useState<any[]>([]);
@@ -54,130 +78,61 @@ export function FinancialCharts() {
     });
     const [selectedDate, setSelectedDate] = useState<string>('');
     const [selectedMonth, setSelectedMonth] = useState<string>('');
+    const [loading, setLoading] = useState(true);
 
-    // Define the data loading function separately so it can be reused
+    // Carregar dados financeiros
     const loadFinancialData = async (preserveSelection?: string) => {
+        setLoading(true);
         try {
-            // Fetch data com gymId para filtrar por academia
-            const financialUrl = gymId ? `/api/data?gymId=${gymId}` : '/api/data';
-            const expenseUrl = gymId ? `/api/expenses?gymId=${gymId}` : '/api/expenses';
+            const url = gymId ? `/api/financial/data?gymId=${gymId}` : '/api/financial/data';
+            const res = await fetch(url);
 
-            const [financialResponse, expenseResponse] = await Promise.all([
-                fetch(financialUrl),
-                fetch(expenseUrl)
-            ]);
-
-            if (!financialResponse.ok || !expenseResponse.ok) {
-                throw new Error('Failed to fetch data');
+            if (!res.ok) {
+                throw new Error('Erro ao carregar dados financeiros');
             }
 
-            const allData = await financialResponse.json();
-            const financial = allData.financial || [];
-            const members = allData.members || [];
-            const expenses: Expense[] = await expenseResponse.json();
+            const data: FinancialData = await res.json();
+            setFinancialData(data);
 
-            console.log('[FinancialCharts] Loaded data for gymId:', gymId, 'Expenses:', expenses.length, 'Financial:', financial.length);
+            // Atualizar mapa de preços global
+            const planPriceMap = new Map<string, number>();
+            data.gymPlans.forEach((plan: GymPlan) => {
+                if (plan.isActive) {
+                    planPriceMap.set(plan.name.toLowerCase(), plan.price);
+                }
+            });
+            (window as any).__gymPlanPriceMap = planPriceMap;
 
-            // Se não houver dados, usa fallback
-            if ((!financial || financial.length === 0) && (!expenses || expenses.length === 0)) {
-                throw new Error('No data available');
-            }
+            // Criar registros financeiros
+            const revenueRecords = data.members
+                .filter((m: any) => m.status === 'Ativo' || m.status === 'ativo')
+                .map((member: any) => {
+                    const price = getPlanPrice(member.plan);
+                    return {
+                        id: `revenue-${member.id}-${member.paymentDate}`,
+                        date: member.paymentDate,
+                        description: `Mensalidade - ${member.name}`,
+                        type: 'Receita',
+                        amount: price,
+                        category: member.plan,
+                    };
+                });
 
-            // Convert expenses to financial records format for integration
-            const expenseFinancialRecords = expenses.map(expense => ({
+            const expenseRecords = data.expenses.map((expense: Expense) => ({
                 id: expense.id,
                 date: expense.date,
                 description: expense.title,
                 type: 'Despesa',
                 amount: expense.amount,
                 category: expense.category,
-                userId: expense.userId
             }));
 
-            // Use only the existing financial records from the database
-            // These should already include the member payment records that were properly updated
-            // when member payment dates were changed, thanks to our json-db update
-            const allFinancialRecords = [...financial, ...expenseFinancialRecords];
+            const allRecords = [...revenueRecords, ...expenseRecords];
+            setFinancialRecords(allRecords);
 
-            // Set all financial records
-            setFinancialRecords(allFinancialRecords);
-
-            // Determine what to filter by - date, month, or default to last 7 days
-            let recordsToShow;
-            if (selectedMonth) {
-                // If a month is selected, show records for that month in the current year
-                const currentYear = new Date().getFullYear();
-
-                recordsToShow = allFinancialRecords.filter(record => {
-                    const [recordYear, recordMonth] = record.date.split('-');
-                    return recordMonth === selectedMonth && parseInt(recordYear) === currentYear;
-                }).sort((a, b) => {
-                    // Sort by date (ascending), then by type (Receita first), then by amount (descending)
-                    if (a.date !== b.date) {
-                        return a.date.localeCompare(b.date); // Sort dates ascending
-                    }
-                    if (a.type === 'Receita' && b.type !== 'Receita') return -1;
-                    if (a.type !== 'Receita' && b.type === 'Receita') return 1;
-                    return b.amount - a.amount;
-                });
-            } else if (preserveSelection && preserveSelection.length === 10) { // YYYY-MM-DD format has 10 characters
-                // If a specific date is selected (preserveSelection is in YYYY-MM-DD format), show records for that date
-                recordsToShow = allFinancialRecords.filter(record => {
-                    return record.date === preserveSelection;
-                }).sort((a, b) => {
-                    // Sort by type (Receita first), then by amount (descending)
-                    if (a.type === 'Receita' && b.type !== 'Receita') return -1;
-                    if (a.type !== 'Receita' && b.type === 'Receita') return 1;
-                    return b.amount - a.amount;
-                });
-            } else if (preserveSelection && preserveSelection.length === 2) { // MM format has 2 characters
-                // If preserveSelection is a month (when called from refresh with month selected)
-                const currentYear = new Date().getFullYear();
-
-                recordsToShow = allFinancialRecords.filter(record => {
-                    const [recordYear, recordMonth] = record.date.split('-');
-                    return recordMonth === preserveSelection && parseInt(recordYear) === currentYear;
-                }).sort((a, b) => {
-                    // Sort by date (ascending), then by type (Receita first), then by amount (descending)
-                    if (a.date !== b.date) {
-                        return a.date.localeCompare(b.date); // Sort dates ascending
-                    }
-                    if (a.type === 'Receita' && b.type !== 'Receita') return -1;
-                    if (a.type !== 'Receita' && b.type === 'Receita') return 1;
-                    return b.amount - a.amount;
-                });
-            } else {
-                // If no date or month is selected, show last 7 days
-                const today = new Date();
-                const sevenDaysAgo = new Date();
-                sevenDaysAgo.setDate(today.getDate() - 7);
-
-                const recentRecords = allFinancialRecords.filter(record => {
-                    const recordDate = new Date(record.date);
-                    return recordDate >= sevenDaysAgo;
-                }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Sort by date descending
-
-                // If no recent records, show all records as fallback
-                recordsToShow = recentRecords.length > 0 ? recentRecords : allFinancialRecords.slice(0, 20); // Show first 20 if no recent ones
-            }
-
-            setFilteredRecords(recordsToShow);
-            // Don't update selectedDate if a month is selected, to preserve the UI state
-            if (!selectedMonth && preserveSelection && preserveSelection.length === 10) {
-                setSelectedDate(preserveSelection);
-            } else if (preserveSelection && preserveSelection.length === 2) {
-                setSelectedMonth(preserveSelection);
-            }
-
-            // Calculate total revenue from all financial records
-            const totalRevenue = allFinancialRecords
-                .filter((record: any) => record.type === 'Receita')
-                .reduce((sum: number, record: any) => sum + record.amount, 0);
-
-            // Calculate expenses from all financial records
-            const totalExpenses = allFinancialRecords
-                .filter((record: any) => record.type === 'Despesa')
-                .reduce((sum: number, record: any) => sum + record.amount, 0);
+            // Atualizar resumos
+            const totalRevenue = revenueRecords.reduce((sum, r) => sum + r.amount, 0);
+            const totalExpenses = expenseRecords.reduce((sum, r) => sum + r.amount, 0);
 
             setFinancialSummary({
                 totalRevenue,
@@ -185,201 +140,166 @@ export function FinancialCharts() {
                 profit: totalRevenue - totalExpenses
             });
 
-            // Prepare monthly data based on actual financial records
-            const allRecords = allFinancialRecords;
-
-            // Group records by month
-            const monthlyDataMap: Record<string, { revenue: number, expenses: number }> = {};
-
+            // Preparar dados mensais
+            const monthlyMap: Record<string, { revenue: number; expenses: number }> = {};
+            
             allRecords.forEach(record => {
-                // Parse date to avoid timezone issues
                 const [year, month] = record.date.split('-');
-                const monthKey = `${year}-${month}`;
-
-                if (!monthlyDataMap[monthKey]) {
-                    monthlyDataMap[monthKey] = { revenue: 0, expenses: 0 };
+                const key = `${year}-${month}`;
+                
+                if (!monthlyMap[key]) {
+                    monthlyMap[key] = { revenue: 0, expenses: 0 };
                 }
-
+                
                 if (record.type === 'Receita') {
-                    monthlyDataMap[monthKey].revenue += record.amount;
-                } else if (record.type === 'Despesa') {
-                    monthlyDataMap[monthKey].expenses += record.amount;
+                    monthlyMap[key].revenue += record.amount;
+                } else {
+                    monthlyMap[key].expenses += record.amount;
                 }
             });
 
-            // Convert to array and format month names
-            const months = Object.keys(monthlyDataMap).sort().slice(-6); // Get last 6 months
             const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-
-            const monthly = months.map(monthKey => {
-                const [year, monthNum] = monthKey.split('-');
-                const monthName = monthNames[parseInt(monthNum) - 1];
-                const data = monthlyDataMap[monthKey];
-
-                return {
-                    month: `${monthName}/${year.substring(2)}`, // Format as "Jan/25"
-                    revenue: data.revenue,
-                    expenses: data.expenses,
-                    profit: data.revenue - data.expenses
-                };
-            });
+            const monthly = Object.keys(monthlyMap)
+                .sort()
+                .slice(-6)
+                .map(key => {
+                    const [year, monthNum] = key.split('-');
+                    const monthName = monthNames[parseInt(monthNum) - 1];
+                    return {
+                        month: `${monthName}/${year.substring(2)}`,
+                        revenue: monthlyMap[key].revenue,
+                        expenses: monthlyMap[key].expenses,
+                        profit: monthlyMap[key].revenue - monthlyMap[key].expenses,
+                    };
+                });
 
             setMonthlyData(monthly);
 
-            // Prepare category data based on all financial records
-            const categories: Record<string, number> = {};
-
-            // Add all revenue from financial records
-            allFinancialRecords.forEach(record => {
-                if (record.type === 'Receita') {
-                    if (!categories[record.category]) {
-                        categories[record.category] = 0;
-                    }
-                    categories[record.category] += record.amount;
+            // Dados por categoria
+            const categoryMap: Record<string, number> = {};
+            expenseRecords.forEach(record => {
+                if (!categoryMap[record.category]) {
+                    categoryMap[record.category] = 0;
                 }
+                categoryMap[record.category] += record.amount;
             });
 
-            const catData = Object.entries(categories).map(([name, value]) => ({
+            const categories = Object.entries(categoryMap).map(([name, value]) => ({
                 name,
-                value: value as number
+                value,
             }));
-            setCategoryData(catData);
+            setCategoryData(categories);
+
+            // Filtrar registros
+            let recordsToShow = allRecords;
+            if (selectedMonth) {
+                recordsToShow = allRecords.filter(record => {
+                    const [recordYear, recordMonth] = record.date.split('-');
+                    return recordMonth === selectedMonth && parseInt(recordYear) === new Date().getFullYear();
+                });
+            } else if (selectedDate) {
+                recordsToShow = allRecords.filter(record => record.date === selectedDate);
+            }
+
+            setFilteredRecords(recordsToShow.sort((a, b) => {
+                if (a.type === 'Receita' && b.type !== 'Receita') return -1;
+                if (a.type !== 'Receita' && b.type === 'Receita') return 1;
+                return b.amount - a.amount;
+            }));
 
         } catch (error) {
-            console.error("Error loading financial data:", error);
-
-            // Fallback to mock data if API fails
-            const fallbackFinancial = [
-                { id: '1', date: '2025-12-01', description: 'Mensalidade - João Silva', type: 'Receita', amount: 120, category: 'Mensalidades' },
-                { id: '2', date: '2025-12-01', description: 'Mensalidade - Maria Oliveira', type: 'Receita', amount: 120, category: 'Mensalidades' },
-                { id: '3', date: '2025-12-05', description: 'Limpeza', type: 'Despesa', amount: 800, category: 'Manutenção' },
-                { id: '4', date: '2025-12-10', description: 'Mensalidade - Carlos Souza', type: 'Receita', amount: 120, category: 'Mensalidades' },
-                { id: '5', date: '2025-12-15', description: 'Salário Personal', type: 'Despesa', amount: 3500, category: 'Folha de Pagamento' },
-            ];
-
-            // Add some expense records for fallback
-            const fallbackExpenses = [
-                { id: '6', date: '2025-12-08', description: 'Suprimentos de limpeza', type: 'Despesa', amount: 150, category: 'Suprimentos' },
-                { id: '7', date: '2025-12-12', description: 'Internet', type: 'Despesa', amount: 300, category: 'Utilidades' },
-                { id: '8', date: '2025-12-18', description: 'Marketing digital', type: 'Despesa', amount: 500, category: 'Marketing' },
-            ];
-
-            const allFinancialRecords = [...fallbackFinancial, ...fallbackExpenses];
-            setFinancialRecords(allFinancialRecords);
-
-            // Calculate revenue from all records
-            const totalRevenue = allFinancialRecords
-                .filter((record: any) => record.type === 'Receita')
-                .reduce((sum: number, record: any) => sum + record.amount, 0);
-
-            // Calculate expenses from all records
-            const totalExpenses = allFinancialRecords
-                .filter((record: any) => record.type === 'Despesa')
-                .reduce((sum: number, record: any) => sum + record.amount, 0);
-
-            setFinancialSummary({
-                totalRevenue,
-                totalExpenses,
-                profit: totalRevenue - totalExpenses
-            });
-
-            setMonthlyData([
-                { month: 'Jan/25', revenue: 12000, expenses: 8000, profit: 4000 },
-                { month: 'Fev/25', revenue: 13500, expenses: 8200, profit: 5300 },
-                { month: 'Mar/25', revenue: 14200, expenses: 8500, profit: 5700 },
-                { month: 'Abr/25', revenue: 13800, expenses: 8300, profit: 5500 },
-                { month: 'Mai/25', revenue: 15000, expenses: 8700, profit: 6300 },
-                { month: 'Jun/25', revenue: 14500, expenses: 8600, profit: 5900 },
-            ]);
-
-            // Calculate categories from all records (for revenue)
-            const categories: Record<string, number> = {};
-            allFinancialRecords.forEach(record => {
-                if (record.type === 'Receita') {
-                    if (!categories[record.category]) {
-                        categories[record.category] = 0;
-                    }
-                    categories[record.category] += record.amount;
-                }
-            });
-
-            const catData = Object.entries(categories).map(([name, value]) => ({
-                name,
-                value: value as number
-            }));
-            setCategoryData(catData);
+            console.error('Erro ao carregar dados:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
     useEffect(() => {
         loadFinancialData();
-    }, []);
+    }, [gymId]);
 
-    // Filter records based on selected date or month
-    useEffect(() => {
-        if (selectedMonth && financialRecords.length > 0) {
-            // If a month is selected, show records for that month in the current year
-            const currentYear = new Date().getFullYear();
+    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#FF6B6B'];
 
-            const monthlyRecords = financialRecords.filter(record => {
-                const [recordYear, recordMonth] = record.date.split('-');
-                return recordMonth === selectedMonth && parseInt(recordYear) === currentYear;
-            }).sort((a, b) => {
-                // Sort by date (ascending), then by type (Receita first), then by amount (descending)
-                if (a.date !== b.date) {
-                    return a.date.localeCompare(b.date); // Sort dates ascending
-                }
-                if (a.type === 'Receita' && b.type !== 'Receita') return -1;
-                if (a.type !== 'Receita' && b.type === 'Receita') return 1;
-                return b.amount - a.amount;
-            });
-
-            setFilteredRecords(monthlyRecords);
-        } else if (selectedDate && financialRecords.length > 0) {
-            // If a specific date is selected, show records for that date
-            // Using direct string comparison to avoid timezone issues
-            const selectedDateRecords = financialRecords.filter(record => {
-                return record.date === selectedDate;
-            }).sort((a, b) => {
-                // Sort by type (Receita first), then by amount (descending)
-                if (a.type === 'Receita' && b.type !== 'Receita') return -1;
-                if (a.type !== 'Receita' && b.type === 'Receita') return 1;
-                return b.amount - a.amount;
-            });
-
-            setFilteredRecords(selectedDateRecords);
-        } else if (financialRecords.length > 0) {
-            // If no date or month is selected, show last 7 days
-            const today = new Date();
-            // Format today's date to YYYY-MM-DD to avoid timezone issues
-            const todayFormatted = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-
-            const sevenDaysAgo = new Date();
-            sevenDaysAgo.setDate(today.getDate() - 7);
-            const sevenDaysAgoFormatted = `${sevenDaysAgo.getFullYear()}-${String(sevenDaysAgo.getMonth() + 1).padStart(2, '0')}-${String(sevenDaysAgo.getDate()).padStart(2, '0')}`;
-
-            const recentRecords = financialRecords.filter(record => {
-                // Direct string comparison to avoid timezone issues
-                return record.date >= sevenDaysAgoFormatted;
-            }).sort((a, b) => {
-                // Sort by date (descending), then by type (Receita first), then by amount (descending)
-                if (a.date !== b.date) {
-                    return b.date.localeCompare(a.date); // Sort dates descending
-                }
-                if (a.type === 'Receita' && b.type !== 'Receita') return -1;
-                if (a.type !== 'Receita' && b.type === 'Receita') return 1;
-                return b.amount - a.amount;
-            });
-
-            setFilteredRecords(recentRecords);
-        }
-    }, [selectedDate, selectedMonth, financialRecords]);
-
-    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center py-12">
+                <div className="text-center">
+                    <DashboardIcon className="h-8 w-8 animate-spin mx-auto mb-4" />
+                    <p>Carregando dados financeiros...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
-            {/* Financial Summary Cards */}
+            {/* Receita Projetada por Planos */}
+            {financialData && financialData.gymPlans.length > 0 && Object.keys(financialData.membersByPlan).length > 0 && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <DollarSign className="h-5 w-5 text-green-600" />
+                            Receita Projetada por Planos
+                        </CardTitle>
+                        <p className="text-sm text-muted-foreground">
+                            Projeção mensal baseada nos planos ativos dos membros
+                        </p>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/20 p-4 rounded-lg border-2 border-green-200 dark:border-green-800">
+                                <div className="flex items-center gap-2 text-sm text-green-700 dark:text-green-300 font-medium mb-1">
+                                    <TrendingUp className="h-4 w-4" />
+                                    Receita Mensal Projetada
+                                </div>
+                                <div className="text-4xl font-bold text-green-700 dark:text-green-300">
+                                    R$ {financialData.projectedRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </div>
+                                <p className="text-xs text-green-600 dark:text-green-400 mt-2">
+                                    Baseado em {Object.values(financialData.membersByPlan).reduce((sum: any, p: any) => sum + p.count, 0)} membro(s) ativo(s)
+                                </p>
+                            </div>
+                            
+                            <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/20 p-4 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+                                <div className="flex items-center gap-2 text-sm text-blue-700 dark:text-blue-300 font-medium mb-1">
+                                    <BarChart3 className="h-4 w-4" />
+                                    Ticket Médio por Membro
+                                </div>
+                                <div className="text-4xl font-bold text-blue-700 dark:text-blue-300">
+                                    R$ {(Object.keys(financialData.membersByPlan).length > 0 
+                                        ? financialData.projectedRevenue / Object.values(financialData.membersByPlan).reduce((sum: any, p: any) => sum + p.count, 0) 
+                                        : 0
+                                    ).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </div>
+                                <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
+                                    {financialData.gymPlans.length} plano(s) cadastrado(s)
+                                </p>
+                            </div>
+                        </div>
+                        
+                        {/* Distribuição de Membros por Plano */}
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                            {Object.entries(financialData.membersByPlan).map(([planName, data]: [string, any]) => {
+                                const plan = financialData.gymPlans.find(p => p.name.toLowerCase() === planName.toLowerCase());
+                                return (
+                                    <div key={planName} className="bg-muted/50 p-3 rounded-lg border text-center hover:border-primary transition-colors">
+                                        <div className="text-xs font-medium text-muted-foreground mb-1 truncate" title={planName}>{planName}</div>
+                                        <div className="text-2xl font-bold">{data.count}</div>
+                                        <div className="text-xs text-muted-foreground">membro(s)</div>
+                                        {plan && (
+                                            <div className="text-xs text-green-600 dark:text-green-400 mt-1 font-medium">
+                                                R$ {plan.price.toFixed(2)}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+            
+            {/* Resumo Financeiro */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -388,7 +308,7 @@ export function FinancialCharts() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">R$ {financialSummary.totalRevenue.toLocaleString('pt-BR')}</div>
-                        <p className="text-xs text-muted-foreground">+12% desde o mês passado</p>
+                        <p className="text-xs text-muted-foreground">último período</p>
                     </CardContent>
                 </Card>
 
@@ -399,7 +319,7 @@ export function FinancialCharts() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">R$ {financialSummary.totalExpenses.toLocaleString('pt-BR')}</div>
-                        <p className="text-xs text-muted-foreground">-3% desde o mês passado</p>
+                        <p className="text-xs text-muted-foreground">último período</p>
                     </CardContent>
                 </Card>
 
@@ -409,269 +329,181 @@ export function FinancialCharts() {
                         <BarChartIcon className="h-5 w-5 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">R$ {financialSummary.profit.toLocaleString('pt-BR')}</div>
-                        <p className="text-xs text-muted-foreground">Margem de {financialSummary.totalRevenue > 0 ? Math.round((financialSummary.profit/financialSummary.totalRevenue)*100) : 0}%</p>
+                        <div className={`text-2xl font-bold ${financialSummary.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            R$ {financialSummary.profit.toLocaleString('pt-BR')}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            Margem de {financialSummary.totalRevenue > 0 ? Math.round((financialSummary.profit/financialSummary.totalRevenue)*100) : 0}%
+                        </p>
                     </CardContent>
                 </Card>
             </div>
 
-            {/* Refresh Button */}
-            <div className="flex justify-end">
-                <Button
-                    onClick={() => {
-                        // Clear current data and reload from API
-                        setFinancialRecords([]);
-                        setFilteredRecords([]);
-                        setMonthlyData([]);
-                        setCategoryData([]);
-                        setFinancialSummary({ totalRevenue: 0, totalExpenses: 0, profit: 0 });
-
-                        // Reload the data while preserving the selected date or month
-                        // Pass the selected month if it exists, otherwise pass the selected date
-                        loadFinancialData(selectedMonth || selectedDate);
-                    }}
-                    variant="outline"
-                    className="flex items-center gap-2"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-                        <path d="M21 3v5h-5"/>
-                        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
-                        <path d="M8 16H3v5"/>
-                    </svg>
-                    Atualizar Dados
-                </Button>
-            </div>
-
-            {/* Charts */}
+            {/* Gráficos */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Evolução Mensal */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Desempenho Mensal</CardTitle>
+                        <CardTitle>Evolução Mensal</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={monthlyData}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="month" />
-                                <YAxis />
-                                <Tooltip />
-                                <Bar dataKey="revenue" fill="#8884d8" name="Receita" />
-                                <Bar dataKey="expenses" fill="#ff7300" name="Despesas" />
-                                <Bar dataKey="profit" fill="#00c49f" name="Lucro" />
-                            </BarChart>
-                        </ResponsiveContainer>
+                        {monthlyData.length > 0 ? (
+                            <ResponsiveContainer width="100%" height={300}>
+                                <BarChart data={monthlyData}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="month" />
+                                    <YAxis />
+                                    <Tooltip 
+                                        formatter={(value: number) => `R$ ${value.toLocaleString('pt-BR')}`}
+                                    />
+                                    <Bar dataKey="revenue" fill="#22c55e" name="Receitas" />
+                                    <Bar dataKey="expenses" fill="#ef4444" name="Despesas" />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                                Sem dados disponíveis
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
 
+                {/* Despesas por Categoria */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Receitas por Categoria</CardTitle>
+                        <CardTitle>Despesas por Categoria</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <PieChart>
-                                <Pie
-                                    data={categoryData}
-                                    cx="50%"
-                                    cy="50%"
-                                    labelLine={false}
-                                    label={({ name, percent }) => `${name} ${percent ? (percent * 100).toFixed(0) : '0'}%`}
-                                    outerRadius={80}
-                                    fill="#8884d8"
-                                    dataKey="value"
-                                >
-                                    {categoryData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                    ))}
-                                </Pie>
-                                <Tooltip />
-                            </PieChart>
-                        </ResponsiveContainer>
+                        {categoryData.length > 0 ? (
+                            <ResponsiveContainer width="100%" height={300}>
+                                <PieChart>
+                                    <Pie
+                                        data={categoryData}
+                                        cx="50%"
+                                        cy="50%"
+                                        labelLine={false}
+                                        label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                                        outerRadius={100}
+                                        fill="#8884d8"
+                                        dataKey="value"
+                                    >
+                                        {categoryData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip 
+                                        formatter={(value: number) => `R$ ${value.toLocaleString('pt-BR')}`}
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                                Sem despesas registradas
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </div>
 
-            {/* Financial Records Table */}
+            {/* Registros Detalhados */}
             <Card>
                 <CardHeader>
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                        <CardTitle>Registro Financeiro ({filteredRecords.length})</CardTitle>
-                        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                            <Input
-                                type="date"
-                                value={selectedDate}
-                                onChange={(e) => {
-                                    // Directly use the value from the input which is already in YYYY-MM-DD format
-                                    // This avoids any timezone conversion issues
-                                    setSelectedDate(e.target.value);
-                                    // Clear month selection when date is selected
-                                    setSelectedMonth('');
-                                }}
-                                className="max-w-[200px]"
-                            />
-                            <select
-                                value={selectedMonth}
-                                onChange={(e) => {
-                                    // When a month is selected, clear the date selection
-                                    setSelectedMonth(e.target.value);
-                                    setSelectedDate('');
-                                }}
-                                className="border rounded-md px-3 py-2 max-w-[150px]"
-                            >
-                                <option value="">Mês</option>
-                                <option value="01">Janeiro</option>
-                                <option value="02">Fevereiro</option>
-                                <option value="03">Março</option>
-                                <option value="04">Abril</option>
-                                <option value="05">Maio</option>
-                                <option value="06">Junho</option>
-                                <option value="07">Julho</option>
-                                <option value="08">Agosto</option>
-                                <option value="09">Setembro</option>
-                                <option value="10">Outubro</option>
-                                <option value="11">Novembro</option>
-                                <option value="12">Dezembro</option>
-                            </select>
-                            <Button
-                                onClick={() => {
-                                    // Reset both date and month selections
-                                    setSelectedDate('');
-                                    setSelectedMonth('');
-                                }}
-                                variant="outline"
-                                className="whitespace-nowrap"
-                            >
-                                Limpar
-                            </Button>
-                            <Button
-                                onClick={() => {
-                                    // Get today's date in YYYY-MM-DD format without timezone conversion
-                                    const today = new Date();
-                                    const year = today.getFullYear();
-                                    const month = String(today.getMonth() + 1).padStart(2, '0');
-                                    const day = String(today.getDate()).padStart(2, '0');
-                                    const todayStr = `${year}-${month}-${day}`;
-                                    setSelectedDate(todayStr);
-                                    // Clear month selection when setting today's date
-                                    setSelectedMonth('');
-                                }}
-                                variant="outline"
-                                className="whitespace-nowrap"
-                            >
-                                Hoje
-                            </Button>
-                            <Dialog>
-                                <DialogTrigger asChild>
-                                    <Button>
-                                        <PlusIcon className="mr-2 h-4 w-4" /> Adicionar Transação
-                                    </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                    <DialogHeader>
-                                        <DialogTitle>Adicionar Nova Transação</DialogTitle>
-                                        <DialogDescription>
-                                            Preencha as informações da transação.
-                                        </DialogDescription>
-                                    </DialogHeader>
-                                    <div className="grid gap-4 py-4">
-                                        <div className="grid grid-cols-4 items-center gap-4">
-                                            <label htmlFor="date" className="text-right">
-                                                Data
-                                            </label>
-                                            <Input id="date" type="date" className="col-span-3" />
-                                        </div>
-                                        <div className="grid grid-cols-4 items-center gap-4">
-                                            <label htmlFor="description" className="text-right">
-                                                Descrição
-                                            </label>
-                                            <Input id="description" className="col-span-3" placeholder="Descrição da transação" />
-                                        </div>
-                                        <div className="grid grid-cols-4 items-center gap-4">
-                                            <label htmlFor="type" className="text-right">
-                                                Tipo
-                                            </label>
-                                            <select id="type" className="col-span-3 border rounded-md px-3 py-2">
-                                                <option value="Receita">Receita</option>
-                                                <option value="Despesa">Despesa</option>
-                                            </select>
-                                        </div>
-                                        <div className="grid grid-cols-4 items-center gap-4">
-                                            <label htmlFor="amount" className="text-right">
-                                                Valor
-                                            </label>
-                                            <Input id="amount" type="number" className="col-span-3" placeholder="R$" />
-                                        </div>
-                                        <div className="grid grid-cols-4 items-center gap-4">
-                                            <label htmlFor="category" className="text-right">
-                                                Categoria
-                                            </label>
-                                            <select id="category" className="col-span-3 border rounded-md px-3 py-2">
-                                                <option value="Mensalidades">Mensalidades</option>
-                                                <option value="Personal Trainers">Personal Trainers</option>
-                                                <option value="Manutenção">Manutenção</option>
-                                                <option value="Folha de Pagamento">Folha de Pagamento</option>
-                                                <option value="Outros">Outros</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <Button type="submit">Salvar Transação</Button>
-                                </DialogContent>
-                            </Dialog>
-                        </div>
+                    <CardTitle>Registros Financeiros</CardTitle>
+                    <div className="flex gap-2 mt-4">
+                        <Input
+                            type="month"
+                            value={selectedMonth}
+                            onChange={(e) => {
+                                setSelectedMonth(e.target.value);
+                                setSelectedDate('');
+                            }}
+                            className="w-40"
+                            placeholder="Mês"
+                        />
+                        <Input
+                            type="date"
+                            value={selectedDate}
+                            onChange={(e) => {
+                                setSelectedDate(e.target.value);
+                                setSelectedMonth('');
+                            }}
+                            className="w-40"
+                            placeholder="Data"
+                        />
+                        <Button
+                            onClick={() => {
+                                setSelectedMonth('');
+                                setSelectedDate('');
+                                loadFinancialData();
+                            }}
+                            variant="outline"
+                            size="sm"
+                        >
+                            Limpar
+                        </Button>
+                        <Button
+                            onClick={() => loadFinancialData(selectedMonth || selectedDate)}
+                            variant="outline"
+                            size="sm"
+                            className="ml-auto"
+                        >
+                            <PlusIcon className="h-4 w-4 mr-2" />
+                            Atualizar
+                        </Button>
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="flex justify-between items-center mb-4">
-                        <p className="text-sm text-muted-foreground">
-                            {selectedDate
-                                ? `Mostrando registros para: ${new Date(selectedDate).toLocaleDateString('pt-BR')}`
-                                : 'Mostrando registros dos últimos 7 dias'}
-                        </p>
-                        <Button variant="outline" className="text-sm">
-                            <Link href="/app/expenses">Ver todas as despesas</Link>
-                        </Button>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead>
-                                <tr>
-                                    <th className="text-left py-2">Data</th>
-                                    <th className="text-left py-2">Descrição</th>
-                                    <th className="text-left py-2">Categoria</th>
-                                    <th className="text-left py-2">Tipo</th>
-                                    <th className="text-left py-2">Valor</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredRecords.length > 0 ? (
-                                    filteredRecords.map((record) => (
-                                        <tr key={record.id} className="border-t">
-                                            <td className="py-2">{new Date(record.date).toLocaleDateString('pt-BR')}</td>
-                                            <td className="py-2 font-medium">{record.description}</td>
-                                            <td className="py-2">
-                                                <Badge variant="outline">{record.category}</Badge>
-                                            </td>
-                                            <td className="py-2">
-                                                <Badge variant={record.type === 'Receita' ? 'default' : 'secondary'}>
-                                                    {record.type}
-                                                </Badge>
-                                            </td>
-                                            <td className="py-2">
-                                                {record.type === 'Receita' ? '+' : '-'} R$ {record.amount}
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan={5} className="text-center py-8 text-muted-foreground">
-                                            Nenhum registro financeiro encontrado para a data selecionada.
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                    {filteredRecords.length > 0 ? (
+                        <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                            {filteredRecords.map((record) => (
+                                <div
+                                    key={record.id}
+                                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className={`p-2 rounded-full ${
+                                            record.type === 'Receita' 
+                                                ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' 
+                                                : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
+                                        }`}>
+                                            {record.type === 'Receita' ? (
+                                                <TrendingUp className="h-4 w-4" />
+                                            ) : (
+                                                <TrendingDown className="h-4 w-4" />
+                                            )}
+                                        </div>
+                                        <div>
+                                            <div className="font-medium">{record.description}</div>
+                                            <div className="text-xs text-muted-foreground flex items-center gap-2">
+                                                <Calendar className="h-3 w-3" />
+                                                {new Date(record.date).toLocaleDateString('pt-BR')}
+                                                {record.category && (
+                                                    <>
+                                                        {' • '}
+                                                        <Badge variant="outline" className="text-xs">
+                                                            {record.category}
+                                                        </Badge>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className={`font-bold ${
+                                        record.type === 'Receita' 
+                                            ? 'text-green-600 dark:text-green-400' 
+                                            : 'text-red-600 dark:text-red-400'
+                                    }`}>
+                                        {record.type === 'Receita' ? '+' : '-'} R$ {record.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-8 text-muted-foreground">
+                            <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                            <p>Nenhum registro financeiro encontrado</p>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </div>

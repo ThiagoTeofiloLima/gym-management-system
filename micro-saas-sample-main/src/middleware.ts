@@ -2,15 +2,15 @@ import { NextRequest, NextResponse } from "next/server"
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  
+
   const sessionToken = request.cookies.get('authjs.session-token')
   const secureSessionToken = request.cookies.get('__Secure-authjs.session-token')
-  
+
   const token = sessionToken || secureSessionToken
   const isAuthenticated = !!token
 
-  // API auth - sempre permite
-  if (pathname.startsWith('/api/auth')) {
+  // API - sempre permite (autenticação é tratada dentro de cada rota)
+  if (pathname.startsWith('/api/')) {
     return NextResponse.next()
   }
 

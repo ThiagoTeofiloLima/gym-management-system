@@ -6,6 +6,7 @@ import {
     DashboardSidebarNavLink,
 } from "@/components/dashboard/sidebar";
 import { usePathname, useRouter } from "next/navigation";
+import { Lock } from "lucide-react";
 
 export function SettingsSidebar() {
 
@@ -21,6 +22,10 @@ export function SettingsSidebar() {
                 <DashboardSidebarNavMain>
                     <DashboardSidebarNavLink href="/app/settings" active={isActive("/app/settings")}>
                         Perfil
+                    </DashboardSidebarNavLink>
+                    <DashboardSidebarNavLink href="/app/settings/password" active={isActive("/app/settings/password")}>
+                        <Lock className="w-4 h-4" />
+                        Senha e Segurança
                     </DashboardSidebarNavLink>
                     <DashboardSidebarNavLink href="/app/settings/theme" active={isActive("/app/settings/theme")}>
                         Tema

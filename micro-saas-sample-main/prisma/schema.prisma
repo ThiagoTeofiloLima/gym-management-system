@@ -8,27 +8,28 @@ datasource db {
 }
 
 model Gym {
-  id            String    @id @default(cuid())
+  id            String      @id @default(cuid())
   name          String
-  cnpj          String?   @unique
-  email         String?   @unique
+  cnpj          String?     @unique
+  email         String?     @unique
   phone         String?
   address       String?
   city          String?
   state         String?
-  isActive      Boolean   @default(true)
-  plan          String    @default("basic")
+  isActive      Boolean     @default(true)
+  plan          String      @default("basic")
   planExpiresAt DateTime?
-  maxMembers    Int       @default(100)
-  maxUsers      Int       @default(5)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  maxMembers    Int         @default(100)
+  maxUsers      Int         @default(5)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
   expenses      Expense[]
   members       Member[]
   todos         Todo[]
   trainers      Trainer[]
   users         UserGym[]
   workouts      Workout[]
+  gymPlans      GymPlan[]
 
   @@map("gyms")
 }
@@ -84,6 +85,7 @@ model User {
   trainers                 Trainer[]
   gyms                     UserGym[]
   workouts                 Workout[]
+  tempPasswords            ManagerTempPassword[]
 
   @@map("users")
 }
@@ -178,11 +180,13 @@ model Member {
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   gymId           String?
+  gymPlanId       String?
   attendances     Attendance[]
   gym             Gym?            @relation(fields: [gymId], references: [id], onDelete: Cascade)
   trainer         Trainer?        @relation(fields: [trainerId], references: [id])
   user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   workoutMembers  WorkoutMember[]
+  gymPlan         GymPlan?        @relation(fields: [gymPlanId], references: [id])
 
   @@map("members")
 }
@@ -235,6 +239,19 @@ model Attendance {
   @@map("attendance")
 }
 
+model ManagerTempPassword {
+  id         String   @id @default(cuid())
+  managerId  String
+  gymId      String
+  password   String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  manager    User     @relation(fields: [managerId], references: [id], onDelete: Cascade)
+
+  @@unique([managerId, gymId])
+  @@map("manager_temp_passwords")
+}
+
 enum UserRole {
   SUPER_ADMIN
   GYM_ADMIN
@@ -245,4 +262,21 @@ enum UserGymStatus {
   ACTIVE
   INACTIVE
   PENDING
+}
+
+model GymPlan {
+  id          String   @id @default(cuid())
+  gymId       String
+  name        String
+  description String?
+  price       Float
+  duration    Int      @default(30) // dias
+  maxMembers  Int?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  gym         Gym      @relation(fields: [gymId], references: [id], onDelete: Cascade)
+  members     Member[]
+
+  @@map("gym_plans")
 }

@@ -43,10 +43,20 @@ interface Member {
     status: string;
     lastVisit: string;
     userId: string;
-    planRenewalDate: string; // Data de renovação do plano
-    paymentDate: string; // Data de pagamento
+    planRenewalDate: string;
+    paymentDate: string;
     trainerId?: string | null;
     gymId?: string | null;
+}
+
+interface GymPlan {
+    id: string;
+    name: string;
+    description: string | null;
+    price: number;
+    duration: number;
+    maxMembers: number | null;
+    isActive: boolean;
 }
 
 // Import the payment status function from the plan pricing service
@@ -63,6 +73,7 @@ export default function MembersPageClient({ initialMembers, gymId }: { initialMe
     const [filteredMembers, setFilteredMembers] = useState<Member[]>(initialMembers);
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [availablePlans, setAvailablePlans] = useState<GymPlan[]>([]);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -75,6 +86,27 @@ export default function MembersPageClient({ initialMembers, gymId }: { initialMe
     const [error, setError] = useState<string | null>(null);
     const [editingMember, setEditingMember] = useState<Member | null>(null);
     const router = useRouter();
+
+    // Carregar planos disponíveis
+    useEffect(() => {
+        const loadPlans = async () => {
+            try {
+                const url = gymId ? `/api/gym-plans?gymId=${gymId}` : '/api/gym-plans';
+                const res = await fetch(url);
+                if (res.ok) {
+                    const plans = await res.json();
+                    setAvailablePlans(plans);
+                    // Se houver planos, usa o primeiro como padrão
+                    if (plans.length > 0 && !formData.plan) {
+                        setFormData(prev => ({ ...prev, plan: plans[0].name }));
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao carregar planos:', error);
+            }
+        };
+        loadPlans();
+    }, [gymId]);
 
     // Filter members based on search term
     useEffect(() => {
@@ -303,9 +335,21 @@ export default function MembersPageClient({ initialMembers, gymId }: { initialMe
                                             value={formData.plan}
                                             onChange={handleChange}
                                         >
-                                            <option value="Mensal">Mensal</option>
-                                            <option value="Trimestral">Trimestral</option>
-                                            <option value="Anual">Anual</option>
+                                            {availablePlans.length > 0 ? (
+                                                availablePlans.map((plan) => (
+                                                    <option key={plan.id} value={plan.name}>
+                                                        {plan.name} - R$ {plan.price.toFixed(2).replace('.', ',')}
+                                                        {plan.duration === 30 ? '/mês' : plan.duration === 90 ? '/trimestre' : plan.duration === 365 ? '/ano' : `/${plan.duration} dias`}
+                                                        {!plan.isActive && ' (Inativo)'}
+                                                    </option>
+                                                ))
+                                            ) : (
+                                                <>
+                                                    <option value="Mensal">Mensal</option>
+                                                    <option value="Trimestral">Trimestral</option>
+                                                    <option value="Anual">Anual</option>
+                                                </>
+                                            )}
                                         </select>
                                     </div>
                                     <div className="grid grid-cols-4 items-center gap-4">
