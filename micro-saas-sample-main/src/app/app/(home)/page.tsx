@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Building2, Users, Heart, Dumbbell, DollarSign, TrendingUp, TrendingDown, Activity, Calendar } from 'lucide-react'
+import { Building2, Users, Heart, Dumbbell, DollarSign, TrendingUp, TrendingDown, Activity, Calendar, AlertCircle, CheckCircle2, Clock, UserCheck, UserX, Percent } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 
@@ -22,6 +22,21 @@ interface Gym {
   }
 }
 
+interface ManagerMetrics {
+  activeMembers: number
+  inactiveMembers: number
+  pendingMembers: number
+  renewalsIn7Days: number
+  renewalsIn30Days: number
+  delinquentMembers: number
+  newMembersThisMonth: number
+  visitedLast7Days: number
+  frequencyRate: number
+  membersByPlan: Record<string, number>
+  occupancyRate: number
+  totalCapacity: number
+}
+
 interface DashboardData {
   gyms: Gym[]
   stats: {
@@ -35,6 +50,7 @@ interface DashboardData {
     totalExpenses: number
   }
   monthlyRevenue: number
+  managerMetrics: ManagerMetrics | null
   gymsByPlan: Record<string, number>
   gymsByState: Record<string, number>
   topGyms: Gym[]
@@ -173,123 +189,326 @@ export default function DashboardPage() {
       )}
 
       {/* Stats Principais */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {stats.totalGyms === 1 ? 'Sua Academia' : 'Total de Academias'}
-            </CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalGyms}</div>
-            {stats.totalGyms > 1 && (
+      {data?.managerMetrics ? (
+        // DASHBOARD PARA GESTORES (GYM ADMIN / USER)
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Membros Ativos</CardTitle>
+              <UserCheck className="h-4 w-4 text-green-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{data.managerMetrics.activeMembers.toLocaleString()}</div>
               <div className="flex items-center gap-2 text-xs mt-1">
-                <span className="text-green-500 flex items-center">
-                  <TrendingUp className="w-3 h-3 mr-1" />
-                  {stats.activeGyms} ativas
-                </span>
                 <span className="text-red-500 flex items-center">
-                  <TrendingDown className="w-3 h-3 mr-1" />
-                  {stats.inactiveGyms} inativas
+                  <UserX className="w-3 h-3 mr-1" />
+                  {data.managerMetrics.inactiveMembers} inativos
+                </span>
+                <span className="text-yellow-500 flex items-center">
+                  <Clock className="w-3 h-3 mr-1" />
+                  {data.managerMetrics.pendingMembers} pendentes
                 </span>
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Membros Totais</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalMembers.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {stats.totalGyms === 1 
-                ? 'Membros da academia' 
-                : 'Em todas as academias'
-              }
-            </p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Renovações Próximas</CardTitle>
+              <Calendar className="h-4 w-4 text-blue-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{data.managerMetrics.renewalsIn7Days}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Próximos 7 dias • {data.managerMetrics.renewalsIn30Days} nos próximos 30 dias
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Receita Mensal</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">R$ {monthlyRevenue.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {stats.totalGyms === 1 
-                ? 'Plano da academia' 
-                : 'Estimativa baseada nos planos'
-              }
-            </p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Inadimplência</CardTitle>
+              <AlertCircle className="h-4 w-4 text-red-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{data.managerMetrics.delinquentMembers}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Pagamento vencido (+7 dias)
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Equipe Total</CardTitle>
-            <Dumbbell className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{(stats.totalUsers + stats.totalTrainers).toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {stats.totalUsers} admins • {stats.totalTrainers} treinadores
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Frequência</CardTitle>
+              <Activity className="h-4 w-4 text-purple-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{data.managerMetrics.frequencyRate}%</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {data.managerMetrics.visitedLast7Days} membros vieram nos últimos 7 dias
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        // DASHBOARD PARA SUPER ADMIN
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {stats.totalGyms === 1 ? 'Sua Academia' : 'Total de Academias'}
+              </CardTitle>
+              <Building2 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalGyms}</div>
+              {stats.totalGyms > 1 && (
+                <div className="flex items-center gap-2 text-xs mt-1">
+                  <span className="text-green-500 flex items-center">
+                    <TrendingUp className="w-3 h-3 mr-1" />
+                    {stats.activeGyms} ativas
+                  </span>
+                  <span className="text-red-500 flex items-center">
+                    <TrendingDown className="w-3 h-3 mr-1" />
+                    {stats.inactiveGyms} inativas
+                  </span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Membros Totais</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalMembers.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {stats.totalGyms === 1
+                  ? 'Membros da academia'
+                  : 'Em todas as academias'
+                }
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Receita Mensal</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">R$ {monthlyRevenue.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {stats.totalGyms === 1
+                  ? 'Plano da academia'
+                  : 'Estimativa baseada nos planos'
+                }
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Equipe Total</CardTitle>
+              <Dumbbell className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{(stats.totalUsers + stats.totalTrainers).toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {stats.totalUsers} admins • {stats.totalTrainers} treinadores
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Stats Secundárias */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Treinos Ativos</CardTitle>
-            <Heart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalWorkouts.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Programas de treino
-            </p>
-          </CardContent>
-        </Card>
+      {data?.managerMetrics ? (
+        // Stats adicionais para gestores
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Taxa de Ocupação</CardTitle>
+              <Percent className="h-4 w-4 text-orange-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{data.managerMetrics.occupancyRate}%</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {data.managerMetrics.activeMembers} de {data.managerMetrics.totalCapacity} vagas
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Despesas Registradas</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalExpenses.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {stats.totalGyms === 1 
-                ? 'Da sua academia' 
-                : 'Em todas as academias'
-              }
-            </p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Novos Membros</CardTitle>
+              <TrendingUp className="h-4 w-4 text-green-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{data.managerMetrics.newMembersThisMonth}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Neste mês
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Membros por Academia</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Distribuição por Plano</CardTitle>
+              <Users className="h-4 w-4 text-blue-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-2 flex-wrap">
+                {Object.entries(data.managerMetrics.membersByPlan).map(([plan, count]) => (
+                  <Badge key={plan} variant="outline" className="capitalize">
+                    {plan}: {count}
+                  </Badge>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        // Stats secundárias para Super Admin
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Treinos Ativos</CardTitle>
+              <Heart className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalWorkouts.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Programas de treino
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Despesas Registradas</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalExpenses.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {stats.totalGyms === 1
+                  ? 'Da sua academia'
+                  : 'Em todas as academias'
+                }
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Membros por Academia</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {stats.totalGyms > 0 ? Math.round(stats.totalMembers / stats.totalGyms) : 0}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Média de membros
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Ações Recomendadas - Apenas para gestores */}
+      {data?.managerMetrics && (
+        <Card className="border-l-4 border-l-blue-500">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="w-5 h-5 text-blue-500" />
+              Ações Recomendadas para Hoje
+            </CardTitle>
+            <CardDescription>
+              Baseado nos dados da sua academia
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {stats.totalGyms > 0 ? Math.round(stats.totalMembers / stats.totalGyms) : 0}
+            <div className="space-y-3">
+              {data.managerMetrics.delinquentMembers > 0 && (
+                <div className="flex items-start gap-3 p-3 bg-red-50 dark:bg-red-950/20 rounded-lg">
+                  <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-red-700 dark:text-red-400">
+                      Cobrar {data.managerMetrics.delinquentMembers} membros inadimplentes
+                    </p>
+                    <p className="text-xs text-red-600 dark:text-red-500 mt-1">
+                      Pagamento vencido há mais de 7 dias
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              {data.managerMetrics.renewalsIn7Days > 0 && (
+                <div className="flex items-start gap-3 p-3 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg">
+                  <Calendar className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-yellow-700 dark:text-yellow-400">
+                      Contatar {data.managerMetrics.renewalsIn7Days} membros com renovação próxima
+                    </p>
+                    <p className="text-xs text-yellow-600 dark:text-yellow-500 mt-1">
+                      Plano vence nos próximos 7 dias
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              {data.managerMetrics.pendingMembers > 0 && (
+                <div className="flex items-start gap-3 p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg">
+                  <Clock className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-orange-700 dark:text-orange-400">
+                      Ativar {data.managerMetrics.pendingMembers} membros pendentes
+                    </p>
+                    <p className="text-xs text-orange-600 dark:text-orange-500 mt-1">
+                      Aguardando confirmação de cadastro
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              {data.managerMetrics.frequencyRate < 30 && (
+                <div className="flex items-start gap-3 p-3 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
+                  <Activity className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-purple-700 dark:text-purple-400">
+                      Campanha de reengajamento
+                    </p>
+                    <p className="text-xs text-purple-600 dark:text-purple-500 mt-1">
+                      Frequência abaixo de 30% ({data.managerMetrics.frequencyRate}%)
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              {data.managerMetrics.delinquentMembers === 0 && 
+               data.managerMetrics.renewalsIn7Days === 0 && 
+               data.managerMetrics.pendingMembers === 0 && (
+                <div className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                  <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-green-700 dark:text-green-400">
+                      Tudo em ordem! 🎉
+                    </p>
+                    <p className="text-xs text-green-600 dark:text-green-500 mt-1">
+                      Nenhuma ação pendente para hoje
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Média de membros
-            </p>
           </CardContent>
         </Card>
-      </div>
+      )}
 
       {/* Distribuição por Plano - Apenas para Super Admin */}
       {stats.totalGyms > 1 && Object.keys(gymsByPlan).length > 0 && (

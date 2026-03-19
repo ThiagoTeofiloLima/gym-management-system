@@ -41,23 +41,34 @@ export interface TenantContext {
 export const getTenantContext = cache(async (): Promise<TenantContext | null> => {
   try {
     const session = await auth()
-    
+
     if (!session?.user) {
       return null
     }
 
     const user = session.user as any
-    
+
     // Super Admin vê tudo
     const isSuperAdmin = user.role === 'SUPER_ADMIN'
     const isGymAdmin = user.role === 'GYM_ADMIN' || user.activeGymRole === 'GYM_ADMIN'
+
+    // Se não tiver activeGymId definido mas tiver academias, usa a primeira academia como padrão
+    let activeGymId = user.activeGymId
+    let activeGymRole = user.activeGymRole
     
+    if (!activeGymId && user.gyms && user.gyms.length > 0) {
+      // Pega a primeira academia onde o usuário é GYM_ADMIN, ou a primeira disponível
+      const adminGym = user.gyms.find((g: any) => g.role === 'GYM_ADMIN')
+      activeGymId = adminGym?.gymId || user.gyms[0]?.gymId
+      activeGymRole = adminGym?.role || user.gyms[0]?.role
+    }
+
     return {
       userId: user.id,
       userRole: user.role,
-      gymId: user.activeGymId,
-      gymName: user.gyms?.find((g: any) => g.gymId === user.activeGymId)?.gymName,
-      gymRole: user.activeGymRole,
+      gymId: activeGymId,
+      gymName: user.gyms?.find((g: any) => g.gymId === activeGymId)?.gymName,
+      gymRole: activeGymRole,
       isSuperAdmin,
       isGymAdmin,
       gyms: user.gyms || [],

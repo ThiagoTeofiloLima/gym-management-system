@@ -140,9 +140,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             isActive: userGym.gym.isActive,
           }))
 
-          if (dbUser.gyms.length === 1) {
-            token.activeGymId = dbUser.gyms[0].gymId
-            token.activeGymRole = dbUser.gyms[0].role
+          // Define activeGymId para usuários com academias
+          // Para Gym Admin, usa a academia onde é admin
+          // Para User, usa a primeira academia disponível
+          if (dbUser.gyms.length > 0 && !token.activeGymId) {
+            if (dbUser.role === 'GYM_ADMIN') {
+              const adminGym = dbUser.gyms.find(g => g.role === 'GYM_ADMIN')
+              token.activeGymId = adminGym?.gymId || dbUser.gyms[0].gymId
+              token.activeGymRole = adminGym?.role || dbUser.gyms[0].role
+            } else if (dbUser.gyms.length === 1) {
+              // User com apenas uma academia
+              token.activeGymId = dbUser.gyms[0].gymId
+              token.activeGymRole = dbUser.gyms[0].role
+            }
           }
         }
       }
@@ -157,7 +167,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
       }
 
-      console.log('JWT callback - Token ID:', token.id, 'Email:', token.email)
+      console.log('JWT callback - Token ID:', token.id, 'Email:', token.email, 'ActiveGymId:', token.activeGymId)
       return token
     },
 

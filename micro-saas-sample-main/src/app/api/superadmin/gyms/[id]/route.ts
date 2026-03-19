@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/services/database'
 import { auth } from '@/services/auth'
 import { getTenantContext } from '@/lib/multi-tenant'
+import { compare } from 'bcryptjs'
 
 /**
  * PUT /api/superadmin/gyms/[id]
@@ -118,7 +119,7 @@ export async function PUT(
 
 /**
  * DELETE /api/superadmin/gyms/[id]
- * Exclui uma academia (apenas Super Admin)
+ * Exclui uma academia e todos os seus dados vinculados (apenas Super Admin)
  */
 export async function DELETE(
   request: NextRequest,
@@ -140,11 +141,44 @@ export async function DELETE(
       )
     }
 
-    const { id } = await params
+    const { id: gymId } = await params
 
-    // Verificar se academia existe
+    // Obter senha do query param
+    const url = new URL(request.url)
+    const password = url.searchParams.get('password')
+
+    // Validar senha do Super Admin
+    if (!password || password.trim() === '') {
+      return NextResponse.json(
+        { error: 'Senha do Super Admin é obrigatória para confirmar a exclusão.' },
+        { status: 400 }
+      )
+    }
+
+    // Buscar usuário atual para validar senha
+    const currentUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+    })
+
+    if (!currentUser || !currentUser.passwordHash) {
+      return NextResponse.json(
+        { error: 'Usuário não encontrado ou não possui senha cadastrada.' },
+        { status: 404 }
+      )
+    }
+
+    // Validar senha
+    const isPasswordValid = await compare(password, currentUser.passwordHash)
+
+    if (!isPasswordValid) {
+      return NextResponse.json(
+        { error: 'Senha do Super Admin inválida.' },
+        { status: 401 }
+      )
+    }
+
     const gym = await prisma.gym.findUnique({
-      where: { id },
+      where: { id: gymId },
       include: {
         _count: {
           select: {
@@ -165,33 +199,67 @@ export async function DELETE(
       )
     }
 
-    const totalItems =
-      gym._count.users +
-      gym._count.members +
-      gym._count.trainers +
-      gym._count.workouts +
-      gym._count.expenses
+    // Excluir todos os dados vinculados em cascata
+    // Ordem importa: excluir dependentes primeiro
+    await prisma.$transaction([
+      // 1. Excluir WorkoutMember (depende de Workout e Member)
+      prisma.workoutMember.deleteMany({
+        where: { workout: { gymId } },
+      }),
+      // 2. Excluir Attendance (depende de Member)
+      prisma.attendance.deleteMany({
+        where: { member: { gymId } },
+      }),
+      // 3. Excluir despesas
+      prisma.expense.deleteMany({
+        where: { gymId },
+      }),
+      // 4. Excluir treinos
+      prisma.workout.deleteMany({
+        where: { gymId },
+      }),
+      // 5. Excluir treinadores
+      prisma.trainer.deleteMany({
+        where: { gymId },
+      }),
+      // 6. Excluir membros
+      prisma.member.deleteMany({
+        where: { gymId },
+      }),
+      // 7. Excluir usuários vinculados à academia
+      prisma.userGym.deleteMany({
+        where: { gymId },
+      }),
+      // 8. Excluir planos da academia
+      prisma.gymPlan.deleteMany({
+        where: { gymId },
+      }),
+      // 9. Excluir todos da academia
+      prisma.todo.deleteMany({
+        where: { gymId },
+      }),
+    ])
 
-    if (totalItems > 0) {
-      return NextResponse.json(
-        {
-          error: 'Não é possível excluir academia com dados vinculados',
-          details: `A academia possui ${totalItems} registros associados (usuários, membros, treinadores, treinos ou despesas).`,
-          counts: gym._count,
-        },
-        { status: 400 }
-      )
-    }
-
+    // Excluir academia
     await prisma.gym.delete({
-      where: { id },
+      where: { id: gymId },
     })
 
-    return NextResponse.json({ message: 'Academia excluída com sucesso' })
+    return NextResponse.json({
+      message: 'Academia e todos os seus dados vinculados foram excluídos com sucesso',
+      gymName: gym.name,
+      deletedCounts: {
+        users: gym._count.users,
+        members: gym._count.members,
+        trainers: gym._count.trainers,
+        workouts: gym._count.workouts,
+        expenses: gym._count.expenses,
+      },
+    })
   } catch (error) {
     console.error('Erro ao excluir academia:', error)
     return NextResponse.json(
-      { error: 'Erro ao excluir academia' },
+      { error: 'Erro ao excluir academia', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }

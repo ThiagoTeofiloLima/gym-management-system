@@ -118,7 +118,6 @@ export async function POST(request: NextRequest) {
       // Dados do gestor
       managerName,
       managerEmail,
-      managerPhone,
       managerPassword,
     } = body
 
@@ -172,22 +171,65 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Verificar se email do gestor já existe
-    const existingManager = await prisma.user.findUnique({
+    // ============================================
+    // VERIFICAR GESTOR EXISTENTE OU NOVO
+    // ============================================
+    // Se email já existe, apenas vincula a nova academia ao gestor
+    // Se email não existe, cria novo gestor
+    let manager = await prisma.user.findUnique({
       where: { email: managerEmail },
+      include: {
+        gyms: true,
+      },
     })
-    if (existingManager) {
-      return NextResponse.json(
-        { error: 'Email do gestor já está em uso' },
-        { status: 409 }
+
+    let passwordHash: string | null = null
+    let generatedPassword: string | null = null
+    let isNewManager = false
+
+    if (manager) {
+      // Gestor já existe - verifica se já é GYM_ADMIN
+      if (manager.role !== 'GYM_ADMIN') {
+        return NextResponse.json(
+          { error: 'Usuário existente não tem perfil de gestor (GYM_ADMIN)' },
+          { status: 409 }
+        )
+      }
+
+      // Verificar se gestor já está vinculado a esta academia (por email da academia)
+      // Isso evita vínculo duplicado
+      const existingLink = manager.gyms.find(
+        (g: any) => g.gym.email === email || g.gym.cnpj === cnpj
       )
+      
+      if (existingLink) {
+        return NextResponse.json(
+          { error: 'Gestor já está vinculado a uma academia com mesmo email ou CNPJ' },
+          { status: 409 }
+        )
+      }
+
+      console.log(`✅ Gestor "${manager.name}" já existe. Nova academia será vinculada.`)
+    } else {
+      // Gestor não existe - criar novo
+      isNewManager = true
+
+      // Validar senha se fornecida para novo gestor
+      if (managerPassword && managerPassword.length < 6) {
+        return NextResponse.json(
+          { error: 'A senha do gestor deve ter pelo menos 6 caracteres' },
+          { status: 400 }
+        )
+      }
+
+      // Gerar senha automática se não fornecida
+      generatedPassword = managerPassword || generateSecurePassword()
+
+      // Hash da senha
+      passwordHash = await hash(generatedPassword, 10)
+
+      console.log(`🆕 Criando novo gestor: ${managerEmail}`)
     }
-
-    // Gerar senha automática se não fornecida
-    const generatedPassword = managerPassword || generateSecurePassword()
-
-    // Hash da senha
-    const passwordHash = await hash(generatedPassword, 10)
 
     // Criar academia e gestor em transação
     const result = await prisma.$transaction(async (tx) => {
@@ -209,20 +251,60 @@ export async function POST(request: NextRequest) {
         },
       })
 
-      // 2. Criar usuário gestor
-      const manager = await tx.user.create({
-        data: {
-          name: managerName,
-          email: managerEmail,
-          role: 'GYM_ADMIN',
-          emailVerified: new Date(),
-          passwordHash,
+      // 2. Se gestor é novo, criar usuário
+      if (isNewManager && passwordHash) {
+        manager = await tx.user.create({
+          data: {
+            name: managerName,
+            email: managerEmail,
+            role: 'GYM_ADMIN',
+            emailVerified: new Date(),
+            passwordHash,
+          },
+        })
+      } else if (manager && !isNewManager) {
+        // Gestor já existe - apenas atualizar nome se diferente
+        if (manager.name !== managerName) {
+          manager = await tx.user.update({
+            where: { id: manager.id },
+            data: {
+              name: managerName,
+            },
+          })
+        }
+      }
+
+      if (!manager) {
+        throw new Error('Gestor não definido após transação')
+      }
+
+      // 3. Verificar se já existe vínculo entre este gestor e academia
+      const existingUserGym = await tx.userGym.findUnique({
+        where: {
+          userId_gymId: {
+            userId: manager.id,
+            gymId: gym.id,
+          },
         },
       })
 
-      // 3. Vincular gestor à academia
-      await tx.userGym.create({
-        data: {
+      if (existingUserGym) {
+        throw new Error('Gestor já está vinculado a esta academia')
+      }
+
+      // 4. Vincular gestor à academia (novo vínculo ou reativar existente)
+      await tx.userGym.upsert({
+        where: {
+          userId_gymId: {
+            userId: manager.id,
+            gymId: gym.id,
+          },
+        },
+        update: {
+          role: 'GYM_ADMIN',
+          status: 'ACTIVE',
+        },
+        create: {
           userId: manager.id,
           gymId: gym.id,
           role: 'GYM_ADMIN',
@@ -230,25 +312,34 @@ export async function POST(request: NextRequest) {
         },
       })
 
-      // 4. Salvar senha temporária para consulta futura do Super Admin
-      await tx.managerTempPassword.create({
-        data: {
-          managerId: manager.id,
-          gymId: gym.id,
-          password: generatedPassword,
-        },
-      })
+      // 5. Se gestor é novo, salvar senha temporária
+      if (isNewManager && generatedPassword) {
+        await tx.managerTempPassword.create({
+          data: {
+            managerId: manager.id,
+            gymId: gym.id,
+            password: generatedPassword,
+          },
+        })
+      }
 
-      return { gym, manager, password: generatedPassword }
+      return { 
+        gym, 
+        manager, 
+        password: generatedPassword,
+        isNewManager 
+      }
     })
 
-    // TODO: Enviar email com credenciais para o gestor
-    // await sendWelcomeEmail({
-    //   to: managerEmail,
-    //   name: managerName,
-    //   gymName: name,
-    //   password: generatedPassword,
-    // })
+    // TODO: Enviar email com credenciais para o gestor (apenas se novo gestor)
+    // if (isNewManager) {
+    //   await sendWelcomeEmail({
+    //     to: managerEmail,
+    //     name: managerName,
+    //     gymName: name,
+    //     password: generatedPassword,
+    //   })
+    // }
 
     return NextResponse.json({
       gym: result.gym,
@@ -256,9 +347,13 @@ export async function POST(request: NextRequest) {
         id: result.manager.id,
         name: result.manager.name,
         email: result.manager.email,
+        existingManager: !result.isNewManager,
+        totalGyms: result.manager.gyms?.length + 1 || 1,
       },
-      temporaryPassword: generatedPassword,
-      message: 'Academia e gestor criados com sucesso! Envie as credenciais para o gestor.',
+      temporaryPassword: result.isNewManager ? generatedPassword : null,
+      message: result.isNewManager
+        ? 'Academia e gestor criados com sucesso! Envie as credenciais para o gestor.'
+        : `Academia criada e vinculada ao gestor "${result.manager.name}" que agora gerencia ${result.manager.gyms?.length + 1 || 1} academia(s).`,
     }, { status: 201 })
   } catch (error) {
     console.error('Erro ao criar academia com gestor:', error)

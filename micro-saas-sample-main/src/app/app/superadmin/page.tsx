@@ -137,6 +137,8 @@ export default function SuperAdminPage() {
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+    const [deletePassword, setDeletePassword] = useState('')
+    const [isDeleting, setIsDeleting] = useState(false)
     const [selectedGym, setSelectedGym] = useState<Gym | null>(null)
     const [isRefreshing, setIsRefreshing] = useState(false)
     const [createdCredentials, setCreatedCredentials] = useState<{
@@ -313,22 +315,54 @@ export default function SuperAdminPage() {
     const handleDeleteGym = async () => {
         if (!selectedGym) return
 
+        if (!deletePassword || deletePassword.trim() === '') {
+            toast({
+                title: 'Senha obrigatória',
+                description: 'Digite sua senha do Super Admin para confirmar a exclusão.',
+                variant: 'destructive',
+            })
+            return
+        }
+
         try {
-            const res = await fetch(`/api/superadmin/gyms/${selectedGym.id}`, {
+            setIsDeleting(true)
+            const res = await fetch(`/api/superadmin/gyms/${selectedGym.id}?password=${encodeURIComponent(deletePassword)}`, {
                 method: 'DELETE',
             })
 
             if (res.ok) {
+                const data = await res.json()
                 toast({
                     title: 'Sucesso!',
-                    description: 'Academia excluída com sucesso',
+                    description: (
+                        <div className="space-y-1">
+                            <p>{data.message}</p>
+                            {data.deletedCounts && (
+                                <div className="text-sm text-muted-foreground mt-2">
+                                    <p>Registros excluídos:</p>
+                                    <ul className="list-disc list-inside ml-2">
+                                        {data.deletedCounts.users > 0 && <li>{data.deletedCounts.users} usuário(s)</li>}
+                                        {data.deletedCounts.members > 0 && <li>{data.deletedCounts.members} membro(s)</li>}
+                                        {data.deletedCounts.trainers > 0 && <li>{data.deletedCounts.trainers} treinador(es)</li>}
+                                        {data.deletedCounts.workouts > 0 && <li>{data.deletedCounts.workouts} treino(s)</li>}
+                                        {data.deletedCounts.expenses > 0 && <li>{data.deletedCounts.expenses} despesa(s)</li>}
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
+                    ),
                 })
                 setIsDeleteDialogOpen(false)
+                setDeletePassword('')
                 await loadAllData()
                 setSelectedGym(null)
             } else {
                 const error = await res.json()
-                throw new Error(error.error || 'Erro ao excluir academia')
+                toast({
+                    title: 'Erro',
+                    description: error.error || 'Não foi possível excluir a academia',
+                    variant: 'destructive',
+                })
             }
         } catch (error: any) {
             toast({
@@ -336,6 +370,8 @@ export default function SuperAdminPage() {
                 description: error.message || 'Não foi possível excluir a academia',
                 variant: 'destructive',
             })
+        } finally {
+            setIsDeleting(false)
         }
     }
 
@@ -1297,21 +1333,66 @@ export default function SuperAdminPage() {
                     <DialogHeader>
                         <DialogTitle>Excluir Academia</DialogTitle>
                         <DialogDescription>
-                            Tem certeza que deseja excluir a academia &quot;{selectedGym?.name}&quot;? Esta ação não pode ser desfeita.
-                            <div className="mt-4 p-3 bg-red-50 dark:bg-red-950/20 rounded-lg">
-                                <p className="text-sm text-red-600 dark:text-red-400 font-medium">
-                                    ⚠️ Isso excluirá todos os dados associados (membros, treinos, usuários, etc.)
+                            Tem certeza que deseja excluir a academia &quot;{selectedGym?.name}&quot;?
+                            <div className="mt-4 space-y-2">
+                                <p className="text-sm text-red-600 dark:text-red-400 font-semibold">
+                                    ⚠️ Atenção: Isso excluirá TODOS os dados vinculados:
+                                </p>
+                                <ul className="text-sm text-muted-foreground list-disc list-inside">
+                                    {selectedGym && selectedGym._count.users > 0 && (
+                                        <li>{selectedGym._count.users} usuário(s)</li>
+                                    )}
+                                    {selectedGym && selectedGym._count.members > 0 && (
+                                        <li>{selectedGym._count.members} membro(s)</li>
+                                    )}
+                                    {selectedGym && selectedGym._count.trainers > 0 && (
+                                        <li>{selectedGym._count.trainers} treinador(es)</li>
+                                    )}
+                                    {selectedGym && selectedGym._count.workouts > 0 && (
+                                        <li>{selectedGym._count.workouts} treino(s)</li>
+                                    )}
+                                    {selectedGym && selectedGym._count.expenses > 0 && (
+                                        <li>{selectedGym._count.expenses} despesa(s)</li>
+                                    )}
+                                </ul>
+                                <p className="text-xs text-muted-foreground mt-2">
+                                    Esta ação não pode ser desfeita.
                                 </p>
                             </div>
                         </DialogDescription>
                     </DialogHeader>
+                    <div className="space-y-2 py-4">
+                        <Label htmlFor="delete-password">Senha do Super Admin *</Label>
+                        <Input
+                            id="delete-password"
+                            type="password"
+                            placeholder="Digite sua senha para confirmar"
+                            value={deletePassword}
+                            onChange={(e) => setDeletePassword(e.target.value)}
+                            disabled={isDeleting}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    handleDeleteGym()
+                                }
+                            }}
+                        />
+                    </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+                        <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} disabled={isDeleting}>
                             Cancelar
                         </Button>
-                        <Button variant="destructive" onClick={handleDeleteGym}>
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Excluir
+                        <Button variant="destructive" onClick={handleDeleteGym} disabled={isDeleting}>
+                            {isDeleting ? (
+                                <>
+                                    <Activity className="w-4 h-4 mr-2 animate-spin" />
+                                    Excluindo...
+                                </>
+                            ) : (
+                                <>
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    Excluir Tudo
+                                </>
+                            )}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

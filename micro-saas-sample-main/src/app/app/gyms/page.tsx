@@ -62,6 +62,10 @@ interface GymFormData {
   plan: string
   maxMembers: number
   maxUsers: number
+  // Dados do gestor
+  managerName: string
+  managerEmail: string
+  managerPassword: string
 }
 
 const PLAN_OPTIONS = [
@@ -81,7 +85,9 @@ export default function GymsPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false)
   const [selectedGym, setSelectedGym] = useState<Gym | null>(null)
+  const [deletePassword, setDeletePassword] = useState('')
   
   const [formData, setFormData] = useState<GymFormData>({
     name: '',
@@ -94,6 +100,9 @@ export default function GymsPage() {
     plan: 'basic',
     maxMembers: 100,
     maxUsers: 5,
+    managerName: '',
+    managerEmail: '',
+    managerPassword: '',
   })
 
   useEffect(() => {
@@ -147,15 +156,26 @@ export default function GymsPage() {
   async function handleCreateGym(e: React.FormEvent) {
     e.preventDefault()
     try {
-      const res = await fetch('/api/gyms', {
+      // Preparar dados para envio (converter strings vazias para null)
+      const dataToSend = {
+        ...formData,
+        cnpj: formData.cnpj || null,
+        email: formData.email || null,
+        phone: formData.phone || null,
+        address: formData.address || null,
+        managerPassword: formData.managerPassword || undefined,
+      }
+
+      const res = await fetch('/api/superadmin/gyms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(dataToSend),
       })
       if (res.ok) {
+        const data = await res.json()
         toast({
           title: 'Sucesso!',
-          description: 'Academia criada com sucesso.',
+          description: data.message || 'Academia criada com sucesso.',
           variant: 'success',
         })
         setFormData({
@@ -169,6 +189,9 @@ export default function GymsPage() {
           plan: 'basic',
           maxMembers: 100,
           maxUsers: 5,
+          managerName: '',
+          managerEmail: '',
+          managerPassword: '',
         })
         setIsCreateDialogOpen(false)
         fetchGyms()
@@ -228,26 +251,56 @@ export default function GymsPage() {
   }
 
   async function handleDeleteGym() {
-    if (!selectedGym) return
+    console.log('🔴 handleDeleteGym chamada')
+    console.log('🔴 selectedGym:', selectedGym?.name)
+    console.log('🔴 isPasswordDialogOpen antes:', isPasswordDialogOpen)
+    
+    if (!selectedGym) {
+      console.error('❌ selectedGym é null!')
+      return
+    }
+
+    // Abrir dialog de senha
+    console.log('🟢 Abrindo password dialog...')
+    setIsDeleteDialogOpen(false)
+    setIsPasswordDialogOpen(true)
+    setDeletePassword('')
+    
+    console.log('🟢 isPasswordDialogOpen depois:', true)
+  }
+
+  async function confirmDeleteWithPassword() {
+    if (!deletePassword || deletePassword.trim() === '') {
+      toast({
+        title: 'Erro',
+        description: 'Digite sua senha do Super Admin para confirmar.',
+        variant: 'destructive',
+      })
+      return
+    }
 
     try {
-      const res = await fetch(`/api/gyms/${selectedGym.id}`, {
+      const res = await fetch(`/api/superadmin/gyms/${selectedGym?.id}?password=${encodeURIComponent(deletePassword.trim())}`, {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
       })
+      
+      const data = await res.json()
+      
       if (res.ok) {
         toast({
           title: 'Sucesso!',
           description: 'Academia deletada com sucesso.',
           variant: 'success',
         })
-        setIsDeleteDialogOpen(false)
+        setIsPasswordDialogOpen(false)
+        setDeletePassword('')
         setSelectedGym(null)
         fetchGyms()
       } else {
-        const error = await res.json()
         toast({
           title: 'Erro',
-          description: error.error || 'Erro ao deletar academia',
+          description: data.error || 'Erro ao deletar academia',
           variant: 'destructive',
         })
       }
@@ -347,7 +400,7 @@ export default function GymsPage() {
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8">
       <Toaster />
-      
+
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -458,6 +511,49 @@ export default function GymsPage() {
                     onChange={(e) => setFormData({ ...formData, state: e.target.value })}
                     placeholder="SP"
                     maxLength={2}
+                  />
+                </div>
+
+                {/* Seção do Gestor */}
+                <div className="col-span-2 mt-6 border-t pt-4">
+                  <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                    <Users className="w-4 h-4" />
+                    Dados do Gestor da Academia
+                  </h4>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    Se o email já estiver cadastrado, a academia será vinculada a este gestor.
+                  </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="managerName">Nome do Gestor *</Label>
+                  <Input
+                    id="managerName"
+                    value={formData.managerName}
+                    onChange={(e) => setFormData({ ...formData, managerName: e.target.value })}
+                    placeholder="Ex: João Silva"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="managerEmail">Email do Gestor *</Label>
+                  <Input
+                    id="managerEmail"
+                    type="email"
+                    value={formData.managerEmail}
+                    onChange={(e) => setFormData({ ...formData, managerEmail: e.target.value })}
+                    placeholder="gestor@academia.com"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="managerPassword">Senha (opcional)</Label>
+                  <Input
+                    id="managerPassword"
+                    type="password"
+                    value={formData.managerPassword}
+                    onChange={(e) => setFormData({ ...formData, managerPassword: e.target.value })}
+                    placeholder="Deixe em branco para gerar automaticamente"
                   />
                 </div>
               </div>
@@ -832,49 +928,172 @@ export default function GymsPage() {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Confirmar Exclusão</DialogTitle>
-            <DialogDescription>
-              Tem certeza que deseja excluir a academia <strong>{selectedGym?.name}</strong>?
+            <DialogTitle className="flex items-center gap-2">
+              <Trash2 className="w-5 h-5 text-destructive" />
+              Confirmar Exclusão
+            </DialogTitle>
+            <DialogDescription className="pt-2">
+              {selectedGym?.name ? (
+                <>
+                  Tem certeza que deseja excluir a academia{' '}
+                  <strong className="text-foreground">{selectedGym.name}</strong>?
+                </>
+              ) : (
+                'Tem certeza que deseja excluir esta academia?'
+              )}
             </DialogDescription>
           </DialogHeader>
-          {selectedGym && (
-            <div className="py-4">
-              <p className="text-sm text-muted-foreground mb-4">
-                Esta ação não pode ser desfeita. A academia só pode ser excluída se não possuir dados associados.
-              </p>
-              <div className="bg-muted p-3 rounded-lg space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span>Usuários:</span>
-                  <strong>{selectedGym._count.users}</strong>
-                </div>
-                <div className="flex justify-between">
-                  <span>Membros:</span>
-                  <strong>{selectedGym._count.members}</strong>
-                </div>
-                <div className="flex justify-between">
-                  <span>Treinadores:</span>
-                  <strong>{selectedGym._count.trainers}</strong>
-                </div>
-                <div className="flex justify-between">
-                  <span>Treinos:</span>
-                  <strong>{selectedGym._count.workouts}</strong>
-                </div>
-                <div className="flex justify-between">
-                  <span>Despesas:</span>
-                  <strong>{selectedGym._count.expenses}</strong>
+
+          <div className="space-y-4">
+            <div className="text-sm text-muted-foreground">
+              <p>⚠️ Esta ação não pode ser desfeita.</p>
+              <p className="mt-1">A academia só pode ser excluída se não possuir dados vinculados.</p>
+            </div>
+
+            {selectedGym && (
+              <div className="bg-muted/50 border rounded-lg p-3 space-y-2 text-sm">
+                <p className="font-semibold mb-2">📊 Dados da academia:</p>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Usuários:</span>
+                    <strong>{selectedGym._count.users}</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Membros:</span>
+                    <strong>{selectedGym._count.members}</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Treinadores:</span>
+                    <strong>{selectedGym._count.trainers}</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Treinos:</span>
+                    <strong>{selectedGym._count.workouts}</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Despesas:</span>
+                    <strong>{selectedGym._count.expenses}</strong>
+                  </div>
                 </div>
               </div>
+            )}
+
+            <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 text-sm">
+              <p className="font-semibold text-yellow-800 dark:text-yellow-400 mb-1">
+                🔐 Autenticação Necessária
+              </p>
+              <p className="text-yellow-700 dark:text-yellow-500">
+                Após confirmar, você precisará digitar sua senha de Super Admin para concluir a exclusão.
+              </p>
             </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setIsDeleteDialogOpen(false)
+                setSelectedGym(null)
+              }}
+            >
               Cancelar
             </Button>
-            <Button variant="destructive" onClick={handleDeleteGym}>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteGym}
+            >
               <Trash2 className="w-4 h-4 mr-2" />
-              Excluir Academia
+              Prosseguir com Exclusão
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Password Dialog - Popup para senha do Super Admin */}
+      <Dialog 
+        open={isPasswordDialogOpen} 
+        onOpenChange={(open) => {
+          console.log('🔐 Password Dialog onOpenChange:', open)
+          setIsPasswordDialogOpen(open)
+          if (!open) {
+            setDeletePassword('')
+            setSelectedGym(null)
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-[450px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-lg">
+              <span className="text-2xl">🔐</span>
+              Autenticação de Super Admin
+            </DialogTitle>
+            <DialogDescription className="pt-3">
+              Para excluir a academia{' '}
+              <strong className="text-foreground">{selectedGym?.name}</strong>,
+              {' '}digite sua senha de Super Admin.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg p-3 text-sm">
+              <p className="font-semibold text-red-800 dark:text-red-400 mb-1">
+                ⚠️ Ação Irreversível
+              </p>
+              <p className="text-red-700 dark:text-red-500">
+                Esta ação não pode ser desfeita. Tenha certeza que deseja excluir esta academia.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-sm font-semibold">
+                Senha do Super Admin *
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                value={deletePassword}
+                onChange={(e) => {
+                  console.log('🔑 Password changed:', e.target.value ? '***' : 'vazio')
+                  setDeletePassword(e.target.value)
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    console.log('⏎ Enter pressionado, chamando confirmDeleteWithPassword')
+                    confirmDeleteWithPassword()
+                  }
+                }}
+                placeholder="Digite sua senha"
+                autoFocus
+                autoComplete="off"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                console.log('❌ Cancelar clicado no Password Dialog')
+                setIsPasswordDialogOpen(false)
+                setDeletePassword('')
+                setSelectedGym(null)
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={() => {
+                console.log('🗑️ Excluir Permanentemente clicado')
+                console.log('🗑️ deletePassword:', deletePassword ? '***' : 'vazio')
+                confirmDeleteWithPassword()
+              }}
+              disabled={!deletePassword || deletePassword.trim() === ''}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Excluir Permanentemente
             </Button>
           </DialogFooter>
         </DialogContent>

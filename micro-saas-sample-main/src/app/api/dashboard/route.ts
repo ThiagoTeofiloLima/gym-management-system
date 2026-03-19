@@ -160,12 +160,110 @@ export async function GET(request: NextRequest) {
       totalExpenses: gyms.reduce((acc: number, g: any) => acc + g._count.expenses, 0),
     }
 
-    // Calcular receita mensal baseada nos planos
-    const planPrices: Record<string, number> = { basic: 99, pro: 199, enterprise: 399 }
-    const monthlyRevenue = gyms.reduce(
-      (acc: number, g: any) => acc + (planPrices[g.plan] || 0), 
-      0
-    )
+    // ============================================
+    // RECEITA MENSAL - APENAS PARA SUPER ADMIN
+    // ============================================
+    // Gestores (Gym Admin / User) NÃO veem esta informação
+    let monthlyRevenue = 0
+    if (context.isSuperAdmin) {
+      const planPrices: Record<string, number> = { basic: 99, pro: 199, enterprise: 399 }
+      monthlyRevenue = gyms.reduce(
+        (acc: number, g: any) => acc + (planPrices[g.plan] || 0),
+        0
+      )
+    }
+
+    // ============================================
+    // MÉTRICAS PARA GESTORES (GYM ADMIN / USER)
+    // ============================================
+    // Informações relevantes para o dia a dia da academia
+    let managerMetrics = null
+    
+    if (!context.isSuperAdmin && gyms.length > 0) {
+      // Buscar dados detalhados dos membros da(s) academia(s)
+      const gymIds = gyms.map((g: any) => g.id)
+      
+      const members = await prisma.member.findMany({
+        where: { gymId: { in: gymIds } },
+        select: {
+          id: true,
+          status: true,
+          plan: true,
+          planRenewalDate: true,
+          paymentDate: true,
+          lastVisit: true,
+        },
+      })
+
+      const today = new Date()
+      const activeMembers = members.filter(m => m.status === 'Ativo').length
+      const inactiveMembers = members.filter(m => m.status === 'Inativo').length
+      const pendingMembers = members.filter(m => m.status === 'Pendente').length
+
+      // Membros com renovação nos próximos 7 dias
+      const renewalsIn7Days = members.filter(m => {
+        const renewalDate = new Date(m.planRenewalDate)
+        const diffTime = renewalDate.getTime() - today.getTime()
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+        return diffDays >= 0 && diffDays <= 7
+      }).length
+
+      // Membros com renovação nos próximos 30 dias
+      const renewalsIn30Days = members.filter(m => {
+        const renewalDate = new Date(m.planRenewalDate)
+        const diffTime = renewalDate.getTime() - today.getTime()
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+        return diffDays >= 0 && diffDays <= 30
+      }).length
+
+      // Membros inadimplentes (pagamento vencido há mais de 7 dias)
+      const delinquentMembers = members.filter(m => {
+        const paymentDate = new Date(m.paymentDate)
+        const diffTime = today.getTime() - paymentDate.getTime()
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+        return diffDays > 7 && m.status !== 'Inativo'
+      }).length
+
+      // Membros novos este mês
+      const newMembersThisMonth = members.filter(m => {
+        const memberDate = new Date(m.id.split('-')[1] || Date.now())
+        return memberDate.getMonth() === today.getMonth() && 
+               memberDate.getFullYear() === today.getFullYear()
+      }).length
+
+      // Frequência média (membros que vieram nos últimos 7 dias)
+      const visitedLast7Days = members.filter(m => {
+        const lastVisit = new Date(m.lastVisit)
+        const diffTime = today.getTime() - lastVisit.getTime()
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+        return diffDays <= 7
+      }).length
+
+      // Distribuição por plano
+      const membersByPlan = members.reduce((acc, m) => {
+        acc[m.plan] = (acc[m.plan] || 0) + 1
+        return acc
+      }, {} as Record<string, number>)
+
+      // Taxa de ocupação
+      const totalCapacity = gyms.reduce((acc: number, g: any) => acc + (g.maxMembers || 100), 0)
+      const occupancyRate = totalCapacity > 0 ? Math.round((activeMembers / totalCapacity) * 100) : 0
+
+      managerMetrics = {
+        activeMembers,
+        inactiveMembers,
+        pendingMembers,
+        renewalsIn7Days,
+        renewalsIn30Days,
+        delinquentMembers,
+        newMembersThisMonth,
+        visitedLast7Days,
+        frequencyRate: members.length > 0 ? Math.round((visitedLast7Days / members.length) * 100) : 0,
+        membersByPlan,
+        occupancyRate,
+        totalCapacity,
+      }
+    }
 
     // Agrupar por plano
     const gymsByPlan: Record<string, number> = gyms.reduce((acc: Record<string, number>, g: any) => {
@@ -191,6 +289,7 @@ export async function GET(request: NextRequest) {
       gyms,
       stats,
       monthlyRevenue,
+      managerMetrics, // Novas métricas para gestores
       gymsByPlan,
       gymsByState,
       topGyms,
