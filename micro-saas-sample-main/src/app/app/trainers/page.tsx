@@ -4,7 +4,7 @@ import {
     DashboardPageHeaderTitle,
     DashboardPageMain,
 } from "@/components/dashboard/page"
-import { prisma } from "@/services/database"
+import * as db from "@/services/database"
 import { auth } from "@/services/auth"
 import { getTenantContext } from "@/lib/multi-tenant"
 import { TrainerManagement } from "../__components/trainers/trainer-management"
@@ -16,7 +16,7 @@ export default async function TrainersPage(props: {
     searchParams: Promise<{ gymId?: string }>
 }) {
     const searchParams = await props.searchParams
-    let queryGymId = searchParams.gymId
+    const queryGymId = searchParams.gymId
 
     const session = await auth()
 
@@ -24,13 +24,14 @@ export default async function TrainersPage(props: {
         return <div>Unauthorized</div>
     }
 
-    const context = await getTenantContext()
+    // Passa o gymId da URL para o contexto
+    const context = await getTenantContext(queryGymId)
 
     if (!context) {
         return <div>Unauthorized</div>
     }
 
-    // Obter gymId
+    // Determinar qual gymId usar
     let gymIdFilter: string | undefined
 
     if (queryGymId) {
@@ -44,52 +45,25 @@ export default async function TrainersPage(props: {
 
     // Se ainda não tem gymId e é super admin, pega a primeira academia
     if (!gymIdFilter && context.isSuperAdmin) {
-        const firstGym = await prisma.gym.findFirst({
-            where: { isActive: true },
-            orderBy: { name: 'asc' },
-        })
+        const allGyms = await db.findAllGyms()
+        const firstGym = allGyms.find(g => g.isActive)
         gymIdFilter = firstGym?.id
     }
 
     // Buscar treinadores do banco
     const whereClause = gymIdFilter ? { gymId: gymIdFilter } : {}
 
-    const trainers = await prisma.trainer.findMany({
-        where: whereClause,
-        include: {
-            gym: {
-                select: {
-                    id: true,
-                    name: true,
-                },
-            },
-            members: {
-                select: {
-                    id: true,
-                    name: true,
-                },
-            },
-        },
-        orderBy: {
-            createdAt: 'desc',
-        },
+    const trainers = await db.findTrainers({
+        gymId: gymIdFilter,
     })
 
     // Buscar membros para o dropdown
-    const members = await prisma.member.findMany({
-        where: whereClause,
-        select: {
-            id: true,
-            name: true,
-            email: true,
-        },
-        orderBy: {
-            name: 'asc',
-        },
+    const members = await db.findMembers({
+        gymId: gymIdFilter,
     })
 
     return (
-        <TrainerManagement 
+        <TrainerManagement
             initialTrainers={trainers}
             initialMembers={members}
             gymId={gymIdFilter || ''}

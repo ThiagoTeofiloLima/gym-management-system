@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/services/database'
+import * as db from '@/services/database'
 import { auth } from '@/services/auth'
 import { getTenantContext } from '@/lib/multi-tenant'
 
@@ -25,33 +25,34 @@ export async function GET() {
     }
 
     // Buscar todos os usuários com role GYM_ADMIN
-    const gymAdmins = await prisma.user.findMany({
-      where: {
-        role: 'GYM_ADMIN',
-      },
-      include: {
-        gyms: {
-          include: {
-            gym: true,
-          },
-        },
-        tempPasswords: true,
-      },
-    })
+    const allUsers = await db.findAllUsers()
+    const gymAdmins = allUsers.filter(user => user.role === 'GYM_ADMIN')
 
-    // Formatrar dados para exibição
-    const managers = gymAdmins.map((admin) => {
-      const gymInfo = admin.gyms[0]
-      return {
-        id: admin.id,
-        name: admin.name,
-        email: admin.email,
-        hasPassword: !!admin.passwordHash,
-        gymId: gymInfo?.gymId,
-        gymName: gymInfo?.gym.name,
-        tempPassword: admin.tempPasswords[0]?.password || null,
-      }
-    })
+    // Buscar dados adicionais para cada gestor
+    const managers = await Promise.all(
+      gymAdmins.map(async (admin) => {
+        // Buscar academias vinculadas ao gestor
+        const userGyms = await db.findUserGymsByUserId(admin.id)
+        const gymInfo = userGyms[0]
+        
+        // Buscar senha temporária se existir
+        let tempPassword: string | null = null
+        if (gymInfo?.gymId) {
+          const tempPwdRecord = await db.findManagerTempPassword(admin.id, gymInfo.gymId)
+          tempPassword = tempPwdRecord?.password || null
+        }
+
+        return {
+          id: admin.id,
+          name: admin.name,
+          email: admin.email,
+          hasPassword: !!admin.passwordHash,
+          gymId: gymInfo?.gymId || null,
+          gymName: (gymInfo?.gym as any)?.name || null,
+          tempPassword,
+        }
+      })
+    )
 
     return NextResponse.json(managers)
   } catch (error) {

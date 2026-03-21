@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import * as db from '@/services/database';
 import { auth } from '@/services/auth';
+import type { Attendance } from '@/types/database';
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,14 +24,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Verificar se usuário tem acesso a esta academia
-    const userGym = await prisma.userGym.findUnique({
-      where: {
-        userId_gymId: {
-          userId: session.user.id,
-          gymId: gymId,
-        },
-      },
-    });
+    const userGym = await db.findUserGymByUserIdGymId(session.user.id, gymId);
 
     if (!userGym) {
       return Response.json({ error: 'Access denied to this gym' }, { status: 403 });
@@ -38,26 +32,23 @@ export async function GET(request: NextRequest) {
 
     // Buscar dados filtrados por gymId
     const [members, financial] = await Promise.all([
-      prisma.member.findMany({
-        where: { gymId },
-        include: {
-          trainer: { select: { id: true, name: true } },
-        },
-      }),
-      prisma.expense.findMany({
-        where: { gymId },
-      }),
+      db.findMembers({ gymId }),
+      db.findExpenses({ gymId }),
     ]);
 
     // Buscar attendance dos membros da academia
     const memberIds = members.map(m => m.id);
-    const attendance = memberIds.length > 0 ? await prisma.attendance.findMany({
-      where: {
-        memberId: { in: memberIds },
-      },
-      include: { member: true },
-      orderBy: { date: 'desc' },
-    }) : [];
+    let attendance: Attendance[] = [];
+    if (memberIds.length > 0) {
+      // Buscar attendance para cada membro (já que não há filtro por múltiplos memberIds)
+      const attendancePromises = memberIds.map(memberId =>
+        db.findAttendanceRecords({ memberId })
+      );
+      const attendanceResults = await Promise.all(attendancePromises);
+      attendance = attendanceResults.flat().sort((a, b) =>
+        new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+    }
 
     return Response.json({
       members,

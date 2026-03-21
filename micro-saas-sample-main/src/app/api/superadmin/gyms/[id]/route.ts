@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/services/database'
+import * as db from '@/services/database'
 import { auth } from '@/services/auth'
 import { getTenantContext } from '@/lib/multi-tenant'
 import { compare } from 'bcryptjs'
@@ -53,9 +53,7 @@ export async function PUT(
     }
 
     // Verificar se academia existe
-    const existingGym = await prisma.gym.findUnique({
-      where: { id },
-    })
+    const existingGym = await db.findGymById(id)
 
     if (!existingGym) {
       return NextResponse.json(
@@ -66,9 +64,7 @@ export async function PUT(
 
     // Verificar CNPJ duplicado (se foi alterado)
     if (cnpj && cnpj !== existingGym.cnpj) {
-      const existingCnpj = await prisma.gym.findUnique({
-        where: { cnpj },
-      })
+      const existingCnpj = await db.findGymByCnpj(cnpj)
       if (existingCnpj && existingCnpj.id !== id) {
         return NextResponse.json(
           { error: 'CNPJ já cadastrado' },
@@ -79,9 +75,7 @@ export async function PUT(
 
     // Verificar email duplicado (se foi alterado)
     if (email && email !== existingGym.email) {
-      const existingEmail = await prisma.gym.findUnique({
-        where: { email },
-      })
+      const existingEmail = await db.findGymByEmail(email)
       if (existingEmail && existingEmail.id !== id) {
         return NextResponse.json(
           { error: 'Email já cadastrado' },
@@ -90,21 +84,18 @@ export async function PUT(
       }
     }
 
-    const gym = await prisma.gym.update({
-      where: { id },
-      data: {
-        name,
-        cnpj: cnpj || null,
-        email: email || null,
-        phone: phone || null,
-        address: address || null,
-        city,
-        state,
-        plan,
-        maxMembers,
-        maxUsers,
-        isActive,
-      },
+    const gym = await db.updateGym(id, {
+      name,
+      cnpj: cnpj || null,
+      email: email || null,
+      phone: phone || null,
+      address: address || null,
+      city,
+      state,
+      plan,
+      maxMembers,
+      maxUsers,
+      isActive,
     })
 
     return NextResponse.json(gym)
@@ -156,9 +147,7 @@ export async function DELETE(
     }
 
     // Buscar usuário atual para validar senha
-    const currentUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-    })
+    const currentUser = await db.findUserById(session.user.id)
 
     if (!currentUser || !currentUser.passwordHash) {
       return NextResponse.json(
@@ -177,20 +166,7 @@ export async function DELETE(
       )
     }
 
-    const gym = await prisma.gym.findUnique({
-      where: { id: gymId },
-      include: {
-        _count: {
-          select: {
-            users: true,
-            members: true,
-            trainers: true,
-            workouts: true,
-            expenses: true,
-          },
-        },
-      },
-    })
+    const gym = await db.findGymById(gymId)
 
     if (!gym) {
       return NextResponse.json(
@@ -199,61 +175,63 @@ export async function DELETE(
       )
     }
 
+    // Obter contagens antes de excluir
+    const counts = await db.getGymCounts(gymId)
+
     // Excluir todos os dados vinculados em cascata
     // Ordem importa: excluir dependentes primeiro
-    await prisma.$transaction([
-      // 1. Excluir WorkoutMember (depende de Workout e Member)
-      prisma.workoutMember.deleteMany({
-        where: { workout: { gymId } },
-      }),
-      // 2. Excluir Attendance (depende de Member)
-      prisma.attendance.deleteMany({
-        where: { member: { gymId } },
-      }),
-      // 3. Excluir despesas
-      prisma.expense.deleteMany({
-        where: { gymId },
-      }),
-      // 4. Excluir treinos
-      prisma.workout.deleteMany({
-        where: { gymId },
-      }),
-      // 5. Excluir treinadores
-      prisma.trainer.deleteMany({
-        where: { gymId },
-      }),
-      // 6. Excluir membros
-      prisma.member.deleteMany({
-        where: { gymId },
-      }),
-      // 7. Excluir usuários vinculados à academia
-      prisma.userGym.deleteMany({
-        where: { gymId },
-      }),
-      // 8. Excluir planos da academia
-      prisma.gymPlan.deleteMany({
-        where: { gymId },
-      }),
-      // 9. Excluir todos da academia
-      prisma.todo.deleteMany({
-        where: { gymId },
-      }),
-    ])
+    
+    // 1. Excluir WorkoutMember (depende de Workout)
+    await db.deleteWorkoutMembersByWorkoutGymId(gymId)
+    
+    // 2. Excluir Attendance (depende de Member)
+    await db.deleteAttendanceByGymId(gymId)
+    
+    // 3. Excluir despesas
+    const expenses = await db.findExpenses({ gymId })
+    for (const expense of expenses) {
+      await db.deleteExpense(expense.id)
+    }
+    
+    // 4. Excluir treinos
+    const workouts = await db.findWorkouts({ gymId })
+    for (const workout of workouts) {
+      await db.deleteWorkout(workout.id)
+    }
+    
+    // 5. Excluir treinadores
+    const trainers = await db.findTrainers({ gymId })
+    for (const trainer of trainers) {
+      await db.deleteTrainer(trainer.id)
+    }
+    
+    // 6. Excluir membros
+    const members = await db.findMembers({ gymId })
+    for (const member of members) {
+      await db.deleteMember(member.id)
+    }
+    
+    // 7. Excluir usuários vinculados à academia
+    await db.deleteUserGymsByGymId(gymId)
+    
+    // 8. Excluir planos da academia
+    await db.deleteGymPlansByGymId(gymId)
+    
+    // 9. Excluir todos da academia
+    await db.deleteTodosByGymId(gymId)
 
     // Excluir academia
-    await prisma.gym.delete({
-      where: { id: gymId },
-    })
+    await db.deleteGym(gymId)
 
     return NextResponse.json({
       message: 'Academia e todos os seus dados vinculados foram excluídos com sucesso',
       gymName: gym.name,
       deletedCounts: {
-        users: gym._count.users,
-        members: gym._count.members,
-        trainers: gym._count.trainers,
-        workouts: gym._count.workouts,
-        expenses: gym._count.expenses,
+        users: counts.users,
+        members: counts.members,
+        trainers: counts.trainers,
+        workouts: counts.workouts,
+        expenses: counts.expenses,
       },
     })
   } catch (error) {

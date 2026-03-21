@@ -353,8 +353,8 @@ export function FinancialCharts() {
                                     <CartesianGrid strokeDasharray="3 3" />
                                     <XAxis dataKey="month" />
                                     <YAxis />
-                                    <Tooltip 
-                                        formatter={(value: number) => `R$ ${value.toLocaleString('pt-BR')}`}
+                                    <Tooltip
+                                        formatter={(value?: number) => `R$ ${(value || 0).toLocaleString('pt-BR')}`}
                                     />
                                     <Bar dataKey="revenue" fill="#22c55e" name="Receitas" />
                                     <Bar dataKey="expenses" fill="#ef4444" name="Despesas" />
@@ -382,7 +382,7 @@ export function FinancialCharts() {
                                         cx="50%"
                                         cy="50%"
                                         labelLine={false}
-                                        label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                                        label={({ name, percent }) => `${name} (${((percent || 0) * 100).toFixed(0)}%)`}
                                         outerRadius={100}
                                         fill="#8884d8"
                                         dataKey="value"
@@ -391,8 +391,8 @@ export function FinancialCharts() {
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                         ))}
                                     </Pie>
-                                    <Tooltip 
-                                        formatter={(value: number) => `R$ ${value.toLocaleString('pt-BR')}`}
+                                    <Tooltip
+                                        formatter={(value?: number) => `R$ ${(value || 0).toLocaleString('pt-BR')}`}
                                     />
                                 </PieChart>
                             </ResponsiveContainer>

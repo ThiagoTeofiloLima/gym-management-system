@@ -1,190 +1,325 @@
-import { NextRequest } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server'
+import * as db from '@/services/database'
+import { auth } from '@/services/auth'
+import { getTenantContext, canAccessGym } from '@/lib/multi-tenant'
 
-// API route to get attendance records for a specific member
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+/**
+ * GET /api/attendance/[id]
+ * Retorna registros de frequência de um membro específico
+ *
+ * SEGURANÇA: Valida se o usuário tem permissão para acessar a academia do membro
+ */
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    const url = new URL(request.url);
-    const userId = url.searchParams.get('userId');
-    const { id: memberId } = params;
+    const session = await auth()
 
-    if (!memberId || !userId) {
+    if (!session?.user) {
       return Response.json(
-        { message: 'Member ID and User ID are required' },
-        { status: 400 }
-      );
+        { message: 'Unauthorized' },
+        { status: 401 }
+      )
     }
 
-    // Verify that the member belongs to the user
-    const member = await prisma.member.findUnique({
-      where: { id: memberId },
-    });
+    const context = await getTenantContext()
 
-    if (!member || member.userId !== userId) {
+    if (!context) {
       return Response.json(
-        { message: 'Member not found or does not belong to user' },
+        { message: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const { id: memberId } = params
+
+    if (!memberId) {
+      return Response.json(
+        { message: 'Member ID is required' },
+        { status: 400 }
+      )
+    }
+
+    // Verificar se o membro existe
+    const member = await db.findMemberById(memberId)
+
+    if (!member) {
+      return Response.json(
+        { message: 'Member not found' },
         { status: 404 }
-      );
+      )
+    }
+
+    // VALIDAÇÃO DE SEGURANÇA: Verificar se usuário tem acesso à academia deste membro
+    const hasAccess = await canAccessGym(session.user.id, member.gymId!)
+    if (!hasAccess) {
+      return Response.json(
+        { message: 'Forbidden: You do not have access to this gym' },
+        { status: 403 }
+      )
     }
 
     // Get all attendance records for this member
-    const memberAttendance = await prisma.attendance.findMany({
-      where: { memberId },
-      include: { member: true },
-      orderBy: { date: 'desc' },
-    });
+    const memberAttendance = await db.findAttendanceRecords({ memberId })
 
-    return Response.json(memberAttendance);
+    // Adicionar informações do membro em cada registro
+    const attendanceWithMember = memberAttendance.map(record => ({
+      ...record,
+      member: {
+        id: member.id,
+        name: member.name,
+        email: member.email,
+        phone: member.phone,
+        status: member.status,
+      },
+    }))
+
+    return Response.json(attendanceWithMember)
   } catch (error) {
-    console.error('Error fetching attendance:', error);
+    console.error('Error fetching attendance:', error)
     return Response.json(
       { message: 'Internal server error' },
       { status: 500 }
-    );
+    )
   }
 }
 
-// API route to record attendance for a specific member
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+/**
+ * POST /api/attendance/[id]
+ * Registra frequência para um membro específico
+ *
+ * SEGURANÇA: Valida se o usuário tem permissão para acessar a academia do membro
+ */
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    const { id: memberId } = params;
-    const body = await request.json();
-    const { date, checkIn, checkOut, userId } = body;
+    const session = await auth()
 
-    // Validate required fields
-    if (!memberId || !date || !userId) {
+    if (!session?.user) {
       return Response.json(
-        { message: 'Missing required fields: memberId, date, and userId are required' },
-        { status: 400 }
-      );
+        { message: 'Unauthorized' },
+        { status: 401 }
+      )
     }
 
-    // Check if member exists and belongs to the user
-    const member = await prisma.member.findUnique({
-      where: { id: memberId },
-    });
+    const context = await getTenantContext()
 
-    if (!member || member.userId !== userId) {
+    if (!context) {
       return Response.json(
-        { message: 'Member not found or does not belong to user' },
+        { message: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const { id: memberId } = params
+    const body = await request.json()
+    const { date, checkIn, checkOut } = body
+
+    // Validate required fields
+    if (!memberId || !date) {
+      return Response.json(
+        { message: 'Missing required fields: memberId and date are required' },
+        { status: 400 }
+      )
+    }
+
+    // Check if member exists
+    const member = await db.findMemberById(memberId)
+
+    if (!member) {
+      return Response.json(
+        { message: 'Member not found' },
         { status: 404 }
-      );
+      )
+    }
+
+    // VALIDAÇÃO DE SEGURANÇA: Verificar se usuário tem acesso à academia deste membro
+    const hasAccess = await canAccessGym(session.user.id, member.gymId!)
+    if (!hasAccess) {
+      return Response.json(
+        { message: 'Forbidden: You do not have access to this gym' },
+        { status: 403 }
+      )
     }
 
     // Create attendance record
-    const attendance = await prisma.attendance.create({
-      data: {
-        date,
-        memberId,
-        memberEmail: member.email,
-        checkIn: checkIn || null,
-        checkOut: checkOut || null,
-        status: 'Presente',
-        userId,
-      },
-    });
+    const attendance = await db.createAttendance({
+      date,
+      memberId,
+      memberEmail: member.email,
+      checkIn: checkIn || null,
+      checkOut: checkOut || null,
+      status: 'Presente',
+      userId: session.user.id,
+    })
 
     // Update the member's last visit date
-    await prisma.member.update({
-      where: { id: memberId },
-      data: {
-        lastVisit: date,
-      },
-    });
+    await db.updateMember(memberId, {
+      lastVisit: date,
+    })
 
-    return Response.json(attendance, { status: 201 });
+    return Response.json(attendance, { status: 201 })
   } catch (error) {
-    console.error('Error recording attendance:', error);
+    console.error('Error recording attendance:', error)
     return Response.json(
       { message: 'Internal server error' },
       { status: 500 }
-    );
+    )
   }
 }
 
-// Update attendance record by ID
+/**
+ * PUT /api/attendance/[id]
+ * Atualiza registro de frequência
+ *
+ * SEGURANÇA: Valida se o usuário tem permissão para acessar a academia do registro
+ */
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id: attendanceId } = params;
-    const body = await request.json();
-    const { date, checkIn, checkOut, status, userId } = body;
+    const session = await auth()
+
+    if (!session?.user) {
+      return Response.json(
+        { message: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const context = await getTenantContext()
+
+    if (!context) {
+      return Response.json(
+        { message: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const { id: attendanceId } = params
+    const body = await request.json()
+    const { date, checkIn, checkOut, status } = body
 
     // Check if attendance record exists
-    const attendanceRecord = await prisma.attendance.findUnique({
-      where: { id: attendanceId },
-    });
+    const attendanceRecord = await db.findAttendanceById(attendanceId)
 
-    if (!attendanceRecord || attendanceRecord.userId !== userId) {
+    if (!attendanceRecord) {
       return Response.json(
-        { message: 'Attendance record not found or does not belong to user' },
+        { message: 'Attendance record not found' },
         { status: 404 }
-      );
+      )
+    }
+
+    // Buscar informações do membro para validar acesso à academia
+    const member = await db.findMemberById(attendanceRecord.memberId)
+
+    if (!member) {
+      return Response.json(
+        { message: 'Member not found' },
+        { status: 404 }
+      )
+    }
+
+    // VALIDAÇÃO DE SEGURANÇA: Verificar se usuário tem acesso à academia deste registro
+    const hasAccess = await canAccessGym(session.user.id, member.gymId!)
+    if (!hasAccess) {
+      return Response.json(
+        { message: 'Forbidden: You do not have access to this gym' },
+        { status: 403 }
+      )
     }
 
     // Update attendance record
-    const updatedAttendance = await prisma.attendance.update({
-      where: { id: attendanceId },
-      data: {
-        date,
-        checkIn,
-        checkOut,
-        status,
-      },
-    });
+    const updatedAttendance = await db.updateAttendance(attendanceId, {
+      date,
+      checkIn,
+      checkOut,
+      status,
+    })
 
-    return Response.json(updatedAttendance);
+    return Response.json(updatedAttendance)
   } catch (error) {
-    console.error('Error updating attendance:', error);
+    console.error('Error updating attendance:', error)
     return Response.json(
       { message: 'Internal server error' },
       { status: 500 }
-    );
+    )
   }
 }
 
-// Delete attendance record by ID
+/**
+ * DELETE /api/attendance/[id]
+ * Exclui registro de frequência
+ *
+ * SEGURANÇA: Valida se o usuário tem permissão para acessar a academia do registro
+ */
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id: attendanceId } = params;
-    const url = new URL(request.url);
-    const userId = url.searchParams.get('userId');
+    const session = await auth()
 
-    if (!attendanceId || !userId) {
+    if (!session?.user) {
       return Response.json(
-        { message: 'Attendance ID and User ID are required' },
-        { status: 400 }
-      );
+        { message: 'Unauthorized' },
+        { status: 401 }
+      )
     }
 
-    // Check if attendance record exists and belongs to the user
-    const attendanceRecord = await prisma.attendance.findUnique({
-      where: { id: attendanceId },
-    });
+    const context = await getTenantContext()
 
-    if (!attendanceRecord || attendanceRecord.userId !== userId) {
+    if (!context) {
       return Response.json(
-        { message: 'Attendance record not found or does not belong to user' },
+        { message: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const { id: attendanceId } = params
+
+    // Check if attendance record exists
+    const attendanceRecord = await db.findAttendanceById(attendanceId)
+
+    if (!attendanceRecord) {
+      return Response.json(
+        { message: 'Attendance record not found' },
         { status: 404 }
-      );
+      )
+    }
+
+    // Buscar informações do membro para validar acesso à academia
+    const member = await db.findMemberById(attendanceRecord.memberId)
+
+    if (!member) {
+      return Response.json(
+        { message: 'Member not found' },
+        { status: 404 }
+      )
+    }
+
+    // VALIDAÇÃO DE SEGURANÇA: Verificar se usuário tem acesso à academia deste registro
+    const hasAccess = await canAccessGym(session.user.id, member.gymId!)
+    if (!hasAccess) {
+      return Response.json(
+        { message: 'Forbidden: You do not have access to this gym' },
+        { status: 403 }
+      )
     }
 
     // Delete attendance record
-    await prisma.attendance.delete({
-      where: { id: attendanceId },
-    });
+    await db.deleteAttendance(attendanceId)
 
-    return Response.json({ message: 'Attendance record deleted successfully' });
+    return Response.json({ message: 'Attendance record deleted successfully' })
   } catch (error) {
-    console.error('Error deleting attendance:', error);
+    console.error('Error deleting attendance:', error)
     return Response.json(
       { message: 'Internal server error' },
       { status: 500 }
-    );
+    )
   }
 }

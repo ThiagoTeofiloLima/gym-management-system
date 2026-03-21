@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import { prisma } from "@/lib/prisma";
+import * as db from "@/services/database";
 
 import { config } from "@/services/stripe/config";
 
@@ -32,18 +32,13 @@ export const createStripeCustomer = async (input: {
     });
 
     // Update user in database
-    const user = await prisma.user.findUnique({
-        where: { email: input.email },
-    });
+    const user = await db.findUserByEmail(input.email);
     if (user) {
-        await prisma.user.update({
-            where: { id: user.id },
-            data: {
-                stripeCustomerId: createdCustomer.id,
-                stripeSubscriptionId: createdCustomerSubscription.id,
-                stripeSubscriptionStatus: createdCustomerSubscription.status,
-                stripePriceId: config.stripe.plans.free.priceId,
-            },
+        await db.updateUser(user.id, {
+            stripeCustomerId: createdCustomer.id,
+            stripeSubscriptionId: createdCustomerSubscription.id,
+            stripeSubscriptionStatus: createdCustomerSubscription.status,
+            stripePriceId: config.stripe.plans.free.priceId,
         });
     }
 
@@ -108,27 +103,18 @@ export const handleProcessWebhookUpdatedSubscription = async (event: {
     const stripePriceId = event.object.items.data[0].price.id;
 
     // Find user in database
-    const user = await prisma.user.findFirst({
-        where: {
-            OR: [
-                { stripeSubscriptionId },
-                { stripeCustomerId },
-            ],
-        },
-    });
+    const user = await db.findUserByEmail(event.object.customer as string)
+        || await db.findUserById(stripeSubscriptionId);
 
     if (!user) {
         throw new Error("user of stripeCustomerId not found");
     }
 
-    await prisma.user.update({
-        where: { id: user.id },
-        data: {
-            stripeCustomerId,
-            stripeSubscriptionId,
-            stripeSubscriptionStatus,
-            stripePriceId,
-        },
+    await db.updateUser(user.id, {
+        stripeCustomerId,
+        stripeSubscriptionId,
+        stripeSubscriptionStatus,
+        stripePriceId,
     });
 };
 
@@ -163,9 +149,7 @@ export const getPlanByPrice = (priceId: string) => {
 };
 
 export const getUserCurrentPlan = async (userId: string) => {
-    const user = await prisma.user.findUnique({
-        where: { id: userId },
-    });
+    const user = await db.findUserById(userId);
 
     if (!user || !user.stripePriceId) {
         // Default to free plan if no user or plan found
@@ -177,9 +161,7 @@ export const getUserCurrentPlan = async (userId: string) => {
         };
 
         // Count user's todos
-        const userTodos = await prisma.todo.findMany({
-            where: { userId },
-        });
+        const userTodos = await db.findTodos({ userId });
         const currentTasks = userTodos.length;
         const availableTasks = plan.quota.TASKS;
         const usage = (currentTasks / availableTasks) * 100;
@@ -199,9 +181,7 @@ export const getUserCurrentPlan = async (userId: string) => {
     const plan = getPlanByPrice(user.stripePriceId);
 
     // Count user's todos
-    const userTodos = await prisma.todo.findMany({
-        where: { userId },
-    });
+    const userTodos = await db.findTodos({ userId });
     const currentTasks = userTodos.length;
     const availableTasks = plan.quota.TASKS;
     const usage = (currentTasks / availableTasks) * 100;

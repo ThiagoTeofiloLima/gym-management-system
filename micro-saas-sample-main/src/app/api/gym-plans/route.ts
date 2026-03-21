@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/services/database'
+import * as db from '@/services/database'
 import { auth } from '@/services/auth'
-import { getTenantContext } from '@/lib/multi-tenant'
+import { getTenantContext, canAccessGym } from '@/lib/multi-tenant'
 
 /**
  * GET /api/gym-plans
  * Lista os planos da academia do gestor logado
+ *
+ * SEGURANÇA: Valida se o usuário tem permissão para acessar a academia especificada
  */
 export async function GET(request: NextRequest) {
   try {
@@ -35,6 +37,14 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url)
     const queryGymId = url.searchParams.get('gymId')
     if (queryGymId && context.isSuperAdmin) {
+      // Validar acesso à academia especificada
+      const hasAccess = await canAccessGym(session.user.id, queryGymId)
+      if (!hasAccess) {
+        return NextResponse.json(
+          { error: 'Forbidden: You do not have access to this gym' },
+          { status: 403 }
+        )
+      }
       gymId = queryGymId
     }
 
@@ -46,10 +56,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Buscar planos da academia
-    const plans = await prisma.gymPlan.findMany({
-      where: { gymId },
-      orderBy: { createdAt: 'desc' },
-    })
+    const plans = await db.findGymPlansByGymId(gymId)
 
     return NextResponse.json(plans)
   } catch (error) {
@@ -64,6 +71,8 @@ export async function GET(request: NextRequest) {
 /**
  * POST /api/gym-plans
  * Cria um novo plano para a academia
+ *
+ * SEGURANÇA: Usa apenas o gymId do contexto do usuário (não aceita gymId externo)
  */
 export async function POST(request: NextRequest) {
   try {
@@ -110,15 +119,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Criar plano
-    const plan = await prisma.gymPlan.create({
-      data: {
-        gymId,
-        name,
-        description: description || null,
-        price: parseFloat(price),
-        duration: duration ? parseInt(duration) : 30,
-        maxMembers: maxMembers ? parseInt(maxMembers) : null,
-      },
+    const plan = await db.createGymPlan({
+      gymId,
+      name,
+      description: description || null,
+      price: parseFloat(price),
+      duration: duration ? parseInt(duration) : 30,
+      maxMembers: maxMembers ? parseInt(maxMembers) : null,
+      isActive: true,
     })
 
     return NextResponse.json(plan, { status: 201 })

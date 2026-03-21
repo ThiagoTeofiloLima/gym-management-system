@@ -4,7 +4,7 @@ import {
     DashboardPageHeaderTitle,
     DashboardPageMain,
 } from "@/components/dashboard/page"
-import { prisma } from "@/services/database"
+import * as db from "@/services/database"
 import { auth } from "@/services/auth"
 import { getTenantContext } from "@/lib/multi-tenant"
 import { ExpenseManagement } from "../__components/expenses/expense-management"
@@ -16,7 +16,7 @@ export default async function ExpensesPage(props: {
     searchParams: Promise<{ gymId?: string }>
 }) {
     const searchParams = await props.searchParams
-    let queryGymId = searchParams.gymId
+    const queryGymId = searchParams.gymId
 
     const session = await auth()
 
@@ -24,13 +24,14 @@ export default async function ExpensesPage(props: {
         return <div>Unauthorized</div>
     }
 
-    const context = await getTenantContext()
+    // Passa o gymId da URL para o contexto
+    const context = await getTenantContext(queryGymId)
 
     if (!context) {
         return <div>Unauthorized</div>
     }
 
-    // Obter gymId
+    // Determinar qual gymId usar
     let gymIdFilter: string | undefined
 
     if (queryGymId) {
@@ -44,41 +45,26 @@ export default async function ExpensesPage(props: {
 
     // Se ainda não tem gymId e é super admin, pega a primeira academia
     if (!gymIdFilter && context.isSuperAdmin) {
-        const firstGym = await prisma.gym.findFirst({
-            where: { isActive: true },
-            orderBy: { name: 'asc' },
-        })
+        const allGyms = await db.findAllGyms()
+        const firstGym = allGyms.find(g => g.isActive)
         gymIdFilter = firstGym?.id
     }
 
     // Buscar expenses do banco
     const whereClause = gymIdFilter ? { gymId: gymIdFilter } : {}
 
-    const expensesData = await prisma.expense.findMany({
-        where: whereClause,
-        include: {
-            gym: {
-                select: {
-                    id: true,
-                    name: true,
-                },
-            },
-        },
-        orderBy: {
-            date: 'desc',
-        },
+    const expensesData = await db.findExpenses({
+        gymId: gymIdFilter,
     })
 
-    // Serializar datas
+    // Serializar datas (já são strings no Supabase)
     const expenses = expensesData.map(e => ({
         ...e,
-        date: e.date.toISOString().split('T')[0],
-        createdAt: e.createdAt.toISOString(),
-        updatedAt: e.updatedAt.toISOString(),
+        date: e.date.split('T')[0],
     }))
 
     return (
-        <ExpenseManagement 
+        <ExpenseManagement
             initialExpenses={expenses}
             gymId={gymIdFilter || ''}
         />

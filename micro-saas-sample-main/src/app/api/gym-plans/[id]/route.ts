@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/services/database'
+import * as db from '@/services/database'
 import { auth } from '@/services/auth'
-import { getTenantContext } from '@/lib/multi-tenant'
+import { getTenantContext, canAccessGym } from '@/lib/multi-tenant'
 
 /**
  * PUT /api/gym-plans/[id]
  * Atualiza um plano existente
+ *
+ * SEGURANÇA: Valida se o usuário tem permissão para acessar a academia do plano
  */
 export async function PUT(
   request: NextRequest,
@@ -31,46 +33,40 @@ export async function PUT(
     const body = await request.json()
     const { name, description, price, duration, maxMembers, isActive } = body
 
-    // Obter gymId
-    let gymId: string | undefined
+    // Verificar se o plano existe
+    const existingPlan = await db.findGymPlanById(id)
 
-    if (context.gymId) {
-      gymId = context.gymId
-    } else if (context.gyms && context.gyms.length > 0) {
-      const firstGym = context.gyms.find((g: any) => g.status === 'ACTIVE' && g.isActive)
-      gymId = firstGym?.gymId
-    }
-
-    if (!gymId) {
-      return NextResponse.json(
-        { error: 'Academia não encontrada' },
-        { status: 404 }
-      )
-    }
-
-    // Verificar se o plano pertence à academia do usuário
-    const existingPlan = await prisma.gymPlan.findUnique({
-      where: { id },
-    })
-
-    if (!existingPlan || existingPlan.gymId !== gymId) {
+    if (!existingPlan) {
       return NextResponse.json(
         { error: 'Plano não encontrado' },
         { status: 404 }
       )
     }
 
+    if (!existingPlan.gymId) {
+      return NextResponse.json(
+        { error: 'Plano não tem associação com academia' },
+        { status: 400 }
+      )
+    }
+
+    // VALIDAÇÃO DE SEGURANÇA: Verificar se usuário tem acesso à academia deste plano
+    const hasAccess = await canAccessGym(session.user.id, existingPlan.gymId)
+    if (!hasAccess) {
+      return NextResponse.json(
+        { error: 'Forbidden: You do not have access to this gym' },
+        { status: 403 }
+      )
+    }
+
     // Atualizar plano
-    const plan = await prisma.gymPlan.update({
-      where: { id },
-      data: {
-        name: name || existingPlan.name,
-        description: description !== undefined ? description : existingPlan.description,
-        price: price !== undefined ? parseFloat(price) : existingPlan.price,
-        duration: duration !== undefined ? parseInt(duration) : existingPlan.duration,
-        maxMembers: maxMembers !== undefined ? parseInt(maxMembers) : existingPlan.maxMembers,
-        isActive: isActive !== undefined ? isActive : existingPlan.isActive,
-      },
+    const plan = await db.updateGymPlan(id, {
+      name: name || existingPlan.name,
+      description: description !== undefined ? description : existingPlan.description,
+      price: price !== undefined ? parseFloat(price) : existingPlan.price,
+      duration: duration !== undefined ? parseInt(duration) : existingPlan.duration,
+      maxMembers: maxMembers !== undefined ? parseInt(maxMembers) : existingPlan.maxMembers,
+      isActive: isActive !== undefined ? isActive : existingPlan.isActive,
     })
 
     return NextResponse.json(plan)
@@ -86,6 +82,8 @@ export async function PUT(
 /**
  * DELETE /api/gym-plans/[id]
  * Exclui um plano (apenas soft delete - desativa)
+ *
+ * SEGURANÇA: Valida se o usuário tem permissão para acessar a academia do plano
  */
 export async function DELETE(
   request: NextRequest,
@@ -109,45 +107,33 @@ export async function DELETE(
 
     const { id } = await params
 
-    // Obter gymId
-    let gymId: string | undefined
+    // Verificar se o plano existe
+    const existingPlan = await db.findGymPlanById(id)
 
-    if (context.gymId) {
-      gymId = context.gymId
-    } else if (context.gyms && context.gyms.length > 0) {
-      const firstGym = context.gyms.find((g: any) => g.status === 'ACTIVE' && g.isActive)
-      gymId = firstGym?.gymId
-    }
-
-    if (!gymId) {
-      return NextResponse.json(
-        { error: 'Academia não encontrada' },
-        { status: 404 }
-      )
-    }
-
-    // Verificar se o plano pertence à academia do usuário
-    const existingPlan = await prisma.gymPlan.findUnique({
-      where: { id },
-    })
-
-    if (!existingPlan || existingPlan.gymId !== gymId) {
+    if (!existingPlan) {
       return NextResponse.json(
         { error: 'Plano não encontrado' },
         { status: 404 }
       )
     }
 
+    // VALIDAÇÃO DE SEGURANÇA: Verificar se usuário tem acesso à academia deste plano
+    const hasAccess = await canAccessGym(session.user.id, existingPlan.gymId)
+    if (!hasAccess) {
+      return NextResponse.json(
+        { error: 'Forbidden: You do not have access to this gym' },
+        { status: 403 }
+      )
+    }
+
     // Verificar se há membros usando este plano
-    const membersCount = await prisma.member.count({
-      where: { gymPlanId: id },
-    })
+    const allMembers = await db.findMembers({ gymId: existingPlan.gymId })
+    const membersCount = allMembers.filter(m => m.gymPlanId === id).length
 
     if (membersCount > 0) {
       // Não pode excluir, apenas desativar
-      const plan = await prisma.gymPlan.update({
-        where: { id },
-        data: { isActive: false },
+      const plan = await db.updateGymPlan(id, {
+        isActive: false,
       })
 
       return NextResponse.json({
@@ -157,9 +143,7 @@ export async function DELETE(
     }
 
     // Pode excluir diretamente
-    await prisma.gymPlan.delete({
-      where: { id },
-    })
+    await db.deleteGymPlan(id)
 
     return NextResponse.json({ message: 'Plano excluído com sucesso' })
   } catch (error) {

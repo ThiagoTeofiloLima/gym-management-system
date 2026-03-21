@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import * as db from '@/services/database';
 
 // This API route allows getting members by user ID from the client side
 export async function GET(request: NextRequest) {
@@ -14,13 +14,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const userMembers = await prisma.member.findMany({
-      where: { userId },
-      include: {
-        trainer: true,
-      },
-      orderBy: { name: 'asc' },
-    });
+    const userMembers = await db.findMembers({ userId });
 
     return Response.json(userMembers);
   } catch (error) {

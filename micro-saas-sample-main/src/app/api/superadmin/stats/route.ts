@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/services/database'
+import * as db from '@/services/database'
 import { auth } from '@/services/auth'
 import { getTenantContext } from '@/lib/multi-tenant'
 
@@ -26,20 +26,14 @@ export async function GET() {
     }
 
     // Buscar todas as academias
-    const gyms = await prisma.gym.findMany({
-      include: {
-        _count: {
-          select: {
-            users: true,
-            members: true,
-            trainers: true,
-            workouts: true,
-            expenses: true,
-          },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    })
+    const allGyms = await db.findAllGyms()
+    const gyms = await Promise.all(
+      allGyms.map(async (g) => ({
+        ...g,
+        _count: await db.getGymCounts(g.id),
+      }))
+    )
+    gyms.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
     // Calcular estatísticas
     const stats = {

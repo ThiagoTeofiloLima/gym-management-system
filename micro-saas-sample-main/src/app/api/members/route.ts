@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/services/database'
+import * as db from '@/services/database'
 import { auth } from '@/services/auth'
+import { getTenantContext, canAccessGym } from '@/lib/multi-tenant'
 
 /**
  * GET /api/members
  * Lista membros da academia
+ *
+ * SEGURANÇA: Valida se o usuário tem permissão para acessar a academia especificada
  */
 export async function GET(request: NextRequest) {
   try {
@@ -14,8 +17,34 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const context = await getTenantContext()
+
+    if (!context) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const url = new URL(request.url)
-    const gymId = url.searchParams.get('gymId')
+    const queryGymId = url.searchParams.get('gymId')
+
+    // Determinar qual gymId usar
+    let gymId: string | undefined
+
+    if (queryGymId) {
+      // Se passou gymId na query, validar se o usuário tem acesso
+      const hasAccess = await canAccessGym(session.user.id, queryGymId)
+      if (!hasAccess) {
+        return NextResponse.json(
+          { error: 'Forbidden: You do not have access to this gym' },
+          { status: 403 }
+        )
+      }
+      gymId = queryGymId
+    } else if (context.gymId) {
+      gymId = context.gymId
+    } else if (context.gyms && context.gyms.length > 0) {
+      const firstGym = context.gyms.find((g: any) => g.status === 'ACTIVE' && g.isActive)
+      gymId = firstGym?.gymId
+    }
 
     // Se não tem gymId, retorna array vazio
     if (!gymId) {
@@ -27,43 +56,12 @@ export async function GET(request: NextRequest) {
     const plan = url.searchParams.get('plan')
     const search = url.searchParams.get('search')
 
-    const whereClause: any = { gymId }
-
-    if (status) {
-      whereClause.status = status
-    }
-
-    if (plan) {
-      whereClause.plan = plan
-    }
-
-    if (search) {
-      whereClause.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } },
-      ]
-    }
-
-    const members = await prisma.member.findMany({
-      where: whereClause,
-      include: {
-        trainer: {
-          select: {
-            id: true,
-            name: true,
-            specialty: true,
-          },
-        },
-        gym: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
+    const members = await db.findMembers({
+      gymId,
+      userId: session.user.id,
+      status: status || undefined,
+      plan: plan || undefined,
+      search: search || undefined,
     })
 
     return NextResponse.json(members)
@@ -79,6 +77,8 @@ export async function GET(request: NextRequest) {
 /**
  * POST /api/members
  * Cria novo membro
+ *
+ * SEGURANÇA: Valida se o usuário tem permissão para acessar a academia especificada
  */
 export async function POST(request: NextRequest) {
   try {
@@ -88,8 +88,34 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const context = await getTenantContext()
+
+    if (!context) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const url = new URL(request.url)
-    const gymId = url.searchParams.get('gymId')
+    const queryGymId = url.searchParams.get('gymId')
+
+    // Determinar qual gymId usar
+    let gymId: string | undefined
+
+    if (queryGymId) {
+      // Se passou gymId na query, validar se o usuário tem acesso
+      const hasAccess = await canAccessGym(session.user.id, queryGymId)
+      if (!hasAccess) {
+        return NextResponse.json(
+          { error: 'Forbidden: You do not have access to this gym' },
+          { status: 403 }
+        )
+      }
+      gymId = queryGymId
+    } else if (context.gymId) {
+      gymId = context.gymId
+    } else if (context.gyms && context.gyms.length > 0) {
+      const firstGym = context.gyms.find((g: any) => g.status === 'ACTIVE' && g.isActive)
+      gymId = firstGym?.gymId
+    }
 
     if (!gymId) {
       return NextResponse.json(
@@ -110,9 +136,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if member with this email already exists for this gym
-    const existingMember = await prisma.member.findFirst({
-      where: { email, gymId },
-    })
+    const existingMembers = await db.findMembers({ gymId, search: email })
+    const existingMember = existingMembers.find(m => m.email === email)
 
     if (existingMember) {
       return NextResponse.json(
@@ -144,20 +169,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new member
-    const newMember = await prisma.member.create({
-      data: {
-        name,
-        email,
-        phone,
-        plan,
-        status: 'Ativo',
-        lastVisit: new Date().toISOString().split('T')[0],
-        planRenewalDate: renewalDate,
-        paymentDate: paymentDateValue,
-        gymId,
-        userId: session.user.id,
-        trainerId: trainerId || null,
-      },
+    const newMember = await db.createMember({
+      name,
+      email,
+      phone,
+      plan,
+      status: 'Ativo',
+      lastVisit: new Date().toISOString().split('T')[0],
+      planRenewalDate: renewalDate,
+      paymentDate: paymentDateValue,
+      gymId,
+      userId: session.user.id,
+      trainerId: trainerId || null,
     })
 
     return NextResponse.json(newMember, { status: 201 })

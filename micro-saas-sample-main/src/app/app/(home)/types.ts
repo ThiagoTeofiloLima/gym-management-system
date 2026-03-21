@@ -6,7 +6,7 @@ export type DashboardData = ReturnTypeWithoutPromise<typeof getDashboardData>;
 export interface ToDo {
     id: string;
     title: string;
-    doneAt: Date | null;
-    createdAt: Date;
+    doneAt: string | null;
+    createdAt: string;
     userId?: string;
 }

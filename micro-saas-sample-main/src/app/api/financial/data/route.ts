@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/services/database'
+import * as db from '@/services/database'
 import { auth } from '@/services/auth'
 import { getTenantContext } from '@/lib/multi-tenant'
 
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     }
 
     const url = new URL(request.url)
-    let gymId = url.searchParams.get('gymId')
+    let gymId: string | undefined = url.searchParams.get('gymId') || undefined
 
     // Obter gymId do contexto se não foi passado
     if (!gymId) {
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
         gymId = context.gymId
       } else if (context.gyms && context.gyms.length > 0) {
         const firstGym = context.gyms.find((g: any) => g.status === 'ACTIVE' && g.isActive)
-        gymId = firstGym?.gymId
+        gymId = firstGym?.gymId || undefined
       }
     }
 
@@ -46,19 +46,9 @@ export async function GET(request: NextRequest) {
 
     // Buscar membros, despesas e planos em paralelo
     const [members, expenses, gymPlans] = await Promise.all([
-      prisma.member.findMany({
-        where: { gymId },
-        include: {
-          gymPlan: true,
-        },
-      }),
-      prisma.expense.findMany({
-        where: { gymId },
-        orderBy: { date: 'desc' },
-      }),
-      prisma.gymPlan.findMany({
-        where: { gymId },
-      }),
+      db.findMembers({ gymId }),
+      db.findExpenses({ gymId }),
+      db.findGymPlansByGymId(gymId),
     ])
 
     // Criar mapa de preços dos planos
@@ -119,9 +109,9 @@ export async function GET(request: NextRequest) {
       .map(member => {
         const paymentDate = new Date(member.paymentDate)
         const planPrice = getPlanPrice(member.plan)
-        
+
         // Verificar se pagamento é do mês atual
-        if (paymentDate.getMonth() === now.getMonth() && 
+        if (paymentDate.getMonth() === now.getMonth() &&
             paymentDate.getFullYear() === now.getFullYear()) {
           return planPrice
         }
@@ -133,7 +123,7 @@ export async function GET(request: NextRequest) {
     const currentMonthExpenses = expenses
       .filter(e => {
         const expenseDate = new Date(e.date)
-        return expenseDate.getMonth() === now.getMonth() && 
+        return expenseDate.getMonth() === now.getMonth() &&
                expenseDate.getFullYear() === now.getFullYear()
       })
       .reduce((sum, e) => sum + e.amount, 0)
@@ -150,7 +140,7 @@ export async function GET(request: NextRequest) {
         .filter(m => {
           const paymentDate = new Date(m.paymentDate)
           return (m.status === 'Ativo' || m.status === 'ativo') &&
-                 paymentDate.getMonth() === month && 
+                 paymentDate.getMonth() === month &&
                  paymentDate.getFullYear() === year
         })
         .reduce((sum, m) => sum + getPlanPrice(m.plan), 0)
@@ -158,13 +148,13 @@ export async function GET(request: NextRequest) {
       const monthExpenses = expenses
         .filter(e => {
           const expenseDate = new Date(e.date)
-          return expenseDate.getMonth() === month && 
+          return expenseDate.getMonth() === month &&
                  expenseDate.getFullYear() === year
         })
         .reduce((sum, e) => sum + e.amount, 0)
 
       const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
-      
+
       monthlyHistory.push({
         month: `${monthNames[month]}/${year.toString().substring(2)}`,
         revenue: monthRevenue,

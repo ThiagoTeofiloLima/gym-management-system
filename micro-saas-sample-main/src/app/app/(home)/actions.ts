@@ -1,15 +1,15 @@
 "use server";
 
 import { auth } from "@/services/auth";
-import { prisma } from "@/lib/prisma";
+import * as db from "@/services/database";
 import { z } from "zod";
 import { upsertToDoSchema } from "./schema";
 
 export interface ToDo {
     id: string;
     title: string;
-    doneAt: Date | null;
-    createdAt: Date;
+    doneAt: string | null;
+    createdAt: string;
     userId?: string;
 }
 
@@ -37,9 +37,7 @@ export async function getDashboardData() {
     const userId = session.user.id;
 
     // Get all members for the user
-    const members = await prisma.member.findMany({
-        where: { userId },
-    });
+    const members = await db.findMembers({ userId });
     const activeMembers = members.filter(member => member.status === 'Ativo');
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -48,18 +46,14 @@ export async function getDashboardData() {
     );
 
     // Calculate attendance rate
-    const attendance = await prisma.attendance.findMany({
-        where: { userId },
-    });
+    const attendance = await db.findAttendanceRecords({ userId });
     const presentRecords = attendance.filter(record => record.status === 'Presente');
     const attendanceRate = attendance.length > 0
         ? Math.round((presentRecords.length / attendance.length) * 100)
         : 0;
 
     // Calculate financial data
-    const financial = await prisma.expense.findMany({
-        where: { userId },
-    });
+    const financial = await db.findExpenses({ userId });
     // Expenses com categoria que indica receita (ex: "Receita", "Mensalidades") são receitas, outras são despesas
     const revenueCategories = ['Receita', 'Mensalidades', 'Mensalidades Anuais', 'Mensalidades Trimestrais'];
     const revenue = financial
@@ -96,15 +90,12 @@ export async function getToDos() {
 
     const userId = session.user.id;
 
-    const todos = await prisma.todo.findMany({
-        where: { userId },
-        orderBy: { createdAt: 'desc' },
-    });
+    const todos = await db.findTodos({ userId });
 
     return todos;
 }
 
-export async function upsertToDo(data: { id?: string; title: string; doneAt?: Date | null }) {
+export async function upsertToDo(data: { id?: string; title: string; doneAt?: string | null }) {
     let session;
     try {
         session = await auth();
@@ -125,18 +116,13 @@ export async function upsertToDo(data: { id?: string; title: string; doneAt?: Da
     const userId = session.user.id;
 
     if (id) {
-        const updatedTodo = await prisma.todo.update({
-            where: { id },
-            data: { title, doneAt: doneAt || null },
-        });
+        const updatedTodo = await db.updateTodo(id, { title, doneAt: doneAt || null });
         return { error: null, data: updatedTodo };
     } else {
-        const newTodo = await prisma.todo.create({
-            data: {
-                title,
-                doneAt: doneAt || null,
-                userId,
-            },
+        const newTodo = await db.createTodo({
+            title,
+            doneAt: doneAt || null,
+            userId,
         });
         return { error: null, data: newTodo };
     }
@@ -155,9 +141,7 @@ export async function deleteToDo(data: { id: string }) {
     }
 
     try {
-        await prisma.todo.delete({
-            where: { id: data.id },
-        });
+        await db.deleteTodo(data.id);
         return { error: null, success: true };
     } catch (error) {
         return { error: "Failed to delete ToDo", success: false };
@@ -178,9 +162,8 @@ export async function deleteAllToDos() {
 
     const userId = session.user.id;
     try {
-        await prisma.todo.deleteMany({
-            where: { userId },
-        });
+        const todos = await db.findTodos({ userId });
+        await Promise.all(todos.map(todo => db.deleteTodo(todo.id)));
         return { error: null, success: true };
     } catch (error) {
         return { error: "Failed to delete all ToDos", success: false };

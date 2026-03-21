@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/services/database'
+import * as db from '@/services/database'
 import { auth } from '@/services/auth'
 import { getTenantContext } from '@/lib/multi-tenant'
 import { hash } from 'bcryptjs'
+import type { UserRole } from '@/types/database'
 
 /**
  * POST /api/superadmin/gyms/assign-manager
@@ -49,16 +50,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Buscar a academia
-    const gym = await prisma.gym.findUnique({
-      where: { id: gymId },
-      include: {
-        users: {
-          include: {
-            user: true,
-          },
-        },
-      },
-    })
+    const gym = await db.findGymById(gymId)
 
     if (!gym) {
       return NextResponse.json(
@@ -67,17 +59,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Buscar usuários vinculados à academia para verificar se já existe gestor
+    const userGyms = await db.findUserGymsByGymId(gymId)
+
     // Verificar se já existe um gestor para esta academia
-    const existingUserGym = gym.users.find((ug) => ug.role === 'GYM_ADMIN')
-    
+    const existingUserGym = userGyms.find((ug) => ug.role === 'GYM_ADMIN')
+
     if (existingUserGym) {
+      // Buscar dados completos do usuário gestor
+      const managerUser = await db.findUserById(existingUserGym.userId)
       return NextResponse.json(
-        { 
+        {
           error: 'Esta academia já possui um gestor vinculado',
           manager: {
-            id: existingUserGym.user.id,
-            name: existingUserGym.user.name,
-            email: existingUserGym.user.email,
+            id: existingUserGym.userId,
+            name: managerUser?.name,
+            email: managerUser?.email,
           }
         },
         { status: 409 }
@@ -85,9 +82,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verificar se email já existe
-    let manager = await prisma.user.findUnique({
-      where: { email: managerEmail },
-    })
+    const manager = await db.findUserByEmail(managerEmail)
 
     if (manager) {
       return NextResponse.json(
@@ -102,61 +97,62 @@ export async function POST(request: NextRequest) {
 
     console.log('Criando gestor e vinculando à academia...')
 
-    // Criar gestor e vincular à academia em transação
-    const result = await prisma.$transaction(async (tx) => {
+    // Criar gestor e vincular à academia em sequência (transação manual)
+    let newManager: Awaited<ReturnType<typeof db.createUser>> | null = null
+
+    try {
       // 1. Criar usuário gestor
-      const newManager = await tx.user.create({
-        data: {
-          name: managerName,
-          email: managerEmail,
-          role: 'GYM_ADMIN',
-          emailVerified: new Date(),
-          passwordHash,
-        },
+      newManager = await db.createUser({
+        name: managerName,
+        email: managerEmail,
+        role: 'GYM_ADMIN' as UserRole,
+        emailVerified: new Date().toISOString(),
+        passwordHash,
       })
 
       console.log('Gestor criado:', newManager.id)
 
       // 2. Vincular gestor à academia
-      await tx.userGym.create({
-        data: {
-          userId: newManager.id,
-          gymId: gymId,
-          role: 'GYM_ADMIN',
-          status: 'ACTIVE',
-        },
+      await db.createUserGym({
+        userId: newManager.id,
+        gymId: gymId,
+        role: 'GYM_ADMIN' as UserRole,
+        status: 'ACTIVE' as import('@/types/database').UserGymStatus,
       })
 
       console.log('Gestor vinculado à academia')
 
-      // 3. Salvar senha temporária (usando upsert do Prisma)
-      await tx.managerTempPassword.upsert({
-        where: {
-          managerId_gymId: {
-            managerId: newManager.id,
-            gymId: gymId,
-          },
-        },
-        update: { password: generatedPassword },
-        create: {
-          managerId: newManager.id,
-          gymId: gymId,
-          password: generatedPassword,
-        },
+      // 3. Salvar senha temporária
+      await db.createManagerTempPassword({
+        managerId: newManager.id,
+        gymId: gymId,
+        password: generatedPassword,
       })
 
       console.log('Senha temporária salva')
-
-      return newManager
-    })
+    } catch (error: any) {
+      // Rollback manual em caso de erro
+      console.error('Erro durante criação, tentando rollback...', error)
+      
+      if (newManager) {
+        try {
+          await db.deleteUser(newManager.id)
+          console.log('Rollback realizado: usuário removido')
+        } catch (rollbackError) {
+          console.error('Rollback falhou:', rollbackError)
+        }
+      }
+      
+      throw error
+    }
 
     console.log('Gestor atribuído com sucesso!')
 
     return NextResponse.json({
       manager: {
-        id: result.id,
-        name: result.name,
-        email: result.email,
+        id: newManager.id,
+        name: newManager.name,
+        email: newManager.email,
       },
       temporaryPassword: generatedPassword,
       message: 'Gestor atribuído com sucesso!',

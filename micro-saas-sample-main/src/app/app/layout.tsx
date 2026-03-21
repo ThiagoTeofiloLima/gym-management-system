@@ -3,7 +3,7 @@ import { AppHeader } from "./__components/app-header"
 import { auth } from "@/services/auth"
 import { getTenantContext, getUserAccessibleGyms } from "@/lib/multi-tenant"
 import { redirect } from "next/navigation"
-import { prisma } from "@/services/database"
+import * as db from "@/services/database"
 
 export default async function AppLayout({
     children,
@@ -35,10 +35,7 @@ export default async function AppLayout({
 
     // Para Super Admin, carregar todas as academias se não tiver nenhuma associada
     if (context.isSuperAdmin && accessibleGyms.length === 0) {
-        const allGyms = await prisma.gym.findMany({
-            where: { isActive: true },
-            orderBy: { name: 'asc' },
-        })
+        const allGyms = await db.findAllGyms()
 
         // Se houver academias no sistema, o Super Admin pode acessá-las
         if (allGyms.length > 0) {

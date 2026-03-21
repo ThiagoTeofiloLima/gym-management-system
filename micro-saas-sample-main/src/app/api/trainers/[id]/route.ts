@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/services/database'
+import * as db from '@/services/database'
 import { auth } from '@/services/auth'
-import { getTenantContext } from '@/lib/multi-tenant'
+import { getTenantContext, canAccessGym } from '@/lib/multi-tenant'
 
 /**
  * PUT /api/trainers/[id]
  * Atualiza um treinador
+ *
+ * SEGURANÇA: Valida se o usuário tem permissão para acessar a academia do treinador
  */
 export async function PUT(
   request: NextRequest,
@@ -17,39 +19,38 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const url = new URL(request.url)
-    const gymId = url.searchParams.get('gymId')
-
-    if (!gymId) {
-      return NextResponse.json({ error: 'gymId is required' }, { status: 400 })
+    const context = await getTenantContext()
+    if (!context) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { id } = await params
     const body = await request.json()
     const { name, email, phone, specialty, certifications, status } = body
 
-    const existingTrainer = await prisma.trainer.findUnique({
-      where: { id },
-    })
+    const existingTrainer = await db.findTrainerById(id)
 
     if (!existingTrainer) {
       return NextResponse.json({ error: 'Trainer not found' }, { status: 404 })
     }
 
-    if (existingTrainer.gymId !== gymId) {
-      return NextResponse.json({ error: 'Trainer does not belong to this gym' }, { status: 403 })
+    if (!existingTrainer.gymId) {
+      return NextResponse.json({ error: 'Trainer has no gym association' }, { status: 400 })
     }
 
-    const trainer = await prisma.trainer.update({
-      where: { id },
-      data: {
-        name,
-        email,
-        phone,
-        specialty,
-        certifications: Array.isArray(certifications) ? certifications.join(', ') : certifications,
-        status,
-      },
+    // VALIDAÇÃO DE SEGURANÇA: Verificar se usuário tem acesso à academia deste treinador
+    const hasAccess = await canAccessGym(session.user.id, existingTrainer.gymId)
+    if (!hasAccess) {
+      return NextResponse.json({ error: 'Forbidden: You do not have access to this gym' }, { status: 403 })
+    }
+
+    const trainer = await db.updateTrainer(id, {
+      name,
+      email,
+      phone,
+      specialty,
+      certifications: Array.isArray(certifications) ? certifications.join(', ') : certifications,
+      status,
     })
 
     return NextResponse.json(trainer)
@@ -65,6 +66,8 @@ export async function PUT(
 /**
  * DELETE /api/trainers/[id]
  * Deleta um treinador
+ *
+ * SEGURANÇA: Valida se o usuário tem permissão para acessar a academia do treinador
  */
 export async function DELETE(
   request: NextRequest,
@@ -76,30 +79,30 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const url = new URL(request.url)
-    const gymId = url.searchParams.get('gymId')
-
-    if (!gymId) {
-      return NextResponse.json({ error: 'gymId is required' }, { status: 400 })
+    const context = await getTenantContext()
+    if (!context) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { id } = await params
 
-    const trainer = await prisma.trainer.findUnique({
-      where: { id },
-    })
+    const trainer = await db.findTrainerById(id)
 
     if (!trainer) {
       return NextResponse.json({ error: 'Trainer not found' }, { status: 404 })
     }
 
-    if (trainer.gymId !== gymId) {
-      return NextResponse.json({ error: 'Trainer does not belong to this gym' }, { status: 403 })
+    if (!trainer.gymId) {
+      return NextResponse.json({ error: 'Trainer has no gym association' }, { status: 400 })
     }
 
-    await prisma.trainer.delete({
-      where: { id },
-    })
+    // VALIDAÇÃO DE SEGURANÇA: Verificar se usuário tem acesso à academia deste treinador
+    const hasAccess = await canAccessGym(session.user.id, trainer.gymId)
+    if (!hasAccess) {
+      return NextResponse.json({ error: 'Forbidden: You do not have access to this gym' }, { status: 403 })
+    }
+
+    await db.deleteTrainer(id)
 
     return NextResponse.json({ message: 'Trainer deleted successfully' })
   } catch (error) {

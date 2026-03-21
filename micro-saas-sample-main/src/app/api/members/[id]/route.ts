@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/services/database'
+import * as db from '@/services/database'
 import { auth } from '@/services/auth'
-import { getTenantContext } from '@/lib/multi-tenant'
+import { getTenantContext, canAccessGym } from '@/lib/multi-tenant'
 
 /**
  * GET /api/members/[id]
  * Busca membro único por ID
+ *
+ * SEGURANÇA: Valida se o usuário tem permissão para acessar a academia do membro
  */
 export async function GET(
   request: NextRequest,
@@ -26,35 +28,53 @@ export async function GET(
 
     const { id } = await params
 
-    const member = await prisma.member.findUnique({
-      where: { id },
-      include: {
-        trainer: {
-          select: {
-            id: true,
-            name: true,
-            specialty: true,
-          },
-        },
-        gym: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-      },
-    })
+    const member = await db.findMemberById(id)
 
     if (!member) {
       return NextResponse.json({ error: 'Member not found' }, { status: 404 })
     }
 
-    // Verificar permissão (Super Admin ou mesma academia)
-    if (!context.isSuperAdmin && member.gymId !== context.gymId) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    if (!member.gymId) {
+      return NextResponse.json({ error: 'Member has no gym association' }, { status: 400 })
     }
 
-    return NextResponse.json(member)
+    // VALIDAÇÃO DE SEGURANÇA: Verificar se usuário tem acesso à academia deste membro
+    const hasAccess = await canAccessGym(session.user.id, member.gymId)
+    if (!hasAccess) {
+      return NextResponse.json({ error: 'Forbidden: You do not have access to this gym' }, { status: 403 })
+    }
+
+    // Buscar trainer se existir
+    let trainer = null
+    if (member.trainerId) {
+      const trainerData = await db.findTrainerById(member.trainerId)
+      if (trainerData) {
+        trainer = {
+          id: trainerData.id,
+          name: trainerData.name,
+          specialty: trainerData.specialty,
+        }
+      }
+    }
+
+    // Buscar gym
+    let gym = null
+    if (member.gymId) {
+      const gymData = await db.findGymById(member.gymId)
+      if (gymData) {
+        gym = {
+          id: gymData.id,
+          name: gymData.name,
+        }
+      }
+    }
+
+    // Retornar member com dados relacionados
+    return NextResponse.json({
+      ...member,
+      trainer,
+      gym,
+    })
   } catch (error) {
     console.error('Error fetching member:', error)
     return NextResponse.json(
@@ -67,6 +87,8 @@ export async function GET(
 /**
  * PUT /api/members/[id]
  * Atualiza membro por ID
+ *
+ * SEGURANÇA: Valida se o usuário tem permissão para acessar a academia do membro
  */
 export async function PUT(
   request: NextRequest,
@@ -79,14 +101,10 @@ export async function PUT(
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const url = new URL(request.url)
-    const gymId = url.searchParams.get('gymId')
+    const context = await getTenantContext()
 
-    if (!gymId) {
-      return NextResponse.json(
-        { error: 'gymId is required' },
-        { status: 400 }
-      )
+    if (!context) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { id } = await params
@@ -102,9 +120,7 @@ export async function PUT(
     }
 
     // Check if member exists
-    const existingMember = await prisma.member.findUnique({
-      where: { id },
-    })
+    const existingMember = await db.findMemberById(id)
 
     if (!existingMember) {
       return NextResponse.json(
@@ -113,10 +129,18 @@ export async function PUT(
       )
     }
 
-    // Verificar se pertence à academia
-    if (existingMember.gymId !== gymId) {
+    if (!existingMember.gymId) {
       return NextResponse.json(
-        { error: 'Member does not belong to this gym' },
+        { error: 'Member has no gym association' },
+        { status: 400 }
+      )
+    }
+
+    // VALIDAÇÃO DE SEGURANÇA: Verificar se usuário tem acesso à academia deste membro
+    const hasAccess = await canAccessGym(session.user.id, existingMember.gymId)
+    if (!hasAccess) {
+      return NextResponse.json(
+        { error: 'Forbidden: You do not have access to this gym' },
         { status: 403 }
       )
     }
@@ -148,18 +172,15 @@ export async function PUT(
     }
 
     // Update member
-    const updatedMember = await prisma.member.update({
-      where: { id },
-      data: {
-        name,
-        email,
-        phone,
-        plan,
-        status,
-        planRenewalDate: renewalDate,
-        paymentDate: paymentDateValue,
-        trainerId: trainerId,
-      },
+    const updatedMember = await db.updateMember(id, {
+      name,
+      email,
+      phone,
+      plan,
+      status,
+      planRenewalDate: renewalDate,
+      paymentDate: paymentDateValue,
+      trainerId: trainerId,
     })
 
     return NextResponse.json(updatedMember)
@@ -175,6 +196,8 @@ export async function PUT(
 /**
  * DELETE /api/members/[id]
  * Deleta membro por ID
+ *
+ * SEGURANÇA: Valida se o usuário tem permissão para acessar a academia do membro
  */
 export async function DELETE(
   request: NextRequest,
@@ -187,22 +210,16 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const url = new URL(request.url)
-    const gymId = url.searchParams.get('gymId')
+    const context = await getTenantContext()
 
-    if (!gymId) {
-      return NextResponse.json(
-        { error: 'gymId is required' },
-        { status: 400 }
-      )
+    if (!context) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { id } = await params
 
-    // Check if member exists and belongs to the gym
-    const existingMember = await prisma.member.findUnique({
-      where: { id },
-    })
+    // Check if member exists
+    const existingMember = await db.findMemberById(id)
 
     if (!existingMember) {
       return NextResponse.json(
@@ -211,17 +228,24 @@ export async function DELETE(
       )
     }
 
-    if (existingMember.gymId !== gymId) {
+    if (!existingMember.gymId) {
       return NextResponse.json(
-        { error: 'Member does not belong to this gym' },
+        { error: 'Member has no gym association' },
+        { status: 400 }
+      )
+    }
+
+    // VALIDAÇÃO DE SEGURANÇA: Verificar se usuário tem acesso à academia deste membro
+    const hasAccess = await canAccessGym(session.user.id, existingMember.gymId)
+    if (!hasAccess) {
+      return NextResponse.json(
+        { error: 'Forbidden: You do not have access to this gym' },
         { status: 403 }
       )
     }
 
     // Delete member
-    await prisma.member.delete({
-      where: { id },
-    })
+    await db.deleteMember(id)
 
     return NextResponse.json({ message: 'Member deleted successfully' })
   } catch (error) {

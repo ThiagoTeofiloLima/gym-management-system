@@ -4,7 +4,7 @@ import {
     DashboardPageHeaderTitle,
     DashboardPageMain,
 } from "@/components/dashboard/page"
-import { prisma } from "@/services/database"
+import * as db from "@/services/database"
 import { auth } from "@/services/auth"
 import { getTenantContext } from "@/lib/multi-tenant"
 import AttendancePageClient from "../__components/attendance/attendance-page-client"
@@ -16,7 +16,7 @@ export default async function AttendancePage(props: {
     searchParams: Promise<{ gymId?: string }>
 }) {
     const searchParams = await props.searchParams
-    let queryGymId = searchParams.gymId
+    const queryGymId = searchParams.gymId
 
     const session = await auth()
 
@@ -24,7 +24,8 @@ export default async function AttendancePage(props: {
         return <div>Unauthorized</div>
     }
 
-    const context = await getTenantContext()
+    // Passa o gymId da URL para o contexto
+    const context = await getTenantContext(queryGymId)
 
     if (!context) {
         return <div>Unauthorized</div>
@@ -44,10 +45,8 @@ export default async function AttendancePage(props: {
 
     // Se ainda não tem gymId e é super admin, pega a primeira academia
     if (!gymIdFilter && context.isSuperAdmin) {
-        const firstGym = await prisma.gym.findFirst({
-            where: { isActive: true },
-            orderBy: { name: 'asc' },
-        })
+        const allGyms = await db.findAllGyms()
+        const firstGym = allGyms.find(g => g.isActive)
         gymIdFilter = firstGym?.id
     }
 
@@ -55,37 +54,18 @@ export default async function AttendancePage(props: {
     const whereClause = gymIdFilter ? { gymId: gymIdFilter } : {}
 
     // Buscar membros primeiro para depois buscar attendance
-    const members = await prisma.member.findMany({
-        where: whereClause,
-        select: {
-            id: true,
-            name: true,
-            email: true,
-        },
-        orderBy: {
-            name: 'asc',
-        },
+    const members = await db.findMembers({
+        gymId: gymIdFilter,
     })
 
     // Buscar attendance records
     const memberIds = members.map(m => m.id)
-    const attendanceRecords = memberIds.length > 0 ? await prisma.attendance.findMany({
-        where: {
-            memberId: { in: memberIds },
-        },
-        include: {
-            member: {
-                select: {
-                    id: true,
-                    name: true,
-                    email: true,
-                },
-            },
-        },
-        orderBy: {
-            date: 'desc',
-        },
-    }) : []
+    let attendanceRecords: any[] = []
+    if (memberIds.length > 0) {
+        // Buscar todos os attendance e filtrar pelos memberIds
+        const allAttendance = await db.findAttendanceRecords({})
+        attendanceRecords = allAttendance.filter(a => memberIds.includes(a.memberId))
+    }
 
     return (
         <AttendancePageClient 

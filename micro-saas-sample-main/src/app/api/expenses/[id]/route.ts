@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/services/database'
+import * as db from '@/services/database'
 import { auth } from '@/services/auth'
-import { getTenantContext } from '@/lib/multi-tenant'
+import { getTenantContext, canAccessGym } from '@/lib/multi-tenant'
 
 /**
  * PUT /api/expenses/[id]
  * Atualiza uma despesa
+ *
+ * SEGURANÇA: Valida se o usuário tem permissão para acessar a academia da despesa
  */
 export async function PUT(
   request: NextRequest,
@@ -17,38 +19,37 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const url = new URL(request.url)
-    const gymId = url.searchParams.get('gymId')
-
-    if (!gymId) {
-      return NextResponse.json({ error: 'gymId is required' }, { status: 400 })
+    const context = await getTenantContext()
+    if (!context) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { id } = await params
     const body = await request.json()
     const { title, description, amount, category, date } = body
 
-    const existingExpense = await prisma.expense.findUnique({
-      where: { id },
-    })
+    const existingExpense = await db.findExpenseById(id)
 
     if (!existingExpense) {
       return NextResponse.json({ error: 'Expense not found' }, { status: 404 })
     }
 
-    if (existingExpense.gymId !== gymId) {
-      return NextResponse.json({ error: 'Expense does not belong to this gym' }, { status: 403 })
+    if (!existingExpense.gymId) {
+      return NextResponse.json({ error: 'Expense has no gym association' }, { status: 400 })
     }
 
-    const expense = await prisma.expense.update({
-      where: { id },
-      data: {
-        title,
-        description,
-        amount: parseFloat(amount),
-        category,
-        date: date ? new Date(date) : undefined,
-      },
+    // VALIDAÇÃO DE SEGURANÇA: Verificar se usuário tem acesso à academia desta despesa
+    const hasAccess = await canAccessGym(session.user.id, existingExpense.gymId)
+    if (!hasAccess) {
+      return NextResponse.json({ error: 'Forbidden: You do not have access to this gym' }, { status: 403 })
+    }
+
+    const expense = await db.updateExpense(id, {
+      title,
+      description,
+      amount: parseFloat(amount),
+      category,
+      date: date ? new Date(date).toISOString() : undefined,
     })
 
     return NextResponse.json(expense)
@@ -64,6 +65,8 @@ export async function PUT(
 /**
  * DELETE /api/expenses/[id]
  * Deleta uma despesa
+ *
+ * SEGURANÇA: Valida se o usuário tem permissão para acessar a academia da despesa
  */
 export async function DELETE(
   request: NextRequest,
@@ -75,30 +78,30 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const url = new URL(request.url)
-    const gymId = url.searchParams.get('gymId')
-
-    if (!gymId) {
-      return NextResponse.json({ error: 'gymId is required' }, { status: 400 })
+    const context = await getTenantContext()
+    if (!context) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { id } = await params
 
-    const expense = await prisma.expense.findUnique({
-      where: { id },
-    })
+    const expense = await db.findExpenseById(id)
 
     if (!expense) {
       return NextResponse.json({ error: 'Expense not found' }, { status: 404 })
     }
 
-    if (expense.gymId !== gymId) {
-      return NextResponse.json({ error: 'Expense does not belong to this gym' }, { status: 403 })
+    if (!expense.gymId) {
+      return NextResponse.json({ error: 'Expense has no gym association' }, { status: 400 })
     }
 
-    await prisma.expense.delete({
-      where: { id },
-    })
+    // VALIDAÇÃO DE SEGURANÇA: Verificar se usuário tem acesso à academia desta despesa
+    const hasAccess = await canAccessGym(session.user.id, expense.gymId)
+    if (!hasAccess) {
+      return NextResponse.json({ error: 'Forbidden: You do not have access to this gym' }, { status: 403 })
+    }
+
+    await db.deleteExpense(id)
 
     return NextResponse.json({ message: 'Expense deleted successfully' })
   } catch (error) {

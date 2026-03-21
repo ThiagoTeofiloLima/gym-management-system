@@ -94,7 +94,7 @@ export function ToDoDataTable({ data }: ToDoDataTableProps) {
     };
 
     const handleMarkAsDone = async (toDo: ToDo) => {
-        const doneAt = toDo.doneAt ? null : new Date();
+        const doneAt = toDo.doneAt ? null : new Date().toISOString();
         await upsertToDo({ id: toDo.id, title: toDo.title, doneAt });
         setDone(!done);
         router.refresh();
@@ -156,7 +156,7 @@ export function ToDoDataTable({ data }: ToDoDataTableProps) {
             cell: ({ row }) => {
                 return (
                     <div className="text-right font-medium">
-                        {row.original.createdAt.toLocaleDateString()}
+                        {new Date(row.original.createdAt).toLocaleDateString()}
                     </div>
                 );
             },

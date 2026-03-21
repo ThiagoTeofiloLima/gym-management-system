@@ -1,4 +1,4 @@
-import { UserRole, UserGymStatus } from "@prisma/client"
+import { UserRole, UserGymStatus } from "@/types/database"
 
 declare module "next-auth" {
   interface User {
@@ -6,7 +6,7 @@ declare module "next-auth" {
     name?: string | null
     email?: string | null
     image?: string | null
-    emailVerified?: Date | null
+    emailVerified?: string | null
     role?: UserRole
   }
 
@@ -14,7 +14,7 @@ declare module "next-auth" {
     user: User & {
       id: string
       role?: UserRole
-      emailVerified?: Date | null
+      emailVerified?: string | null
       gyms?: Array<{
         gymId: string
         gymName: string

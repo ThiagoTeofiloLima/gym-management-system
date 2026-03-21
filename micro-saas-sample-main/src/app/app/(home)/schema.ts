@@ -20,5 +20,5 @@ export const deleteMemberSchema = z.object({
 export const upsertToDoSchema = z.object({
     id: z.string().optional(),
     title: z.string().min(1, "Title is required"),
-    doneAt: z.date().nullable().optional(),
+    doneAt: z.string().datetime().nullable().optional(),
 });

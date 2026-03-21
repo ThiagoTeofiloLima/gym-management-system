@@ -135,7 +135,7 @@ export function UserDropdown({ user, context }: UserDropdownProps) {
                 
                 <DropdownMenuItem
                     className="flex items-center gap-2 cursor-pointer"
-                    onClick={() => signOut()}
+                    onClick={() => signOut({ callbackUrl: '/auth' })}
                 >
                     <ExitIcon />
                     Sair

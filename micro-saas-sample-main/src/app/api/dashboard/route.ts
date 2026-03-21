@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/services/database'
+import * as db from '@/services/database'
 import { auth } from '@/services/auth'
 import { getTenantContext } from '@/lib/multi-tenant'
 
 /**
  * GET /api/dashboard
  * Retorna dados consolidados para o dashboard
- * 
+ *
  * REGRAS DE MULTI-TENANT:
  * - Super Admin: vê todas as academias consolidadas
  * - Gym Admin: vê APENAS suas academias (pode ter mais de uma)
  * - User: vê APENAS sua academia atual
- * 
+ *
  * NUNCA permite que um gerente veja dados de outras academias
  */
 export async function GET(request: NextRequest) {
@@ -31,47 +31,34 @@ export async function GET(request: NextRequest) {
     // ============================================
     // ISOLAMENTO MULTI-TENANT ESTRITO
     // ============================================
-    
+
     let gyms: any[]
-    
+
     // Verifica se há um gymId específico na query string
     const url = new URL(request.url)
     const queryGymId = url.searchParams.get('gymId')
-    
+
     if (context.isSuperAdmin) {
       // Super Admin pode ver todas ou filtrar por gymId específico
       if (queryGymId) {
         // Filtra por academia específica
-        gyms = await prisma.gym.findMany({
-          where: { id: queryGymId },
-          include: {
-            _count: {
-              select: {
-                users: true,
-                members: true,
-                trainers: true,
-                workouts: true,
-                expenses: true,
-              },
-            },
-          },
-        })
+        const gym = await db.findGymById(queryGymId)
+        if (gym) {
+          const counts = await db.getGymCounts(queryGymId)
+          gyms = [{ ...gym, _count: counts }]
+        } else {
+          gyms = []
+        }
       } else {
         // Vê TODAS as academias
-        gyms = await prisma.gym.findMany({
-          include: {
-            _count: {
-              select: {
-                users: true,
-                members: true,
-                trainers: true,
-                workouts: true,
-                expenses: true,
-              },
-            },
-          },
-          orderBy: { createdAt: 'desc' },
-        })
+        const allGyms = await db.findAllGyms()
+        const gymsWithCounts = await Promise.all(
+          allGyms.map(async (g) => ({
+            ...g,
+            _count: await db.getGymCounts(g.id),
+          }))
+        )
+        gyms = gymsWithCounts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       }
     } else if (context.gyms && context.gyms.length > 0) {
       // Gym Admin e User: vêem APENAS suas academias
@@ -79,13 +66,13 @@ export async function GET(request: NextRequest) {
       const gymIds = context.gyms
         .filter((g: any) => g.status === 'ACTIVE' && g.isActive)
         .map((g: any) => g.gymId)
-      
+
       // Se houver queryGymId E pertence ao usuário, mostra apenas daquela
       // Caso contrário, mostra dados CONSOLIDADOS de todas as academias do usuário
       const filterGymIds = queryGymId && gymIds.includes(queryGymId)
         ? [queryGymId]
         : gymIds
-      
+
       if (filterGymIds.length === 0) {
         // Usuário não tem academias ativas
         return NextResponse.json({
@@ -107,25 +94,18 @@ export async function GET(request: NextRequest) {
           recentGyms: [],
         })
       }
-      
+
       // Busca APENAS as academias do usuário (pode ser uma ou várias)
-      gyms = await prisma.gym.findMany({
-        where: {
-          id: { in: filterGymIds },
-        },
-        include: {
-          _count: {
-            select: {
-              users: true,
-              members: true,
-              trainers: true,
-              workouts: true,
-              expenses: true,
-            },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-      })
+      const allGyms = await db.findAllGyms()
+      const filteredGyms = allGyms.filter((g) => filterGymIds.includes(g.id))
+      
+      const gymsWithCounts = await Promise.all(
+        filteredGyms.map(async (g) => ({
+          ...g,
+          _count: await db.getGymCounts(g.id),
+        }))
+      )
+      gyms = gymsWithCounts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     } else {
       // Usuário sem academias
       return NextResponse.json({
@@ -178,22 +158,12 @@ export async function GET(request: NextRequest) {
     // ============================================
     // Informações relevantes para o dia a dia da academia
     let managerMetrics = null
-    
+
     if (!context.isSuperAdmin && gyms.length > 0) {
       // Buscar dados detalhados dos membros da(s) academia(s)
       const gymIds = gyms.map((g: any) => g.id)
-      
-      const members = await prisma.member.findMany({
-        where: { gymId: { in: gymIds } },
-        select: {
-          id: true,
-          status: true,
-          plan: true,
-          planRenewalDate: true,
-          paymentDate: true,
-          lastVisit: true,
-        },
-      })
+
+      const members = await db.findMembersByGymIds(gymIds)
 
       const today = new Date()
       const activeMembers = members.filter(m => m.status === 'Ativo').length
@@ -218,6 +188,7 @@ export async function GET(request: NextRequest) {
 
       // Membros inadimplentes (pagamento vencido há mais de 7 dias)
       const delinquentMembers = members.filter(m => {
+        if (!m.paymentDate) return false
         const paymentDate = new Date(m.paymentDate)
         const diffTime = today.getTime() - paymentDate.getTime()
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
@@ -227,12 +198,13 @@ export async function GET(request: NextRequest) {
       // Membros novos este mês
       const newMembersThisMonth = members.filter(m => {
         const memberDate = new Date(m.id.split('-')[1] || Date.now())
-        return memberDate.getMonth() === today.getMonth() && 
+        return memberDate.getMonth() === today.getMonth() &&
                memberDate.getFullYear() === today.getFullYear()
       }).length
 
       // Frequência média (membros que vieram nos últimos 7 dias)
       const visitedLast7Days = members.filter(m => {
+        if (!m.lastVisit) return false
         const lastVisit = new Date(m.lastVisit)
         const diffTime = today.getTime() - lastVisit.getTime()
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
@@ -289,7 +261,7 @@ export async function GET(request: NextRequest) {
       gyms,
       stats,
       monthlyRevenue,
-      managerMetrics, // Novas métricas para gestores
+      managerMetrics,
       gymsByPlan,
       gymsByState,
       topGyms,

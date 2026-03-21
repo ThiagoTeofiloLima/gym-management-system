@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/services/database'
+import * as db from '@/services/database'
 import { auth } from '@/services/auth'
 import { getTenantContext } from '@/lib/multi-tenant'
 
@@ -13,13 +13,13 @@ export async function PATCH(
 ) {
   try {
     const session = await auth()
-    
+
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const context = await getTenantContext()
-    
+
     if (!context || !context.isSuperAdmin) {
       return NextResponse.json(
         { error: 'Forbidden: Super Admin access required' },
@@ -29,15 +29,15 @@ export async function PATCH(
 
     const { id } = await params
     const body = await request.json()
-    const { 
-      name, 
-      cnpj, 
-      email, 
-      phone, 
+    const {
+      name,
+      cnpj,
+      email,
+      phone,
       address,
-      city, 
-      state, 
-      isActive, 
+      city,
+      state,
+      isActive,
       plan,
       maxMembers,
       maxUsers,
@@ -45,9 +45,7 @@ export async function PATCH(
     } = body
 
     // Verificar se academia existe
-    const existingGym = await prisma.gym.findUnique({
-      where: { id },
-    })
+    const existingGym = await db.findGymById(id)
 
     if (!existingGym) {
       return NextResponse.json(
@@ -58,10 +56,9 @@ export async function PATCH(
 
     // Verificar se CNPJ já existe (se foi alterado)
     if (cnpj && cnpj !== existingGym.cnpj) {
-      const existingCnpj = await prisma.gym.findUnique({
-        where: { cnpj },
-      })
-      if (existingCnpj && existingCnpj.id !== id) {
+      const allGyms = await db.findAllGyms()
+      const existingCnpj = allGyms.find(g => g.cnpj === cnpj && g.id !== id)
+      if (existingCnpj) {
         return NextResponse.json(
           { error: 'CNPJ já cadastrado' },
           { status: 409 }
@@ -71,10 +68,9 @@ export async function PATCH(
 
     // Verificar se email já existe (se foi alterado)
     if (email && email !== existingGym.email) {
-      const existingEmail = await prisma.gym.findUnique({
-        where: { email },
-      })
-      if (existingEmail && existingEmail.id !== id) {
+      const allGyms = await db.findAllGyms()
+      const existingEmail = allGyms.find(g => g.email === email && g.id !== id)
+      if (existingEmail) {
         return NextResponse.json(
           { error: 'Email já cadastrado' },
           { status: 409 }
@@ -82,22 +78,19 @@ export async function PATCH(
       }
     }
 
-    const gym = await prisma.gym.update({
-      where: { id },
-      data: {
-        name,
-        cnpj,
-        email,
-        phone,
-        address,
-        city,
-        state,
-        isActive,
-        plan,
-        maxMembers,
-        maxUsers,
-        planExpiresAt: planExpiresAt ? new Date(planExpiresAt) : undefined,
-      },
+    const gym = await db.updateGym(id, {
+      name,
+      cnpj,
+      email,
+      phone,
+      address,
+      city,
+      state,
+      isActive,
+      plan,
+      maxMembers,
+      maxUsers,
+      planExpiresAt: planExpiresAt ? new Date(planExpiresAt).toISOString() : undefined,
     })
 
     return NextResponse.json(gym)
@@ -120,13 +113,13 @@ export async function DELETE(
 ) {
   try {
     const session = await auth()
-    
+
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const context = await getTenantContext()
-    
+
     if (!context || !context.isSuperAdmin) {
       return NextResponse.json(
         { error: 'Forbidden: Super Admin access required' },
@@ -137,20 +130,7 @@ export async function DELETE(
     const { id } = await params
 
     // Verificar se a academia existe
-    const gym = await prisma.gym.findUnique({
-      where: { id },
-      include: {
-        _count: {
-          select: {
-            users: true,
-            members: true,
-            trainers: true,
-            workouts: true,
-            expenses: true,
-          },
-        },
-      },
-    })
+    const gym = await db.findGymById(id)
 
     if (!gym) {
       return NextResponse.json(
@@ -159,27 +139,47 @@ export async function DELETE(
       )
     }
 
+    // Contar registros associados
+    const allUserGyms = await db.findUserGymsByUserId(session.user.id)
+    const usersCount = allUserGyms.filter(ug => ug.gymId === id).length
+
+    const allMembers = await db.findMembers({ gymId: id })
+    const membersCount = allMembers.length
+
+    const allTrainers = await db.findTrainers({ gymId: id })
+    const trainersCount = allTrainers.length
+
+    const allWorkouts = await db.findWorkouts({ gymId: id })
+    const workoutsCount = allWorkouts.length
+
+    const allExpenses = await db.findExpenses({ gymId: id })
+    const expensesCount = allExpenses.length
+
     const totalItems =
-      gym._count.users +
-      gym._count.members +
-      gym._count.trainers +
-      gym._count.workouts +
-      gym._count.expenses
+      usersCount +
+      membersCount +
+      trainersCount +
+      workoutsCount +
+      expensesCount
 
     if (totalItems > 0) {
       return NextResponse.json(
         {
           error: 'Não é possível deletar academia com dados',
           details: `A academia possui ${totalItems} registros associados`,
-          counts: gym._count,
+          counts: {
+            users: usersCount,
+            members: membersCount,
+            trainers: trainersCount,
+            workouts: workoutsCount,
+            expenses: expensesCount,
+          },
         },
         { status: 400 }
       )
     }
 
-    await prisma.gym.delete({
-      where: { id },
-    })
+    await db.deleteGym(id)
 
     return NextResponse.json({ message: 'Academia deletada com sucesso' })
   } catch (error) {

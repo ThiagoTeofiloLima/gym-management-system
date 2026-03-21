@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/services/database'
+import * as db from '@/services/database'
 import { auth } from '@/services/auth'
 import { getTenantContext } from '@/lib/multi-tenant'
 import { hash } from 'bcryptjs'
@@ -31,17 +31,8 @@ export async function POST(
     const { id } = await params
     const gymId = id
 
-    // Buscar a academia COM TODOS OS USUÁRIOS
-    const gym = await prisma.gym.findUnique({
-      where: { id: gymId },
-      include: {
-        users: {
-          include: {
-            user: true,
-          },
-        },
-      },
-    })
+    // Buscar a academia
+    const gym = await db.findGymById(gymId)
 
     if (!gym) {
       return NextResponse.json(
@@ -50,41 +41,50 @@ export async function POST(
       )
     }
 
+    // Buscar usuários vinculados à academia
+    const userGyms = await db.findUserGymsByGymId(gymId)
+
     // Debug: logar estrutura da academia
     console.log('=== DEBUG - Academia ===')
     console.log('Gym ID:', gymId)
     console.log('Gym Name:', gym.name)
-    console.log('Users count:', gym.users.length)
-    console.log('Users:', gym.users.map(u => ({
-      userId: u.userId,
-      role: u.role,
-      userName: u.user.name,
-      userEmail: u.user.email
+    console.log('Users count:', userGyms.length)
+    console.log('Users:', userGyms.map(ug => ({
+      userId: ug.userId,
+      role: ug.role,
     })))
 
-    // Encontrar o gestor da academia (pode ser por role GYM_ADMIN ou SUPER_ADMIN)
-    const userGym = gym.users.find((ug) => ug.role === 'GYM_ADMIN' || ug.user.role === 'GYM_ADMIN')
+    // Encontrar o gestor da academia (pode ser por role GYM_ADMIN)
+    const userGym = userGyms.find((ug) => ug.role === 'GYM_ADMIN')
 
     if (!userGym) {
       // Tenta buscar qualquer usuário vinculado à academia
-      if (gym.users.length > 0) {
+      if (userGyms.length > 0) {
         console.log('Nenhum GYM_ADMIN encontrado')
         return NextResponse.json(
-          { 
-            error: 'Nenhum gestor (GYM_ADMIN) encontrado para esta academia. Usuários vinculados: ' + gym.users.length,
-            users: gym.users.map(u => ({ name: u.user.name, email: u.user.email, role: u.role }))
+          {
+            error: 'Nenhum gestor (GYM_ADMIN) encontrado para esta academia. Usuários vinculados: ' + userGyms.length,
+            users: userGyms.map(ug => ({ userId: ug.userId, role: ug.role }))
           },
           { status: 404 }
         )
       }
-      
+
       return NextResponse.json(
         { error: 'Nenhum usuário vinculado a esta academia' },
         { status: 404 }
       )
     }
 
-    const manager = userGym.user
+    // Buscar dados completos do gestor
+    const manager = await db.findUserById(userGym.userId)
+
+    if (!manager) {
+      return NextResponse.json(
+        { error: 'Gestor não encontrado' },
+        { status: 404 }
+      )
+    }
 
     // Gerar nova senha segura
     const newPassword = generateSecurePassword()
@@ -92,22 +92,29 @@ export async function POST(
     // Hash da nova senha
     const passwordHash = await hash(newPassword, 10)
 
-    // Atualizar senha do gestor e salvar senha temporária em transação
-    await prisma.$transaction(async (tx) => {
+    // Atualizar senha do gestor e salvar senha temporária em sequência
+    try {
       // 1. Atualizar senha do usuário
-      await tx.user.update({
-        where: { id: manager.id },
-        data: { passwordHash },
-      })
+      await db.updateUser(manager.id, { passwordHash })
 
-      // 2. Salvar/atualizar senha temporária usando SQL direto
-      await tx.$executeRaw`
-        INSERT INTO "manager_temp_passwords" ("manager_id", "gym_id", "password", "created_at")
-        VALUES (${manager.id}, ${gymId}, ${newPassword}, NOW())
-        ON CONFLICT ("manager_id", "gym_id")
-        DO UPDATE SET "password" = ${newPassword}, "created_at" = NOW()
-      `
-    })
+      // 2. Verificar se já existe senha temporária e atualizar ou criar
+      const existingTempPassword = await db.findManagerTempPassword(manager.id, gymId)
+
+      if (existingTempPassword) {
+        await db.updateManagerTempPassword(manager.id, gymId, {
+          password: newPassword,
+        })
+      } else {
+        await db.createManagerTempPassword({
+          managerId: manager.id,
+          gymId,
+          password: newPassword,
+        })
+      }
+    } catch (error: any) {
+      console.error('Erro ao atualizar senha:', error)
+      throw error
+    }
 
     return NextResponse.json({
       manager: {

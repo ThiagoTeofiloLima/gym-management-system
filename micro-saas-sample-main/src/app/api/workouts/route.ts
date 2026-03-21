@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/services/database'
+import * as db from '@/services/database'
 import { auth } from '@/services/auth'
+import { getTenantContext, canAccessGym } from '@/lib/multi-tenant'
 
 /**
  * GET /api/workouts
  * Lista workouts da academia
+ *
+ * SEGURANÇA: Valida se o usuário tem permissão para acessar a academia especificada
  */
 export async function GET(request: NextRequest) {
   try {
@@ -14,59 +17,93 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const context = await getTenantContext()
+
+    if (!context) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const url = new URL(request.url)
-    const gymId = url.searchParams.get('gymId')
+    const queryGymId = url.searchParams.get('gymId')
+
+    // Determinar qual gymId usar
+    let gymId: string | undefined
+
+    if (queryGymId) {
+      // Se passou gymId na query, validar se o usuário tem acesso
+      const hasAccess = await canAccessGym(session.user.id, queryGymId)
+      if (!hasAccess) {
+        return NextResponse.json(
+          { error: 'Forbidden: You do not have access to this gym' },
+          { status: 403 }
+        )
+      }
+      gymId = queryGymId
+    } else if (context.gymId) {
+      gymId = context.gymId
+    } else if (context.gyms && context.gyms.length > 0) {
+      const firstGym = context.gyms.find((g: any) => g.status === 'ACTIVE' && g.isActive)
+      gymId = firstGym?.gymId
+    }
 
     if (!gymId) {
       return NextResponse.json([])
     }
 
-    const whereClause: any = { gymId }
+    const workouts = await db.findWorkouts({ gymId })
 
-    const workouts = await prisma.workout.findMany({
-      where: whereClause,
-      include: {
-        trainer: {
-          select: {
-            id: true,
-            name: true,
-            specialty: true,
-          },
-        },
-        gym: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        workoutMembers: {
-          include: {
-            member: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-              },
-            },
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    })
+    // Buscar dados relacionados para cada workout
+    const formattedWorkouts = await Promise.all(
+      workouts.map(async (workout) => {
+        // Buscar trainer
+        let trainer = null
+        if (workout.trainerId) {
+          const trainerData = await db.findTrainerById(workout.trainerId)
+          if (trainerData) {
+            trainer = {
+              id: trainerData.id,
+              name: trainerData.name,
+              specialty: trainerData.specialty,
+            }
+          }
+        }
 
-    const formattedWorkouts = workouts.map((workout) => ({
-      ...workout,
-      members: workout.workoutMembers.map((wm) => ({
-        id: wm.member.id,
-        name: wm.member.name,
-        email: wm.member.email,
-      })),
-      trainer: workout.trainer
-        ? { id: workout.trainer.id, name: workout.trainer.name, specialty: workout.trainer.specialty }
-        : null,
-    }))
+        // Buscar gym
+        let gym = null
+        if (workout.gymId) {
+          const gymData = await db.findGymById(workout.gymId)
+          if (gymData) {
+            gym = {
+              id: gymData.id,
+              name: gymData.name,
+            }
+          }
+        }
+
+        // Buscar workout members
+        const workoutMembers = await db.findWorkoutMembersByWorkoutId(workout.id)
+        const members = await Promise.all(
+          workoutMembers.map(async (wm) => {
+            const member = await db.findMemberById(wm.memberId)
+            return member
+              ? {
+                  id: member.id,
+                  name: member.name,
+                  email: member.email,
+                }
+              : null
+          })
+        )
+        const validMembers = members.filter((m) => m !== null)
+
+        return {
+          ...workout,
+          members: validMembers,
+          trainer,
+          gym,
+        }
+      })
+    )
 
     return NextResponse.json(formattedWorkouts)
   } catch (error) {
@@ -81,6 +118,8 @@ export async function GET(request: NextRequest) {
 /**
  * POST /api/workouts
  * Cria novo workout
+ *
+ * SEGURANÇA: Valida se o usuário tem permissão para acessar a academia especificada
  */
 export async function POST(request: NextRequest) {
   try {
@@ -90,8 +129,34 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const context = await getTenantContext()
+
+    if (!context) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const url = new URL(request.url)
-    const gymId = url.searchParams.get('gymId')
+    const queryGymId = url.searchParams.get('gymId')
+
+    // Determinar qual gymId usar
+    let gymId: string | undefined
+
+    if (queryGymId) {
+      // Se passou gymId na query, validar se o usuário tem acesso
+      const hasAccess = await canAccessGym(session.user.id, queryGymId)
+      if (!hasAccess) {
+        return NextResponse.json(
+          { error: 'Forbidden: You do not have access to this gym' },
+          { status: 403 }
+        )
+      }
+      gymId = queryGymId
+    } else if (context.gymId) {
+      gymId = context.gymId
+    } else if (context.gyms && context.gyms.length > 0) {
+      const firstGym = context.gyms.find((g: any) => g.status === 'ACTIVE' && g.isActive)
+      gymId = firstGym?.gymId
+    }
 
     if (!gymId) {
       return NextResponse.json(
@@ -110,17 +175,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const newWorkout = await prisma.workout.create({
-      data: {
-        name,
-        type,
-        duration: String(duration),
-        level,
-        description,
-        trainerId: trainerId || null,
-        gymId,
-        userId: session.user.id,
-      },
+    const newWorkout = await db.createWorkout({
+      name,
+      type,
+      duration: String(duration),
+      level,
+      description,
+      trainerId: trainerId || null,
+      gymId,
+      userId: session.user.id,
     })
 
     return NextResponse.json(newWorkout, { status: 201 })

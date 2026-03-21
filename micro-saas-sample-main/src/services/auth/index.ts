@@ -1,80 +1,79 @@
 import NextAuth from "next-auth"
-import { PrismaAdapter } from "@auth/prisma-adapter"
 import Google from "next-auth/providers/google"
 import GitHub from "next-auth/providers/github"
 import Credentials from "next-auth/providers/credentials"
 import EmailProvider from "next-auth/providers/email"
-import { UserRole } from "@prisma/client"
 import { getUrl } from "@/lib/get-url"
 import { compare } from "bcryptjs"
-import { prisma } from "@/lib/prisma"
+import * as db from "@/services/database"
+import type { UserRole } from "@/types/database"
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: PrismaAdapter(prisma) as any,
+// Constrói array de providers dinamicamente
+const providers: any[] = [
+  // Credentials Provider (Email/Senha)
+  Credentials({
+    name: 'credentials',
+    credentials: {
+      email: { label: 'Email', type: 'email' },
+      password: { label: 'Senha', type: 'password' }
+    },
+    async authorize(credentials) {
+      if (!credentials?.email || !credentials?.password) {
+        throw new Error('Email e senha são obrigatórios')
+      }
 
-  providers: [
-    // Credentials Provider (Email/Senha)
-    Credentials({
-      name: 'credentials',
-      credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Senha', type: 'password' }
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error('Email e senha são obrigatórios')
-        }
+      const user = await db.findUserByEmail(credentials.email as string)
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
-          include: {
-            gyms: {
-              include: {
-                gym: true,
-              },
-            },
-          },
-        })
+      if (!user || !user.passwordHash) {
+        throw new Error('Email ou senha inválidos')
+      }
 
-        if (!user || !user.passwordHash) {
-          throw new Error('Email ou senha inválidos')
-        }
+      const isPasswordValid = await compare(
+        credentials.password as string,
+        user.passwordHash
+      )
 
-        const isPasswordValid = await compare(
-          credentials.password as string,
-          user.passwordHash
-        )
+      if (!isPasswordValid) {
+        throw new Error('Email ou senha inválidos')
+      }
 
-        if (!isPasswordValid) {
-          throw new Error('Email ou senha inválidos')
-        }
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        image: user.image,
+        role: user.role,
+        emailVerified: user.emailVerified,
+      }
+    },
+  }),
+]
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.image,
-          role: user.role,
-          emailVerified: user.emailVerified,
-        }
-      },
-    }),
-
-    // Google Provider
+// Adiciona Google Provider apenas se credenciais existirem
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  providers.push(
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       allowDangerousEmailAccountLinking: true,
-    }),
+    })
+  )
+}
 
-    // GitHub Provider
+// Adiciona GitHub Provider apenas se credenciais existirem
+if (process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET) {
+  providers.push(
     GitHub({
       clientId: process.env.AUTH_GITHUB_ID,
       clientSecret: process.env.AUTH_GITHUB_SECRET,
       allowDangerousEmailAccountLinking: true,
-    }),
+    })
+  )
+}
 
-    // Email Provider (Magic Link)
+// Adiciona Email Provider apenas se credenciais existirem
+if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
+  providers.push(
     EmailProvider({
       server: {
         host: process.env.EMAIL_SERVER,
@@ -85,9 +84,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         },
       },
       from: process.env.EMAIL_FROM,
-    }),
-  ],
-  
+    })
+  )
+}
+
+export const { handlers, signIn, signOut, auth } = NextAuth({
+  providers,
+
   pages: {
     signIn: '/auth',
     verifyRequest: '/auth/verify',
@@ -102,11 +105,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   jwt: {
     maxAge: 30 * 24 * 60 * 60, // 30 dias
   },
-  
+
+  cookies: {
+    sessionToken: {
+      name: 'authjs.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
+  },
+
   callbacks: {
     async signIn({ user, account, profile, email, credentials }) {
       // Permitir signIn para todos os providers
-      console.log('SignIn callback - User:', user?.email, 'Account:', account?.provider)
       return true
     },
 
@@ -117,41 +131,35 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.email = user.email
         token.role = user.role
 
-        // Buscar informações do usuário no banco
-        const dbUser = await prisma.user.findUnique({
-          where: { id: user.id },
-          include: {
-            gyms: {
-              include: {
-                gym: true,
-              },
-            },
-          },
-        })
+        // Buscar informações do usuário no banco (apenas se user.id existir)
+        if (user.id) {
+          const dbUser = await db.findUserById(user.id)
+          const userGyms = await db.findUserGymsByUserId(user.id)
 
-        if (dbUser) {
-          token.role = dbUser.role
-          token.gyms = dbUser.gyms.map((userGym) => ({
-            gymId: userGym.gymId,
-            gymName: userGym.gym.name,
-            role: userGym.role,
-            status: userGym.status,
-            plan: userGym.gym.plan,
-            isActive: userGym.gym.isActive,
-          }))
+          if (dbUser) {
+            token.role = dbUser.role
+            token.gyms = userGyms.map((userGym: any) => ({
+              gymId: userGym.gymId,
+              gymName: (userGym as any).gym?.name,
+              role: userGym.role,
+              status: userGym.status,
+              plan: (userGym as any).gym?.plan,
+              isActive: (userGym as any).gym?.isActive,
+            }))
 
-          // Define activeGymId para usuários com academias
-          // Para Gym Admin, usa a academia onde é admin
-          // Para User, usa a primeira academia disponível
-          if (dbUser.gyms.length > 0 && !token.activeGymId) {
-            if (dbUser.role === 'GYM_ADMIN') {
-              const adminGym = dbUser.gyms.find(g => g.role === 'GYM_ADMIN')
-              token.activeGymId = adminGym?.gymId || dbUser.gyms[0].gymId
-              token.activeGymRole = adminGym?.role || dbUser.gyms[0].role
-            } else if (dbUser.gyms.length === 1) {
-              // User com apenas uma academia
-              token.activeGymId = dbUser.gyms[0].gymId
-              token.activeGymRole = dbUser.gyms[0].role
+            // Define activeGymId para usuários com academias
+            // Para Gym Admin, usa a academia onde é admin
+            // Para User, usa a primeira academia disponível
+            if (userGyms.length > 0 && !token.activeGymId) {
+              if (dbUser.role === 'GYM_ADMIN') {
+                const adminGym = userGyms.find((g: any) => g.role === 'GYM_ADMIN')
+                token.activeGymId = adminGym?.gymId || userGyms[0].gymId
+                token.activeGymRole = adminGym?.role || userGyms[0].role
+              } else if (userGyms.length === 1) {
+                // User com apenas uma academia
+                token.activeGymId = userGyms[0].gymId
+                token.activeGymRole = userGyms[0].role
+              }
             }
           }
         }
@@ -167,7 +175,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
       }
 
-      console.log('JWT callback - Token ID:', token.id, 'Email:', token.email, 'ActiveGymId:', token.activeGymId)
       return token
     },
 
@@ -182,18 +189,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.activeGymRole = token.activeGymRole as any
       }
 
-      console.log('Session callback - User:', session.user.email, 'ID:', session.user.id)
       return session
     },
   },
-  
+
   events: {
     async createUser({ user }) {
-      // Quando um novo usuário é criado, definir role padrão
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { role: 'USER' },
-      })
+      // Quando um novo usuário é criado, definir role padrão (apenas se user.id existir)
+      if (user.id) {
+        await db.updateUser(user.id, { role: 'USER' as import('@/types/database').UserRole })
+      }
     },
   },
 })

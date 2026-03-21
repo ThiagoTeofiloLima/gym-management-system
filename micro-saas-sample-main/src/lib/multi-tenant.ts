@@ -8,13 +8,11 @@
  */
 
 import { auth } from "@/services/auth"
-import { prisma } from "@/lib/prisma"
+import * as db from "@/services/database"
 import { cache } from "react"
+import type { UserRole } from "@/types/database"
 
-// Exportar prisma para compatibilidade com código legado
-export { prisma }
-
-export type UserRole = 'SUPER_ADMIN' | 'GYM_ADMIN' | 'USER'
+export type { UserRole }
 
 export interface TenantContext {
   userId: string
@@ -37,8 +35,10 @@ export interface TenantContext {
 /**
  * Obtém o contexto do tenant atual baseado na sessão do usuário
  * Usa cache para evitar múltiplas consultas no mesmo render
+ *
+ * @param gymIdFromUrl - Opcional: gymId passado via query param na URL (tem prioridade)
  */
-export const getTenantContext = cache(async (): Promise<TenantContext | null> => {
+export const getTenantContext = cache(async (gymIdFromUrl?: string): Promise<TenantContext | null> => {
   try {
     const session = await auth()
 
@@ -52,15 +52,21 @@ export const getTenantContext = cache(async (): Promise<TenantContext | null> =>
     const isSuperAdmin = user.role === 'SUPER_ADMIN'
     const isGymAdmin = user.role === 'GYM_ADMIN' || user.activeGymRole === 'GYM_ADMIN'
 
-    // Se não tiver activeGymId definido mas tiver academias, usa a primeira academia como padrão
-    let activeGymId = user.activeGymId
-    let activeGymRole = user.activeGymRole
-    
-    if (!activeGymId && user.gyms && user.gyms.length > 0) {
-      // Pega a primeira academia onde o usuário é GYM_ADMIN, ou a primeira disponível
-      const adminGym = user.gyms.find((g: any) => g.role === 'GYM_ADMIN')
-      activeGymId = adminGym?.gymId || user.gyms[0]?.gymId
-      activeGymRole = adminGym?.role || user.gyms[0]?.role
+    // PRIORIDADE: Se gymId foi passado via URL, usa ele
+    let activeGymId = gymIdFromUrl
+    let activeGymRole: UserRole | undefined
+
+    // Se não veio da URL, tenta pegar da sessão ou das academias do usuário
+    if (!activeGymId) {
+      activeGymId = user.activeGymId
+      activeGymRole = user.activeGymRole
+
+      if (!activeGymId && user.gyms && user.gyms.length > 0) {
+        // Pega a primeira academia onde o usuário é GYM_ADMIN, ou a primeira disponível
+        const adminGym = user.gyms.find((g: any) => g.role === 'GYM_ADMIN')
+        activeGymId = adminGym?.gymId || user.gyms[0]?.gymId
+        activeGymRole = adminGym?.role || user.gyms[0]?.role
+      }
     }
 
     return {
@@ -87,12 +93,12 @@ export function hasPermission(
   requiredRole: UserRole | UserRole[]
 ): boolean {
   if (!context) return false
-  
+
   const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole]
-  
+
   // Super Admin sempre tem permissão
   if (context.isSuperAdmin) return true
-  
+
   // Verifica se tem uma das roles necessárias
   return roles.some(role => {
     if (role === 'SUPER_ADMIN') return false // Já tratado acima
@@ -103,7 +109,7 @@ export function hasPermission(
 }
 
 /**
- * Aplica filtro de tenant em consultas Prisma
+ * Aplica filtro de tenant em consultas
  * - Super Admin: sem filtro (vê tudo)
  * - Gym Admin / User: filtra pela academia atual
  */
@@ -115,7 +121,7 @@ export function applyTenantFilter<T extends Record<string, any>>(
   if (context?.isSuperAdmin) {
     return filter || ({} as T)
   }
-  
+
   // Outros usuários: filtra pela academia
   if (context?.gymId) {
     return {
@@ -123,12 +129,12 @@ export function applyTenantFilter<T extends Record<string, any>>(
       gymId: context.gymId,
     } as unknown as T
   }
-  
+
   return filter || ({} as T)
 }
 
 /**
- * Obtém o where clause do Prisma para filtrar por tenant
+ * Obtém o where clause para filtrar por tenant
  */
 export function getTenantWhereClause(
   context: TenantContext | null,
@@ -138,7 +144,7 @@ export function getTenantWhereClause(
   if (context?.isSuperAdmin) {
     return baseWhere || {}
   }
-  
+
   // Outros usuários: filtra pela academia
   if (context?.gymId) {
     return {
@@ -146,7 +152,7 @@ export function getTenantWhereClause(
       gymId: context.gymId,
     }
   }
-  
+
   // Usuário sem academia: não vê nada
   return {
     gymId: undefined, // Nunca vai matchar
@@ -161,29 +167,24 @@ export async function canAccessGym(
   gymId: string,
   requiredRole?: UserRole
 ): Promise<boolean> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: {
-      gyms: true,
-    },
-  })
-  
+  const user = await db.findUserById(userId)
+
   if (!user) return false
-  
+
   // Super Admin acessa tudo
   if (user.role === 'SUPER_ADMIN') return true
-  
+
   // Verifica se pertence à academia
-  const userGym = user.gyms.find(ug => ug.gymId === gymId)
-  
+  const userGym = await db.findUserGym(userId, gymId)
+
   if (!userGym) return false
-  
+
   // Verifica role se necessário
   if (requiredRole) {
     if (requiredRole === 'SUPER_ADMIN') return false
     if (requiredRole === 'GYM_ADMIN') return userGym.role === 'GYM_ADMIN'
   }
-  
+
   return true
 }
 
@@ -191,42 +192,34 @@ export async function canAccessGym(
  * Lista de academias que o usuário pode acessar
  */
 export async function getUserAccessibleGyms(userId: string) {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: {
-      gyms: {
-        include: {
-          gym: true,
-        },
-      },
-    },
-  })
-  
+  const user = await db.findUserById(userId)
+
   if (!user) return []
-  
+
   // Super Admin vê todas as academias
   if (user.role === 'SUPER_ADMIN') {
-    const allGyms = await prisma.gym.findMany({
-      where: { isActive: true },
-    })
-    return allGyms.map(gym => ({
-      gymId: gym.id,
-      gymName: gym.name,
-      role: 'SUPER_ADMIN' as UserRole,
-      plan: gym.plan,
-      isActive: gym.isActive,
-    }))
+    const allGyms = await db.findAllGyms()
+    return allGyms
+      .filter(gym => gym.isActive)
+      .map(gym => ({
+        gymId: gym.id,
+        gymName: gym.name,
+        role: 'SUPER_ADMIN' as UserRole,
+        plan: gym.plan,
+        isActive: gym.isActive,
+      }))
   }
-  
+
   // Outros usuários: apenas suas academias
-  return user.gyms
-    .filter(ug => ug.status === 'ACTIVE' && ug.gym.isActive)
-    .map(ug => ({
+  const userGyms = await db.findUserGymsByUserId(userId)
+  return userGyms
+    .filter((ug: any) => ug.status === 'ACTIVE' && (ug as any).gym?.isActive)
+    .map((ug: any) => ({
       gymId: ug.gymId,
-      gymName: ug.gym.name,
+      gymName: (ug as any).gym?.name,
       role: ug.role as UserRole,
-      plan: ug.gym.plan,
-      isActive: ug.gym.isActive,
+      plan: (ug as any).gym?.plan,
+      isActive: (ug as any).gym?.isActive,
     }))
 }
 
@@ -242,34 +235,34 @@ export async function withTenantContext<T>(
   }
 ): Promise<T | Response> {
   const context = await getTenantContext()
-  
+
   // Requer autenticação
   if (options?.requireAuth && !context) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
     })
   }
-  
+
   // Requer role específica
   if (options?.requireRole && context && !hasPermission(context, options.requireRole)) {
     return new Response(JSON.stringify({ error: 'Forbidden' }), {
       status: 403,
     })
   }
-  
+
   // Requer academia selecionada
   if (options?.requireGym && context && !context.gymId && !context.isSuperAdmin) {
     return new Response(JSON.stringify({ error: 'Gym selection required' }), {
       status: 400,
     })
   }
-  
+
   if (!context) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
     })
   }
-  
+
   return handler(context)
 }
 

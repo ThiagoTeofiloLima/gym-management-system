@@ -1,76 +1,117 @@
-import { jsonDb } from "../json-db";
+import * as db from "@/services/database"
 
-// Simple adapter for NextAuth using JSON database
+// Adapter para NextAuth usando Supabase
 export const jsonAdapter = {
   async getUser(id: string) {
-    return await jsonDb.findUserById(id);
+    return await db.findUserById(id)
   },
-  
+
   async getUserByEmail(email: string) {
-    return await jsonDb.findUserByEmail(email);
+    return await db.findUserByEmail(email)
   },
-  
+
   async createUser(user: any) {
-    return await jsonDb.createUser({
+    const userData = {
       name: user.name,
       email: user.email,
-      emailVerified: user.emailVerified,
-      image: user.image
-    });
+      emailVerified: user.emailVerified ? new Date(user.emailVerified).toISOString() : null,
+      image: user.image,
+      passwordHash: user.passwordHash || null,
+      role: user.role || 'USER',
+      stripeCustomerId: null,
+      stripeSubscriptionId: null,
+      stripeSubscriptionStatus: null,
+      stripePriceId: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+    return await db.createUser(userData)
   },
-  
+
   async updateUser(user: any) {
-    return await jsonDb.updateUser(user.id, {
+    return await db.updateUser(user.id, {
       name: user.name,
       email: user.email,
-      emailVerified: user.emailVerified,
-      image: user.image
-    });
+      emailVerified: user.emailVerified ? new Date(user.emailVerified).toISOString() : null,
+      image: user.image,
+    })
   },
-  
+
   async deleteUser(userId: string) {
-    // In a real implementation, you would also delete related records
-    // For now, we'll just return the user that would be deleted
-    return await jsonDb.findUserById(userId);
+    return await db.deleteUser(userId)
   },
-  
+
   async linkAccount(account: any) {
-    // For simplicity, we're not implementing account linking in this JSON adapter
-    return null;
+    return await db.createAccount({
+      userId: account.userId,
+      type: account.type,
+      provider: account.provider,
+      providerAccountId: account.providerAccountId,
+      refresh_token: account.refresh_token,
+      access_token: account.access_token,
+      expires_at: account.expires_at,
+      token_type: account.token_type,
+      scope: account.scope,
+      id_token: account.id_token,
+      session_state: account.session_state,
+    })
   },
-  
+
   async getUserByAccount(account: any) {
-    // For simplicity, we're not implementing account linking in this JSON adapter
-    return null;
+    const userAccount = await db.findAccountByProviderAndAccountId(
+      account.provider,
+      account.providerAccountId
+    )
+    if (!userAccount) return null
+    return await db.findUserById(userAccount.userId)
   },
-  
+
   async createSession(data: any) {
-    // For simplicity, sessions are not implemented in this JSON adapter
-    return null;
+    return await db.createSession({
+      userId: data.userId,
+      sessionToken: data.sessionToken,
+      expires: new Date(data.expires).toISOString(),
+    })
   },
-  
+
   async getSessionAndUser(sessionToken: string) {
-    // For simplicity, sessions are not implemented in this JSON adapter
-    return null;
+    const session = await db.findSessionBySessionToken(sessionToken)
+    if (!session) return null
+    const user = await db.findUserById(session.userId)
+    if (!user) return null
+    return {
+      session: {
+        id: session.id,
+        userId: session.userId,
+        sessionToken: session.sessionToken,
+        expires: new Date(session.expires),
+      },
+      user,
+    }
   },
-  
+
   async updateSession(data: any) {
-    // For simplicity, sessions are not implemented in this JSON adapter
-    return null;
+    return await db.updateSession(data.sessionToken, {
+      expires: data.expires ? new Date(data.expires).toISOString() : undefined,
+    })
   },
-  
+
   async deleteSession(sessionToken: string) {
-    // For simplicity, sessions are not implemented in this JSON adapter
-    return null;
+    await db.deleteSession(sessionToken)
   },
-  
+
   async createVerificationToken(token: any) {
-    // For simplicity, verification tokens are not implemented in this JSON adapter
-    return null;
+    return await db.createVerificationToken({
+      identifier: token.identifier,
+      token: token.token,
+      expires: new Date(token.expires).toISOString(),
+    })
   },
-  
-  async useVerificationToken(identifier_token: { identifier: string; token: string }) {
-    // For simplicity, verification tokens are not implemented in this JSON adapter
-    return null;
+
+  async useVerificationToken(params: { identifier: string; token: string }) {
+    const verificationToken = await db.findVerificationToken(params.identifier, params.token)
+    if (!verificationToken) return null
+    await db.deleteVerificationToken(params.identifier, params.token)
+    return verificationToken
   },
-};
+}

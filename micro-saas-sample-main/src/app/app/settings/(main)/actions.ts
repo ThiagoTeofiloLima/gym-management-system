@@ -4,7 +4,7 @@ import { auth } from "@/services/auth";
 import { z } from "zod";
 import { updateProfileSchema } from "./schema";
 import capitalize from "@/lib/capitalize";
-import { prisma } from "@/lib/prisma";
+import * as db from "@/services/database";
 
 export async function upsertProfile(input: z.infer<typeof updateProfileSchema>) {
     let session;
@@ -21,11 +21,8 @@ export async function upsertProfile(input: z.infer<typeof updateProfileSchema>) 
         };
     }
 
-    const updatedUser = await prisma.user.update({
-        where: { id: session.user.id },
-        data: {
-            name: capitalize(input.name)
-        },
+    const updatedUser = await db.updateUser(session.user.id, {
+        name: capitalize(input.name)
     });
 
     if (!updatedUser) {

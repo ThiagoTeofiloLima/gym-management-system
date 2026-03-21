@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/services/database'
+import * as db from '@/services/database'
 import { auth } from '@/services/auth'
 import { getTenantContext } from '@/lib/multi-tenant'
 
 /**
  * POST /api/superadmin/gyms/managers/set-temp-password
  * Salva uma nota/metadado com a senha temporária do gestor (apenas Super Admin)
- * 
+ *
  * NOTA: Esta é uma solução temporária. Em produção, use email ou outro mecanismo seguro.
  */
 export async function POST(request: NextRequest) {
@@ -36,17 +36,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Salvar senha temporária no campo de metadados (usando um campo personalizado ou nota)
-    // Como não temos campo dedicado, vamos criar um registro em uma tabela de metadados
-    // ou usar o próprio usuário com um campo temporário
-    
-    // Para esta implementação, vamos armazenar em uma tabela de metadados
-    await prisma.$executeRaw`
-      INSERT INTO "manager_temp_passwords" ("manager_id", "gym_id", "password", "created_at")
-      VALUES (${managerId}, ${gymId}, ${tempPassword}, NOW())
-      ON CONFLICT ("manager_id", "gym_id") 
-      DO UPDATE SET "password" = ${tempPassword}, "created_at" = NOW()
-    `
+    // Verificar se já existe senha temporária para este gestor
+    const existingPassword = await db.findManagerTempPassword(managerId, gymId)
+
+    if (existingPassword) {
+      // Atualizar senha existente
+      await db.updateManagerTempPassword(managerId, gymId, {
+        password: tempPassword,
+      })
+    } else {
+      // Criar nova senha temporária
+      await db.createManagerTempPassword({
+        managerId,
+        gymId,
+        password: tempPassword,
+      })
+    }
 
     return NextResponse.json({ success: true })
   } catch (error) {
@@ -90,15 +95,9 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const result = await prisma.$queryRaw`
-      SELECT "password", "created_at"
-      FROM "manager_temp_passwords"
-      WHERE "manager_id" = ${managerId} AND "gym_id" = ${gymId}
-      ORDER BY "created_at" DESC
-      LIMIT 1
-    ` as any[]
+    const tempPassword = await db.findManagerTempPassword(managerId, gymId)
 
-    if (result.length === 0) {
+    if (!tempPassword) {
       return NextResponse.json(
         { error: 'Senha temporária não encontrada' },
         { status: 404 }
@@ -106,8 +105,8 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({
-      password: result[0].password,
-      createdAt: result[0].created_at,
+      password: tempPassword.password,
+      createdAt: tempPassword.createdAt,
     })
   } catch (error) {
     console.error('Erro ao buscar senha temporária:', error)

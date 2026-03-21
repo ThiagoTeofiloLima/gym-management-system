@@ -135,6 +135,9 @@ export default function GymsPage() {
         plan: selectedGym.plan,
         maxMembers: selectedGym.maxMembers,
         maxUsers: selectedGym.maxUsers,
+        managerName: '',
+        managerEmail: '',
+        managerPassword: '',
       })
     }
   }, [selectedGym])
@@ -378,8 +381,8 @@ export default function GymsPage() {
     total: gyms.length,
     active: gyms.filter(g => g.isActive).length,
     inactive: gyms.filter(g => !g.isActive).length,
-    totalMembers: gyms.reduce((acc, g) => acc + g._count.members, 0),
-    totalUsers: gyms.reduce((acc, g) => acc + g._count.users, 0),
+    totalMembers: gyms.reduce((acc, g) => acc + (g._count?.members || 0), 0),
+    totalUsers: gyms.reduce((acc, g) => acc + (g._count?.users || 0), 0),
     totalRevenue: gyms.reduce((acc, g) => {
       const planPrices: Record<string, number> = { basic: 99, pro: 199, enterprise: 399 }
       return acc + (planPrices[g.plan] || 0)
@@ -706,14 +709,14 @@ export default function GymsPage() {
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-2">
                     <Users className="w-5 h-5 text-blue-500" />
-                    <span className="text-2xl font-bold text-blue-500">{gym._count.users}</span>
+                    <span className="text-2xl font-bold text-blue-500">{gym._count?.users || 0}</span>
                   </div>
                   <p className="text-sm text-muted-foreground">Usuários</p>
                 </div>
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-2">
                     <Heart className="w-5 h-5 text-green-500" />
-                    <span className="text-2xl font-bold text-green-500">{gym._count.members}</span>
+                    <span className="text-2xl font-bold text-green-500">{gym._count?.members || 0}</span>
                   </div>
                   <p className="text-sm text-muted-foreground">Membros</p>
                   <p className="text-xs text-muted-foreground">
@@ -723,21 +726,21 @@ export default function GymsPage() {
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-2">
                     <Dumbbell className="w-5 h-5 text-yellow-500" />
-                    <span className="text-2xl font-bold text-yellow-500">{gym._count.trainers}</span>
+                    <span className="text-2xl font-bold text-yellow-500">{gym._count?.trainers || 0}</span>
                   </div>
                   <p className="text-sm text-muted-foreground">Treinadores</p>
                 </div>
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-2">
                     <Building2 className="w-5 h-5 text-purple-500" />
-                    <span className="text-2xl font-bold text-purple-500">{gym._count.workouts}</span>
+                    <span className="text-2xl font-bold text-purple-500">{gym._count?.workouts || 0}</span>
                   </div>
                   <p className="text-sm text-muted-foreground">Treinos</p>
                 </div>
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-2">
                     <DollarSign className="w-5 h-5 text-red-500" />
-                    <span className="text-2xl font-bold text-red-500">{gym._count.expenses}</span>
+                    <span className="text-2xl font-bold text-red-500">{gym._count?.expenses || 0}</span>
                   </div>
                   <p className="text-sm text-muted-foreground">Despesas</p>
                 </div>

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/services/database'
+import * as db from '@/services/database'
 import { auth } from '@/services/auth'
 import { hash, compare } from 'bcryptjs'
 
@@ -41,9 +41,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Buscar usuário com senha
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-    })
+    const user = await db.findUserById(session.user.id)
 
     if (!user) {
       return NextResponse.json(
@@ -74,11 +72,8 @@ export async function PATCH(request: NextRequest) {
     const newPasswordHash = await hash(newPassword, 10)
 
     // Atualizar senha
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: {
-        passwordHash: newPasswordHash,
-      },
+    await db.updateUser(session.user.id, {
+      passwordHash: newPasswordHash,
     })
 
     return NextResponse.json({

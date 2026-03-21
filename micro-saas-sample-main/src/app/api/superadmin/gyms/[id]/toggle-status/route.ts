@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/services/database'
+import * as db from '@/services/database'
 import { auth } from '@/services/auth'
 import { getTenantContext } from '@/lib/multi-tenant'
 
@@ -32,9 +32,7 @@ export async function PATCH(
     const { isActive } = body
 
     // Verificar se academia existe
-    const existingGym = await prisma.gym.findUnique({
-      where: { id },
-    })
+    const existingGym = await db.findGymById(id)
 
     if (!existingGym) {
       return NextResponse.json(
@@ -43,10 +41,7 @@ export async function PATCH(
       )
     }
 
-    const gym = await prisma.gym.update({
-      where: { id },
-      data: { isActive },
-    })
+    const gym = await db.updateGym(id, { isActive })
 
     return NextResponse.json(gym)
   } catch (error) {

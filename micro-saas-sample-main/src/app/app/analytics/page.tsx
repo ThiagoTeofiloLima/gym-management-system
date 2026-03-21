@@ -13,7 +13,7 @@ import {
 } from "@radix-ui/react-icons";
 import { Dumbbell, TrendingUp, TrendingDown, DollarSign } from "lucide-react";
 import { AnalyticsCharts } from "../__components/dashboard-charts";
-import { prisma } from "@/lib/prisma";
+import * as db from "@/services/database";
 import { auth } from "@/services/auth";
 import { getTenantContext } from "@/lib/multi-tenant";
 
@@ -21,14 +21,15 @@ export default async function AnalyticsPage(props: {
     searchParams: Promise<{ gymId?: string }>
 }) {
     const searchParams = await props.searchParams
-    let queryGymId = searchParams.gymId
+    const queryGymId = searchParams.gymId
 
     const session = await auth()
     if (!session?.user) {
         return <div>Unauthorized</div>
     }
 
-    const context = await getTenantContext()
+    // Passa o gymId da URL para o contexto
+    const context = await getTenantContext(queryGymId)
     if (!context) {
         return <div>Unauthorized</div>
     }
@@ -46,10 +47,8 @@ export default async function AnalyticsPage(props: {
 
     // Se ainda não tem gymId e é super admin, pega a primeira academia
     if (!gymIdFilter && context.isSuperAdmin) {
-        const firstGym = await prisma.gym.findFirst({
-            where: { isActive: true },
-            orderBy: { name: 'asc' },
-        })
+        const allGyms = await db.findAllGyms()
+        const firstGym = allGyms.find(g => g.isActive)
         gymIdFilter = firstGym?.id
     }
 
@@ -57,31 +56,23 @@ export default async function AnalyticsPage(props: {
     const whereClause = gymIdFilter ? { gymId: gymIdFilter } : {}
 
     const [members, attendance, gymPlans, expenses] = await Promise.all([
-        prisma.member.findMany({ 
-            where: whereClause,
-            include: {
-                gymPlan: true,
-            }
+        db.findMembers({
+            gymId: gymIdFilter,
         }),
-        prisma.attendance.findMany({
-            where: gymIdFilter ? {
-                memberId: {
-                    in: (await prisma.member.findMany({
-                        where: { gymId: gymIdFilter },
-                        select: { id: true }
-                    })).map(m => m.id)
-                }
-            } : {}
+        db.findAttendanceRecords({
+            memberId: undefined,
         }),
         // Buscar planos da academia
-        prisma.gymPlan.findMany({
-            where: gymIdFilter ? { gymId: gymIdFilter } : {},
-        }),
+        db.findGymPlansByGymId(gymIdFilter || ''),
         // Buscar despesas para cálculo de lucro
-        prisma.expense.findMany({
-            where: whereClause,
+        db.findExpenses({
+            gymId: gymIdFilter,
         }),
     ])
+
+    // Filtrar attendance pelos membros da academia
+    const memberIds = new Set(members.map(m => m.id))
+    const filteredAttendance = attendance.filter(a => memberIds.has(a.memberId))
 
     // Calcular analytics
     const activeMembers = members.filter(m => m.status === 'Ativo').length
@@ -90,7 +81,7 @@ export default async function AnalyticsPage(props: {
     // Taxa de frequência: membros únicos que vieram nos últimos 30 dias / total de membros
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-    const recentAttendance = attendance.filter(a =>
+    const recentAttendance = filteredAttendance.filter(a =>
         new Date(a.date) >= thirtyDaysAgo && a.status === 'Presente'
     )
     const uniqueMembersWhoAttended = new Set(recentAttendance.map(a => a.memberId)).size
@@ -182,10 +173,11 @@ export default async function AnalyticsPage(props: {
         const renewalDate = new Date(m.planRenewalDate)
         return renewalDate <= now
     })
-    
+
     const membersWhoRenewed = membersDueForRenewal.filter(m => {
         const paymentDate = new Date(m.paymentDate)
-        return paymentDate > renewalDate // Pagou após vencimento
+        const memberRenewalDate = new Date(m.planRenewalDate)
+        return paymentDate > memberRenewalDate // Pagou após vencimento
     })
     
     const retentionRate = membersDueForRenewal.length > 0

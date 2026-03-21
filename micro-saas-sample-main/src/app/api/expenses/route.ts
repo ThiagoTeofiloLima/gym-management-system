@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/services/database'
+import * as db from '@/services/database'
 import { auth } from '@/services/auth'
+import { getTenantContext, canAccessGym } from '@/lib/multi-tenant'
 
 /**
  * GET /api/expenses
  * Lista despesas da academia
+ *
+ * SEGURANÇA: Valida se o usuário tem permissão para acessar a academia especificada
  */
 export async function GET(request: NextRequest) {
   try {
@@ -14,31 +17,63 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const context = await getTenantContext()
+
+    if (!context) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const url = new URL(request.url)
-    const gymId = url.searchParams.get('gymId')
+    const queryGymId = url.searchParams.get('gymId')
+
+    // Determinar qual gymId usar
+    let gymId: string | undefined
+
+    if (queryGymId) {
+      // Se passou gymId na query, validar se o usuário tem acesso
+      const hasAccess = await canAccessGym(session.user.id, queryGymId)
+      if (!hasAccess) {
+        return NextResponse.json(
+          { error: 'Forbidden: You do not have access to this gym' },
+          { status: 403 }
+        )
+      }
+      gymId = queryGymId
+    } else if (context.gymId) {
+      gymId = context.gymId
+    } else if (context.gyms && context.gyms.length > 0) {
+      const firstGym = context.gyms.find((g: any) => g.status === 'ACTIVE' && g.isActive)
+      gymId = firstGym?.gymId
+    }
 
     if (!gymId) {
       return NextResponse.json([])
     }
 
-    const whereClause: any = { gymId }
+    const expenses = await db.findExpenses({ gymId })
 
-    const expenses = await prisma.expense.findMany({
-      where: whereClause,
-      include: {
-        gym: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-      },
-      orderBy: {
-        date: 'desc',
-      },
-    })
+    // Buscar gym para cada expense
+    const expensesWithGym = await Promise.all(
+      expenses.map(async (expense) => {
+        let gym = null
+        if (expense.gymId) {
+          const gymData = await db.findGymById(expense.gymId)
+          if (gymData) {
+            gym = {
+              id: gymData.id,
+              name: gymData.name,
+            }
+          }
+        }
 
-    return NextResponse.json(expenses)
+        return {
+          ...expense,
+          gym,
+        }
+      })
+    )
+
+    return NextResponse.json(expensesWithGym)
   } catch (error) {
     console.error('Error fetching expenses:', error)
     return NextResponse.json(
@@ -51,6 +86,8 @@ export async function GET(request: NextRequest) {
 /**
  * POST /api/expenses
  * Cria nova despesa
+ *
+ * SEGURANÇA: Valida se o usuário tem permissão para acessar a academia especificada
  */
 export async function POST(request: NextRequest) {
   try {
@@ -60,8 +97,34 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const context = await getTenantContext()
+
+    if (!context) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const url = new URL(request.url)
-    const gymId = url.searchParams.get('gymId')
+    const queryGymId = url.searchParams.get('gymId')
+
+    // Determinar qual gymId usar
+    let gymId: string | undefined
+
+    if (queryGymId) {
+      // Se passou gymId na query, validar se o usuário tem acesso
+      const hasAccess = await canAccessGym(session.user.id, queryGymId)
+      if (!hasAccess) {
+        return NextResponse.json(
+          { error: 'Forbidden: You do not have access to this gym' },
+          { status: 403 }
+        )
+      }
+      gymId = queryGymId
+    } else if (context.gymId) {
+      gymId = context.gymId
+    } else if (context.gyms && context.gyms.length > 0) {
+      const firstGym = context.gyms.find((g: any) => g.status === 'ACTIVE' && g.isActive)
+      gymId = firstGym?.gymId
+    }
 
     if (!gymId) {
       return NextResponse.json(
@@ -80,16 +143,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const newExpense = await prisma.expense.create({
-      data: {
-        title,
-        description,
-        amount,
-        category,
-        date: date ? new Date(date) : new Date(),
-        gymId,
-        userId: session.user.id,
-      },
+    const newExpense = await db.createExpense({
+      title,
+      description,
+      amount,
+      category,
+      date: date || new Date().toISOString().split('T')[0],
+      gymId,
+      userId: session.user.id,
     })
 
     return NextResponse.json(newExpense, { status: 201 })
